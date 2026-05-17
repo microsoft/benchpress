@@ -1,0 +1,5300 @@
+{
+  "AA Intelligence Index": {
+    "best_neighbor": "Aider Polyglot (diff mode)",
+    "max_r": 0.976,
+    "max_r2": 0.952,
+    "medape": 1.5,
+    "medae": 0.76,
+    "n_shared": 5,
+    "category": "Composite",
+    "raw_predictions": {
+      "model_indices": [
+        7,
+        17,
+        24,
+        39,
+        49
+      ],
+      "actuals": [
+        69.0,
+        63.0,
+        60.0,
+        57.0,
+        50.0
+      ],
+      "preds": [
+        67.592219,
+        62.527089,
+        62.527089,
+        57.226688,
+        49.237281
+      ]
+    }
+  },
+  "AA Long Context Reasoning": {
+    "best_neighbor": "SWE-Lancer IC Diamond",
+    "max_r": 0.888,
+    "max_r2": 0.788,
+    "medape": 2.6,
+    "medae": 1.86,
+    "n_shared": 5,
+    "category": "Long Context",
+    "raw_predictions": {
+      "model_indices": [
+        9,
+        10,
+        17,
+        19,
+        27
+      ],
+      "actuals": [
+        75.0,
+        72.3,
+        66.0,
+        71.3,
+        65.3
+      ],
+      "preds": [
+        73.071359,
+        74.497537,
+        66.702898,
+        69.441252,
+        66.322618
+      ]
+    }
+  },
+  "Aider Polyglot (diff mode)": {
+    "best_neighbor": "Aider Polyglot (whole mode)",
+    "max_r": 0.985,
+    "max_r2": 0.97,
+    "medape": 7.4,
+    "medae": 2.73,
+    "n_shared": 17,
+    "category": "Coding",
+    "raw_predictions": {
+      "model_indices": [
+        0,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        24,
+        25,
+        35,
+        36,
+        39,
+        42,
+        49,
+        59,
+        60,
+        61
+      ],
+      "actuals": [
+        60.4,
+        52.9,
+        31.6,
+        6.2,
+        79.6,
+        58.2,
+        88.0,
+        82.2,
+        61.9,
+        53.3,
+        49.6,
+        74.5,
+        57.3,
+        60.0,
+        18.2,
+        2.7,
+        61.7
+      ],
+      "preds": [
+        62.972632,
+        46.487246,
+        29.266823,
+        7.086615,
+        79.520629,
+        65.439683,
+        87.141502,
+        80.547486,
+        57.640631,
+        68.484255,
+        44.374245,
+        71.771446,
+        52.606498,
+        55.551673,
+        25.421364,
+        2.386738,
+        60.630786
+      ]
+    }
+  },
+  "Aider Polyglot (whole mode)": {
+    "best_neighbor": "ERQA",
+    "max_r": 0.987,
+    "max_r2": 0.975,
+    "medape": 13.2,
+    "medae": 2.68,
+    "n_shared": 7,
+    "category": "Coding",
+    "raw_predictions": {
+      "model_indices": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        59
+      ],
+      "actuals": [
+        51.6,
+        34.7,
+        9.8,
+        81.3,
+        68.9,
+        88.0,
+        30.7
+      ],
+      "preds": [
+        44.766985,
+        40.169829,
+        11.52111,
+        83.874831,
+        71.575374,
+        86.072626,
+        25.137985
+      ]
+    }
+  },
+  "AIME 2024": {
+    "best_neighbor": "CNMO 2024",
+    "max_r": 0.966,
+    "max_r2": 0.932,
+    "medape": 9.0,
+    "medae": 3.68,
+    "n_shared": 10,
+    "category": "Math",
+    "raw_predictions": {
+      "model_indices": [
+        35,
+        36,
+        37,
+        49,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69
+      ],
+      "actuals": [
+        79.8,
+        39.2,
+        91.4,
+        69.6,
+        4.6,
+        16.7,
+        23.3,
+        23.3,
+        16.0,
+        9.3
+      ],
+      "preds": [
+        79.53226,
+        48.869024,
+        86.638362,
+        75.679193,
+        5.026004,
+        15.846181,
+        21.827183,
+        10.741187,
+        18.60392,
+        15.846181
+      ]
+    }
+  },
+  "AIME 2025": {
+    "best_neighbor": "BFCL v3",
+    "max_r": 0.969,
+    "max_r2": 0.94,
+    "medape": 8.3,
+    "medae": 3.49,
+    "n_shared": 8,
+    "category": "Math",
+    "raw_predictions": {
+      "model_indices": [
+        38,
+        42,
+        43,
+        44,
+        45,
+        46,
+        80,
+        81
+      ],
+      "actuals": [
+        56.3,
+        81.5,
+        72.9,
+        67.3,
+        70.9,
+        69.5,
+        1.0,
+        0.33
+      ],
+      "preds": [
+        26.879739,
+        79.317265,
+        78.285719,
+        73.446706,
+        75.704692,
+        69.408359,
+        0.627902,
+        1.390379
+      ]
+    }
+  },
+  "AIME 2026": {
+    "best_neighbor": "MRCR v2",
+    "max_r": 0.889,
+    "max_r2": 0.79,
+    "medape": 1.4,
+    "medae": 1.41,
+    "n_shared": 5,
+    "category": "Math",
+    "raw_predictions": {
+      "model_indices": [
+        10,
+        17,
+        20,
+        27,
+        29
+      ],
+      "actuals": [
+        96.7,
+        82.5,
+        95.6,
+        90.6,
+        98.2
+      ],
+      "preds": [
+        96.492533,
+        79.952915,
+        96.54712,
+        94.464336,
+        96.789344
+      ]
+    }
+  },
+  "AlpacaEval 2.0 (LC-winrate)": {
+    "best_neighbor": "MATH-500",
+    "max_r": 0.981,
+    "max_r2": 0.963,
+    "medape": 5.5,
+    "medae": 3.0,
+    "n_shared": 8,
+    "category": "Chat",
+    "raw_predictions": {
+      "model_indices": [
+        35,
+        46,
+        60,
+        66,
+        73,
+        74,
+        80,
+        81
+      ],
+      "actuals": [
+        87.6,
+        82.4,
+        49.7,
+        47.7,
+        34.6,
+        36.5,
+        20.4,
+        10.1
+      ],
+      "preds": [
+        83.689306,
+        86.718905,
+        40.218388,
+        47.773293,
+        42.81282,
+        34.402169,
+        20.95427,
+        10.84326
+      ]
+    }
+  },
+  "ARC-AGI-1": {
+    "best_neighbor": "MultiChallenge (o3-mini grader)",
+    "max_r": 0.953,
+    "max_r2": 0.908,
+    "medape": 34.7,
+    "medae": 4.56,
+    "n_shared": 9,
+    "category": "Reasoning",
+    "raw_predictions": {
+      "model_indices": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        59
+      ],
+      "actuals": [
+        25.8,
+        10.3,
+        5.5,
+        3.5,
+        0.0,
+        60.8,
+        58.7,
+        65.7,
+        4.5
+      ],
+      "preds": [
+        15.06174,
+        14.856882,
+        8.509255,
+        4.616028,
+        0.693428,
+        48.43986,
+        36.701597,
+        82.817054,
+        3.19506
+      ]
+    }
+  },
+  "ARC-AGI-2": {
+    "best_neighbor": "ScreenSpot-Pro",
+    "max_r": 0.961,
+    "max_r2": 0.924,
+    "medape": 15.0,
+    "medae": 1.6,
+    "n_shared": 8,
+    "category": "Reasoning",
+    "raw_predictions": {
+      "model_indices": [
+        10,
+        17,
+        19,
+        24,
+        25,
+        27,
+        28,
+        31
+      ],
+      "actuals": [
+        52.9,
+        13.6,
+        37.6,
+        4.9,
+        2.5,
+        31.1,
+        33.6,
+        42.5
+      ],
+      "preds": [
+        51.822435,
+        15.71675,
+        19.90202,
+        5.954238,
+        2.660446,
+        36.496888,
+        33.603562,
+        48.643199
+      ]
+    }
+  },
+  "Arena-Hard Auto": {
+    "best_neighbor": "BFCL v3",
+    "max_r": 0.939,
+    "max_r2": 0.881,
+    "medape": 1.7,
+    "medae": 1.45,
+    "n_shared": 6,
+    "category": "Instruction Following",
+    "raw_predictions": {
+      "model_indices": [
+        38,
+        42,
+        43,
+        44,
+        45,
+        46
+      ],
+      "actuals": [
+        60.6,
+        95.6,
+        93.8,
+        85.8,
+        91.0,
+        89.5
+      ],
+      "preds": [
+        58.703168,
+        93.371038,
+        92.987214,
+        91.097142,
+        91.998105,
+        89.395355
+      ]
+    }
+  },
+  "ArtifactsBench": {
+    "best_neighbor": "GraphWalks parents 0-128K",
+    "max_r": -0.977,
+    "max_r2": 0.954,
+    "medape": 1.7,
+    "medae": 1.17,
+    "n_shared": 6,
+    "category": "Coding",
+    "raw_predictions": {
+      "model_indices": [
+        7,
+        10,
+        17,
+        19,
+        27,
+        56
+      ],
+      "actuals": [
+        73.0,
+        71.1,
+        61.5,
+        68.5,
+        58.4,
+        66.6
+      ],
+      "preds": [
+        74.149588,
+        70.805008,
+        62.17708,
+        67.013928,
+        59.596061,
+        65.367189
+      ]
+    }
+  },
+  "BabyVision": {
+    "best_neighbor": "Bullshit-Bench (Clear Pushback)",
+    "max_r": -0.975,
+    "max_r2": 0.951,
+    "medape": 4.3,
+    "medae": 1.58,
+    "n_shared": 5,
+    "category": "Multimodal",
+    "raw_predictions": {
+      "model_indices": [
+        10,
+        11,
+        19,
+        20,
+        50
+      ],
+      "actuals": [
+        37.4,
+        49.7,
+        16.2,
+        14.8,
+        36.5
+      ],
+      "preds": [
+        43.662492,
+        44.637747,
+        16.250773,
+        14.902507,
+        34.921886
+      ]
+    }
+  },
+  "Beyond AIME": {
+    "best_neighbor": "BRUMO 2025",
+    "max_r": 0.994,
+    "max_r2": 0.989,
+    "medape": 1.9,
+    "medae": 1.56,
+    "n_shared": 5,
+    "category": "Math",
+    "raw_predictions": {
+      "model_indices": [
+        10,
+        17,
+        24,
+        27,
+        35
+      ],
+      "actuals": [
+        86.0,
+        57.0,
+        58.8,
+        83.0,
+        42.4
+      ],
+      "preds": [
+        84.561688,
+        58.665854,
+        56.894936,
+        84.561688,
+        42.631665
+      ]
+    }
+  },
+  "BFCL": {
+    "best_neighbor": "LiveBench",
+    "max_r": 0.958,
+    "max_r2": 0.918,
+    "medape": 1.0,
+    "medae": 0.74,
+    "n_shared": 6,
+    "category": "Tool use",
+    "raw_predictions": {
+      "model_indices": [
+        42,
+        43,
+        45,
+        46,
+        69,
+        74
+      ],
+      "actuals": [
+        70.8,
+        70.3,
+        69.1,
+        66.4,
+        58.6,
+        51.4
+      ],
+      "preds": [
+        71.394724,
+        69.421227,
+        68.89094,
+        66.886243,
+        55.034921,
+        55.034921
+      ]
+    }
+  },
+  "BFCL v3": {
+    "best_neighbor": "MT-AIME2024",
+    "max_r": 0.98,
+    "max_r2": 0.96,
+    "medape": 1.4,
+    "medae": 0.8,
+    "n_shared": 6,
+    "category": "Tool use",
+    "raw_predictions": {
+      "model_indices": [
+        38,
+        42,
+        43,
+        44,
+        45,
+        46
+      ],
+      "actuals": [
+        49.3,
+        70.8,
+        70.3,
+        68.1,
+        69.1,
+        66.4
+      ],
+      "preds": [
+        50.311033,
+        72.598986,
+        69.718183,
+        65.525262,
+        69.209086,
+        66.614627
+      ]
+    }
+  },
+  "BigBench Hard (BBH)": {
+    "best_neighbor": "FACTS Grounding",
+    "max_r": 0.973,
+    "max_r2": 0.947,
+    "medape": 3.5,
+    "medae": 2.91,
+    "n_shared": 6,
+    "category": "Reasoning",
+    "raw_predictions": {
+      "model_indices": [
+        26,
+        62,
+        63,
+        71,
+        72,
+        80
+      ],
+      "actuals": [
+        83.7,
+        85.5,
+        89.2,
+        64.9,
+        72.7,
+        39.1
+      ],
+      "preds": [
+        81.964914,
+        88.90403,
+        86.486873,
+        69.180013,
+        69.602223,
+        39.759707
+      ]
+    }
+  },
+  "BigCodeBench": {
+    "best_neighbor": "SWE-bench Verified",
+    "max_r": 0.957,
+    "max_r2": 0.917,
+    "medape": 0.9,
+    "medae": 0.44,
+    "n_shared": 6,
+    "category": "Coding",
+    "raw_predictions": {
+      "model_indices": [
+        30,
+        36,
+        57,
+        66,
+        67,
+        74
+      ],
+      "actuals": [
+        49.7,
+        50.0,
+        45.4,
+        45.8,
+        46.2,
+        46.9
+      ],
+      "preds": [
+        50.137861,
+        49.326117,
+        46.299863,
+        45.597953,
+        45.766636,
+        46.869781
+      ]
+    }
+  },
+  "Bird-SQL (Dev)": {
+    "best_neighbor": "MMLU-Pro",
+    "max_r": 0.934,
+    "max_r2": 0.873,
+    "medape": 11.0,
+    "medae": 5.26,
+    "n_shared": 15,
+    "category": "Coding",
+    "raw_predictions": {
+      "model_indices": [
+        23,
+        26,
+        36,
+        57,
+        62,
+        63,
+        66,
+        67,
+        69,
+        71,
+        72,
+        74,
+        76,
+        77,
+        80
+      ],
+      "actuals": [
+        58.7,
+        54.4,
+        50.5,
+        59.5,
+        45.6,
+        54.4,
+        50.1,
+        59.4,
+        53.1,
+        33.8,
+        46.7,
+        58.0,
+        33.2,
+        41.9,
+        6.4
+      ],
+      "preds": [
+        62.313289,
+        51.065229,
+        60.279724,
+        52.515236,
+        50.860594,
+        60.162077,
+        55.403178,
+        57.288021,
+        56.505384,
+        32.515178,
+        40.974829,
+        47.960221,
+        29.557852,
+        32.277685,
+        9.578716
+      ]
+    }
+  },
+  "BrowseComp": {
+    "best_neighbor": "MCPAtlas Public",
+    "max_r": 0.924,
+    "max_r2": 0.854,
+    "medape": 5.9,
+    "medae": 3.73,
+    "n_shared": 20,
+    "category": "Agentic",
+    "raw_predictions": {
+      "model_indices": [
+        9,
+        10,
+        11,
+        12,
+        17,
+        19,
+        20,
+        21,
+        22,
+        24,
+        27,
+        29,
+        39,
+        40,
+        41,
+        50,
+        51,
+        53,
+        54,
+        55
+      ],
+      "actuals": [
+        50.8,
+        65.8,
+        82.7,
+        84.4,
+        43.9,
+        67.8,
+        83.7,
+        74.7,
+        79.3,
+        9.9,
+        59.2,
+        85.9,
+        51.4,
+        83.4,
+        73.2,
+        60.6,
+        83.2,
+        52.0,
+        62.0,
+        79.3
+      ],
+      "preds": [
+        49.524079,
+        67.139733,
+        77.139133,
+        81.53133,
+        48.725136,
+        68.897517,
+        81.985907,
+        67.866226,
+        83.334388,
+        8.291432,
+        60.22374,
+        75.790811,
+        68.794739,
+        79.967196,
+        75.596751,
+        70.429675,
+        73.240562,
+        57.928497,
+        75.790811,
+        78.280529
+      ]
+    }
+  },
+  "BrowseComp Long Context 128k": {
+    "best_neighbor": "SWE-bench Verified",
+    "max_r": 0.988,
+    "max_r2": 0.975,
+    "medape": 0.5,
+    "medae": 0.44,
+    "n_shared": 5,
+    "category": "Long Context",
+    "raw_predictions": {
+      "model_indices": [
+        7,
+        9,
+        10,
+        82,
+        83
+      ],
+      "actuals": [
+        90.0,
+        90.0,
+        92.0,
+        89.4,
+        80.4
+      ],
+      "preds": [
+        90.018865,
+        90.577132,
+        92.022064,
+        88.423421,
+        80.840218
+      ]
+    }
+  },
+  "BrowseComp-ZH": {
+    "best_neighbor": "IMO-AnswerBench",
+    "max_r": 0.967,
+    "max_r2": 0.935,
+    "medape": 5.3,
+    "medae": 3.56,
+    "n_shared": 13,
+    "category": "Agentic search",
+    "raw_predictions": {
+      "model_indices": [
+        7,
+        10,
+        17,
+        19,
+        27,
+        39,
+        47,
+        49,
+        50,
+        52,
+        53,
+        54,
+        56
+      ],
+      "actuals": [
+        63.0,
+        76.1,
+        42.4,
+        62.4,
+        66.8,
+        65.0,
+        70.3,
+        28.8,
+        62.3,
+        49.5,
+        66.6,
+        72.7,
+        82.4
+      ],
+      "preds": [
+        59.279156,
+        75.349965,
+        45.959857,
+        62.926879,
+        70.383231,
+        62.629199,
+        66.579767,
+        25.932804,
+        67.988336,
+        55.787798,
+        68.304238,
+        69.098591,
+        80.546628
+      ]
+    }
+  },
+  "BRUMO 2025": {
+    "best_neighbor": "Beyond AIME",
+    "max_r": 0.994,
+    "max_r2": 0.989,
+    "medape": 0.3,
+    "medae": 0.29,
+    "n_shared": 5,
+    "category": "Math",
+    "raw_predictions": {
+      "model_indices": [
+        10,
+        17,
+        24,
+        27,
+        35
+      ],
+      "actuals": [
+        98.33,
+        90.83,
+        90.0,
+        98.33,
+        80.83
+      ],
+      "preds": [
+        98.53858,
+        90.112168,
+        90.938386,
+        98.037839,
+        80.877315
+      ]
+    }
+  },
+  "Bullshit-Bench (Clear Pushback)": {
+    "best_neighbor": "BabyVision",
+    "max_r": -0.975,
+    "max_r2": 0.951,
+    "medape": 6.5,
+    "medae": 3.06,
+    "n_shared": 5,
+    "category": "Behavior",
+    "raw_predictions": {
+      "model_indices": [
+        10,
+        11,
+        19,
+        20,
+        50
+      ],
+      "actuals": [
+        27.27,
+        25.45,
+        90.91,
+        92.73,
+        47.27
+      ],
+      "preds": [
+        42.068592,
+        18.928646,
+        90.246392,
+        92.173306,
+        44.205551
+      ]
+    }
+  },
+  "C-Eval (Chinese)": {
+    "best_neighbor": "Arena-Hard Auto",
+    "max_r": 0.915,
+    "max_r2": 0.837,
+    "medape": 1.0,
+    "medae": 0.77,
+    "n_shared": 5,
+    "category": "Knowledge",
+    "raw_predictions": {
+      "model_indices": [
+        35,
+        36,
+        65,
+        66,
+        69
+      ],
+      "actuals": [
+        91.8,
+        86.5,
+        79.5,
+        86.1,
+        76.0
+      ],
+      "preds": [
+        91.982541,
+        86.792279,
+        80.266457,
+        81.780907,
+        79.855157
+      ]
+    }
+  },
+  "CharXiv Descriptive": {
+    "best_neighbor": "LiveCodeBench",
+    "max_r": 0.99,
+    "max_r2": 0.979,
+    "medape": 0.3,
+    "medae": 0.29,
+    "n_shared": 7,
+    "category": "Vision",
+    "raw_predictions": {
+      "model_indices": [
+        2,
+        10,
+        19,
+        27,
+        56,
+        59,
+        61
+      ],
+      "actuals": [
+        87.9,
+        93.8,
+        92.7,
+        94.4,
+        93.5,
+        85.3,
+        88.9
+      ],
+      "preds": [
+        87.318328,
+        93.538896,
+        93.013953,
+        94.155776,
+        93.558061,
+        85.008632,
+        89.931075
+      ]
+    }
+  },
+  "CharXiv Reasoning": {
+    "best_neighbor": "SWE-Lancer IC SWE Diamond Freelance ($)",
+    "max_r": 0.977,
+    "max_r2": 0.955,
+    "medape": 3.0,
+    "medae": 2.01,
+    "n_shared": 8,
+    "category": "Multimodal",
+    "raw_predictions": {
+      "model_indices": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        82,
+        83
+      ],
+      "actuals": [
+        56.7,
+        56.8,
+        40.5,
+        78.6,
+        72.0,
+        81.1,
+        75.5,
+        62.7
+      ],
+      "preds": [
+        56.305439,
+        54.950457,
+        44.919628,
+        76.943764,
+        69.82861,
+        84.302685,
+        73.181381,
+        62.903032
+      ]
+    }
+  },
+  "Chatbot Arena Elo": {
+    "best_neighbor": "\u03c4\u00b2-bench Retail",
+    "max_r": 0.969,
+    "max_r2": 0.939,
+    "medape": 0.5,
+    "medae": 6.91,
+    "n_shared": 5,
+    "category": "Human Preference",
+    "raw_predictions": {
+      "model_indices": [
+        9,
+        10,
+        19,
+        20,
+        29
+      ],
+      "actuals": [
+        1439.0,
+        1438.0,
+        1469.0,
+        1496.0,
+        1493.0
+      ],
+      "preds": [
+        1431.747174,
+        1445.548813,
+        1475.908188,
+        1494.647805,
+        1487.14802
+      ]
+    }
+  },
+  "Chinese-SimpleQA": {
+    "best_neighbor": "LiveCodeBench",
+    "max_r": 0.956,
+    "max_r2": 0.914,
+    "medape": 4.6,
+    "medae": 3.49,
+    "n_shared": 13,
+    "category": "Knowledge",
+    "raw_predictions": {
+      "model_indices": [
+        20,
+        29,
+        35,
+        36,
+        40,
+        41,
+        51,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69
+      ],
+      "actuals": [
+        76.4,
+        85.9,
+        63.7,
+        64.8,
+        84.4,
+        78.9,
+        75.9,
+        48.5,
+        54.1,
+        48.4,
+        50.4,
+        51.3,
+        59.3
+      ],
+      "preds": [
+        78.825814,
+        81.00213,
+        67.637347,
+        57.698241,
+        82.607628,
+        80.919756,
+        79.38733,
+        46.739157,
+        52.635106,
+        53.554181,
+        52.237158,
+        55.915385,
+        54.623526
+      ]
+    }
+  },
+  "CLUEWSC": {
+    "best_neighbor": "C-Eval (Chinese)",
+    "max_r": 0.91,
+    "max_r2": 0.829,
+    "medape": 0.4,
+    "medae": 0.35,
+    "n_shared": 8,
+    "category": "Chinese",
+    "raw_predictions": {
+      "model_indices": [
+        35,
+        36,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69
+      ],
+      "actuals": [
+        92.8,
+        90.9,
+        89.9,
+        90.4,
+        91.4,
+        84.7,
+        85.4,
+        87.9
+      ],
+      "preds": [
+        92.989921,
+        91.119629,
+        88.81747,
+        89.063503,
+        90.992822,
+        84.409951,
+        88.306927,
+        88.12143
+      ]
+    }
+  },
+  "CMIMC 2025": {
+    "best_neighbor": "ScreenSpot-Pro",
+    "max_r": 0.955,
+    "max_r2": 0.913,
+    "medape": 4.2,
+    "medae": 3.04,
+    "n_shared": 6,
+    "category": "Math",
+    "raw_predictions": {
+      "model_indices": [
+        10,
+        17,
+        24,
+        25,
+        27,
+        28
+      ],
+      "actuals": [
+        91.25,
+        66.88,
+        58.13,
+        51.88,
+        90.0,
+        90.62
+      ],
+      "preds": [
+        92.183843,
+        77.117793,
+        60.893177,
+        46.067203,
+        88.283518,
+        87.310209
+      ]
+    }
+  },
+  "CNMO 2024": {
+    "best_neighbor": "MATH-500",
+    "max_r": 0.991,
+    "max_r2": 0.983,
+    "medape": 9.6,
+    "medae": 1.04,
+    "n_shared": 9,
+    "category": "Math",
+    "raw_predictions": {
+      "model_indices": [
+        35,
+        36,
+        49,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69
+      ],
+      "actuals": [
+        78.8,
+        43.2,
+        74.3,
+        2.8,
+        10.8,
+        15.9,
+        6.8,
+        13.1,
+        10.8
+      ],
+      "preds": [
+        78.23596,
+        34.795366,
+        79.144373,
+        3.305239,
+        9.823238,
+        14.274218,
+        9.255645,
+        12.600767,
+        9.758012
+      ]
+    }
+  },
+  "Codeforces Rating": {
+    "best_neighbor": "MRCR v2",
+    "max_r": 0.988,
+    "max_r2": 0.977,
+    "medape": 2.7,
+    "medae": 82.57,
+    "n_shared": 6,
+    "category": "Coding",
+    "raw_predictions": {
+      "model_indices": [
+        10,
+        17,
+        24,
+        25,
+        27,
+        29
+      ],
+      "actuals": [
+        3148.0,
+        1480.0,
+        2001.0,
+        1995.0,
+        2708.0,
+        3052.0
+      ],
+      "preds": [
+        3075.044747,
+        1615.757522,
+        1979.763001,
+        1855.072103,
+        2714.18514,
+        3144.177486
+      ]
+    }
+  },
+  "COLLIE": {
+    "best_neighbor": "ScreenSpot-Pro",
+    "max_r": 0.972,
+    "max_r2": 0.945,
+    "medape": 4.5,
+    "medae": 3.5,
+    "n_shared": 5,
+    "category": "Instruction Following",
+    "raw_predictions": {
+      "model_indices": [
+        10,
+        17,
+        19,
+        24,
+        27
+      ],
+      "actuals": [
+        96.9,
+        77.3,
+        79.8,
+        62.5,
+        95.0
+      ],
+      "preds": [
+        96.705885,
+        80.801849,
+        85.262347,
+        55.968006,
+        93.612366
+      ]
+    }
+  },
+  "ComplexFuncBench": {
+    "best_neighbor": "tau-bench Airline",
+    "max_r": 0.846,
+    "max_r2": 0.716,
+    "medape": 27.1,
+    "medae": 11.41,
+    "n_shared": 8,
+    "category": "Tool Use",
+    "raw_predictions": {
+      "model_indices": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        59,
+        60,
+        61
+      ],
+      "actuals": [
+        17.6,
+        63.0,
+        65.5,
+        49.3,
+        5.7,
+        66.5,
+        38.6,
+        47.6
+      ],
+      "preds": [
+        35.109414,
+        62.983636,
+        62.10774,
+        40.978891,
+        9.141293,
+        51.991514,
+        19.150637,
+        62.983636
+      ]
+    }
+  },
+  "CritPt": {
+    "best_neighbor": "MCPAtlas Public",
+    "max_r": 0.986,
+    "max_r2": 0.973,
+    "medape": 4.5,
+    "medae": 0.47,
+    "n_shared": 6,
+    "category": "Science",
+    "raw_predictions": {
+      "model_indices": [
+        10,
+        20,
+        24,
+        25,
+        27,
+        29
+      ],
+      "actuals": [
+        11.6,
+        12.6,
+        2.0,
+        1.1,
+        9.1,
+        17.7
+      ],
+      "preds": [
+        10.99947,
+        16.288656,
+        2.06772,
+        1.097129,
+        9.443432,
+        13.599629
+      ]
+    }
+  },
+  "CyberGym": {
+    "best_neighbor": "GDPval (Artificial Analysis ELO)",
+    "max_r": 0.939,
+    "max_r2": 0.881,
+    "medape": 7.5,
+    "medae": 3.78,
+    "n_shared": 7,
+    "category": "Agentic",
+    "raw_predictions": {
+      "model_indices": [
+        11,
+        19,
+        20,
+        21,
+        27,
+        29,
+        55
+      ],
+      "actuals": [
+        79.0,
+        50.6,
+        73.8,
+        65.2,
+        39.9,
+        38.8,
+        68.7
+      ],
+      "preds": [
+        75.562244,
+        54.382043,
+        70.632964,
+        72.658538,
+        34.509327,
+        44.990059,
+        64.915759
+      ]
+    }
+  },
+  "DeepSearchQA (Accuracy)": {
+    "best_neighbor": "Frames",
+    "max_r": 0.988,
+    "max_r2": 0.976,
+    "medape": 2.6,
+    "medae": 1.74,
+    "n_shared": 5,
+    "category": "Search Agent",
+    "raw_predictions": {
+      "model_indices": [
+        10,
+        17,
+        19,
+        27,
+        56
+      ],
+      "actuals": [
+        71.3,
+        36.3,
+        76.1,
+        63.2,
+        77.4
+      ],
+      "preds": [
+        73.160946,
+        38.041387,
+        77.344022,
+        59.196459,
+        76.182322
+      ]
+    }
+  },
+  "DROP": {
+    "best_neighbor": "FACTS Grounding",
+    "max_r": 0.95,
+    "max_r2": 0.903,
+    "medape": 4.1,
+    "medae": 3.07,
+    "n_shared": 5,
+    "category": "Reasoning",
+    "raw_predictions": {
+      "model_indices": [
+        26,
+        63,
+        71,
+        72,
+        80
+      ],
+      "actuals": [
+        69.2,
+        74.9,
+        58.8,
+        67.5,
+        25.1
+      ],
+      "preds": [
+        71.928475,
+        77.967651,
+        56.848142,
+        57.307412,
+        29.345052
+      ]
+    }
+  },
+  "ERQA": {
+    "best_neighbor": "Aider Polyglot (whole mode)",
+    "max_r": 0.987,
+    "max_r2": 0.975,
+    "medape": 3.9,
+    "medae": 2.16,
+    "n_shared": 7,
+    "category": "Vision",
+    "raw_predictions": {
+      "model_indices": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        59
+      ],
+      "actuals": [
+        44.3,
+        42.3,
+        26.5,
+        64.0,
+        56.5,
+        65.7,
+        35.2
+      ],
+      "preds": [
+        47.250933,
+        40.039803,
+        25.474336,
+        61.84322,
+        54.945998,
+        66.895288,
+        38.212069
+      ]
+    }
+  },
+  "FACTS Grounding": {
+    "best_neighbor": "BigBench Hard (BBH)",
+    "max_r": 0.973,
+    "max_r2": 0.947,
+    "medape": 4.1,
+    "medae": 2.87,
+    "n_shared": 6,
+    "category": "Factuality",
+    "raw_predictions": {
+      "model_indices": [
+        26,
+        62,
+        63,
+        71,
+        72,
+        80
+      ],
+      "actuals": [
+        74.9,
+        82.9,
+        80.0,
+        62.0,
+        62.4,
+        36.4
+      ],
+      "preds": [
+        76.383123,
+        78.344019,
+        82.61804,
+        58.573752,
+        65.51811,
+        37.507962
+      ]
+    }
+  },
+  "FActScore (hallucination rate)": {
+    "best_neighbor": "LongFact-Objects (hallucination rate)",
+    "max_r": 0.975,
+    "max_r2": 0.951,
+    "medape": 21.7,
+    "medae": 3.08,
+    "n_shared": 12,
+    "category": "Hallucination",
+    "raw_predictions": {
+      "model_indices": [
+        2,
+        3,
+        5,
+        6,
+        7,
+        10,
+        17,
+        19,
+        27,
+        56,
+        82,
+        83
+      ],
+      "actuals": [
+        6.7,
+        10.9,
+        23.5,
+        38.7,
+        2.8,
+        91.9,
+        90.6,
+        91.1,
+        92.6,
+        71.2,
+        3.5,
+        7.3
+      ],
+      "preds": [
+        5.80975,
+        7.607573,
+        15.471101,
+        17.809322,
+        6.094625,
+        93.104871,
+        91.420685,
+        92.220663,
+        89.054158,
+        78.626023,
+        6.368453,
+        9.660794
+      ]
+    }
+  },
+  "Finance Agent v1.1": {
+    "best_neighbor": "LiveCodeBench",
+    "max_r": 0.966,
+    "max_r2": 0.932,
+    "medape": 0.6,
+    "medae": 0.35,
+    "n_shared": 5,
+    "category": "Agentic",
+    "raw_predictions": {
+      "model_indices": [
+        10,
+        17,
+        19,
+        20,
+        29
+      ],
+      "actuals": [
+        59.5,
+        54.5,
+        58.8,
+        60.1,
+        59.7
+      ],
+      "preds": [
+        59.217468,
+        54.807512,
+        58.447198,
+        59.549386,
+        60.581119
+      ]
+    }
+  },
+  "FinSearchComp-Global": {
+    "best_neighbor": "ARC-AGI-2",
+    "max_r": 0.918,
+    "max_r2": 0.843,
+    "medape": 10.5,
+    "medae": 5.59,
+    "n_shared": 5,
+    "category": "Search Agent",
+    "raw_predictions": {
+      "model_indices": [
+        7,
+        14,
+        17,
+        24,
+        39
+      ],
+      "actuals": [
+        63.9,
+        42.0,
+        60.8,
+        42.6,
+        26.2
+      ],
+      "preds": [
+        57.19781,
+        42.070348,
+        66.388531,
+        36.976023,
+        31.776226
+      ]
+    }
+  },
+  "Frames": {
+    "best_neighbor": "DeepSearchQA (Accuracy)",
+    "max_r": 0.988,
+    "max_r2": 0.976,
+    "medape": 0.3,
+    "medae": 0.25,
+    "n_shared": 5,
+    "category": "Agentic search",
+    "raw_predictions": {
+      "model_indices": [
+        10,
+        17,
+        19,
+        27,
+        56
+      ],
+      "actuals": [
+        84.0,
+        78.7,
+        84.7,
+        81.9,
+        84.5
+      ],
+      "preds": [
+        83.683955,
+        78.521846,
+        84.448213,
+        82.491454,
+        84.666994
+      ]
+    }
+  },
+  "FrontierMath": {
+    "best_neighbor": "MATH-500",
+    "max_r": 0.973,
+    "max_r2": 0.947,
+    "medape": 11.3,
+    "medae": 0.97,
+    "n_shared": 6,
+    "category": "Math",
+    "raw_predictions": {
+      "model_indices": [
+        0,
+        5,
+        6,
+        7,
+        13,
+        15
+      ],
+      "actuals": [
+        12.4,
+        15.8,
+        15.4,
+        26.3,
+        3.1,
+        4.5
+      ],
+      "preds": [
+        12.740072,
+        13.591667,
+        14.070638,
+        26.913712,
+        2.631223,
+        6.498944
+      ]
+    }
+  },
+  "FrontierMath Tier 4": {
+    "best_neighbor": "MultiChallenge (o3-mini grader)",
+    "max_r": 0.933,
+    "max_r2": 0.87,
+    "medape": 18.7,
+    "medae": 1.82,
+    "n_shared": 5,
+    "category": "Math",
+    "raw_predictions": {
+      "model_indices": [
+        5,
+        7,
+        61,
+        82,
+        83
+      ],
+      "actuals": [
+        15.8,
+        26.3,
+        5.5,
+        22.1,
+        9.6
+      ],
+      "preds": [
+        14.335042,
+        31.206566,
+        7.315966,
+        16.924827,
+        8.774521
+      ]
+    }
+  },
+  "GAIA (text only)": {
+    "best_neighbor": "ArtifactsBench",
+    "max_r": 0.86,
+    "max_r2": 0.74,
+    "medape": 3.5,
+    "medae": 2.48,
+    "n_shared": 8,
+    "category": "Agentic",
+    "raw_predictions": {
+      "model_indices": [
+        7,
+        14,
+        17,
+        24,
+        39,
+        49,
+        52,
+        58
+      ],
+      "actuals": [
+        76.4,
+        68.3,
+        71.2,
+        60.2,
+        63.5,
+        60.2,
+        71.9,
+        75.7
+      ],
+      "preds": [
+        78.708438,
+        65.581117,
+        69.201674,
+        65.929823,
+        64.265838,
+        62.849227,
+        67.746907,
+        73.650825
+      ]
+    }
+  },
+  "GDPval (Artificial Analysis ELO)": {
+    "best_neighbor": "WideSearch (item-F1)",
+    "max_r": 0.991,
+    "max_r2": 0.982,
+    "medape": 0.6,
+    "medae": 8.56,
+    "n_shared": 5,
+    "category": "Knowledge",
+    "raw_predictions": {
+      "model_indices": [
+        10,
+        17,
+        19,
+        27,
+        51
+      ],
+      "actuals": [
+        1462.0,
+        1276.0,
+        1416.0,
+        1195.0,
+        1482.0
+      ],
+      "preds": [
+        1433.288144,
+        1283.220285,
+        1424.556259,
+        1193.855124,
+        1496.080188
+      ]
+    }
+  },
+  "Global PIQA": {
+    "best_neighbor": "SimpleQA-Verified",
+    "max_r": 0.86,
+    "max_r2": 0.739,
+    "medape": 0.6,
+    "medae": 0.52,
+    "n_shared": 9,
+    "category": "Reasoning",
+    "raw_predictions": {
+      "model_indices": [
+        10,
+        17,
+        19,
+        24,
+        25,
+        27,
+        28,
+        34,
+        56
+      ],
+      "actuals": [
+        91.2,
+        90.1,
+        91.6,
+        91.5,
+        90.2,
+        93.4,
+        92.8,
+        85.6,
+        92.3
+      ],
+      "preds": [
+        90.676082,
+        89.740113,
+        91.622957,
+        92.101898,
+        89.592862,
+        93.490732,
+        93.216214,
+        88.320811,
+        90.477612
+      ]
+    }
+  },
+  "GPQA Diamond": {
+    "best_neighbor": "SWE-Lancer IC SWE Diamond Freelance ($)",
+    "max_r": 0.964,
+    "max_r2": 0.929,
+    "medape": 1.8,
+    "medae": 1.41,
+    "n_shared": 8,
+    "category": "Science",
+    "raw_predictions": {
+      "model_indices": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        82,
+        83
+      ],
+      "actuals": [
+        66.3,
+        65.0,
+        50.3,
+        83.3,
+        81.4,
+        85.7,
+        82.3,
+        71.2
+      ],
+      "preds": [
+        65.780453,
+        64.563704,
+        55.151064,
+        82.959571,
+        77.300633,
+        88.568304,
+        79.998409,
+        71.5363
+      ]
+    }
+  },
+  "GPQA Main (full set)": {
+    "best_neighbor": "Beyond AIME",
+    "max_r": 0.983,
+    "max_r2": 0.966,
+    "medape": 1.2,
+    "medae": 1.01,
+    "n_shared": 6,
+    "category": "Science",
+    "raw_predictions": {
+      "model_indices": [
+        10,
+        17,
+        19,
+        24,
+        27,
+        35
+      ],
+      "actuals": [
+        93.2,
+        83.4,
+        87.0,
+        86.4,
+        91.9,
+        81.0
+      ],
+      "preds": [
+        92.831408,
+        84.758371,
+        88.095104,
+        85.276888,
+        91.941871,
+        80.083438
+      ]
+    }
+  },
+  "GraphWalks BFS 0-128K": {
+    "best_neighbor": "LiveBench",
+    "max_r": 0.947,
+    "max_r2": 0.897,
+    "medape": 6.2,
+    "medae": 4.15,
+    "n_shared": 6,
+    "category": "Long Context",
+    "raw_predictions": {
+      "model_indices": [
+        7,
+        17,
+        19,
+        27,
+        60,
+        61
+      ],
+      "actuals": [
+        78.3,
+        80.5,
+        92.0,
+        79.9,
+        29.0,
+        62.0
+      ],
+      "preds": [
+        80.636736,
+        73.735158,
+        88.304924,
+        84.509581,
+        27.067907,
+        71.742593
+      ]
+    }
+  },
+  "GraphWalks parents 0-128K": {
+    "best_neighbor": "ArtifactsBench",
+    "max_r": -0.977,
+    "max_r2": 0.954,
+    "medape": 0.7,
+    "medae": 0.65,
+    "n_shared": 6,
+    "category": "Long Context",
+    "raw_predictions": {
+      "model_indices": [
+        7,
+        10,
+        17,
+        19,
+        27,
+        56
+      ],
+      "actuals": [
+        73.3,
+        89.0,
+        99.0,
+        96.2,
+        99.7,
+        97.6
+      ],
+      "preds": [
+        81.455214,
+        88.691565,
+        99.109809,
+        94.362228,
+        99.595407,
+        96.611235
+      ]
+    }
+  },
+  "GSM8K": {
+    "best_neighbor": "Multi-IF",
+    "max_r": 0.961,
+    "max_r2": 0.923,
+    "medape": 2.0,
+    "medae": 1.75,
+    "n_shared": 6,
+    "category": "Math",
+    "raw_predictions": {
+      "model_indices": [
+        1,
+        46,
+        60,
+        61,
+        80,
+        81
+      ],
+      "actuals": [
+        97.0,
+        95.5,
+        83.0,
+        97.1,
+        42.15,
+        39.04
+      ],
+      "preds": [
+        95.255823,
+        93.890598,
+        84.761734,
+        97.909545,
+        61.707581,
+        28.776873
+      ]
+    }
+  },
+  "HealthBench": {
+    "best_neighbor": "GraphWalks parents 0-128K",
+    "max_r": -0.789,
+    "max_r2": 0.622,
+    "medape": 4.9,
+    "medae": 2.75,
+    "n_shared": 6,
+    "category": "Knowledge",
+    "raw_predictions": {
+      "model_indices": [
+        7,
+        10,
+        17,
+        19,
+        27,
+        56
+      ],
+      "actuals": [
+        67.2,
+        63.3,
+        44.2,
+        36.3,
+        37.9,
+        57.7
+      ],
+      "preds": [
+        66.376219,
+        59.487161,
+        42.516066,
+        51.794012,
+        37.923301,
+        48.550479
+      ]
+    }
+  },
+  "HLE (Humanity's Last Exam)": {
+    "best_neighbor": "Video-MMMU",
+    "max_r": 0.97,
+    "max_r2": 0.941,
+    "medape": 11.6,
+    "medae": 2.46,
+    "n_shared": 20,
+    "category": "Reasoning",
+    "raw_predictions": {
+      "model_indices": [
+        2,
+        3,
+        5,
+        6,
+        7,
+        9,
+        10,
+        17,
+        19,
+        24,
+        25,
+        27,
+        28,
+        47,
+        48,
+        50,
+        56,
+        59,
+        82,
+        83
+      ],
+      "actuals": [
+        5.4,
+        3.7,
+        20.2,
+        14.7,
+        24.8,
+        25.7,
+        34.5,
+        17.7,
+        30.8,
+        21.6,
+        11.0,
+        37.5,
+        33.7,
+        28.7,
+        28.8,
+        30.1,
+        32.4,
+        5.3,
+        16.7,
+        8.7
+      ],
+      "preds": [
+        5.122884,
+        3.637298,
+        23.668405,
+        17.391322,
+        26.386274,
+        22.904345,
+        29.512029,
+        15.432868,
+        25.943264,
+        24.262811,
+        17.130018,
+        34.337877,
+        32.239417,
+        26.611377,
+        25.085181,
+        31.389174,
+        32.239417,
+        5.215758,
+        22.171367,
+        7.348454
+      ]
+    }
+  },
+  "HLE Text": {
+    "best_neighbor": "MultiChallenge (o3-mini grader)",
+    "max_r": 0.968,
+    "max_r2": 0.938,
+    "medape": 14.4,
+    "medae": 0.78,
+    "n_shared": 8,
+    "category": "Reasoning",
+    "raw_predictions": {
+      "model_indices": [
+        2,
+        3,
+        5,
+        6,
+        7,
+        59,
+        82,
+        83
+      ],
+      "actuals": [
+        5.4,
+        3.7,
+        14.7,
+        14.7,
+        24.8,
+        5.3,
+        16.7,
+        8.7
+      ],
+      "preds": [
+        6.019308,
+        4.63909,
+        14.498389,
+        12.156678,
+        25.235161,
+        3.976189,
+        16.264622,
+        10.370327
+      ]
+    }
+  },
+  "HLE (w/ tools)": {
+    "best_neighbor": "Terminal-Bench Hard",
+    "max_r": 0.979,
+    "max_r2": 0.958,
+    "medape": 2.1,
+    "medae": 0.65,
+    "n_shared": 5,
+    "category": "Reasoning & Knowledge",
+    "raw_predictions": {
+      "model_indices": [
+        27,
+        39,
+        52,
+        53,
+        58
+      ],
+      "actuals": [
+        45.8,
+        40.8,
+        30.4,
+        42.8,
+        31.8
+      ],
+      "preds": [
+        45.871794,
+        42.567224,
+        31.04969,
+        40.600772,
+        31.461624
+      ]
+    }
+  },
+  "HMMT Feb 2025": {
+    "best_neighbor": "CharXiv Descriptive",
+    "max_r": 0.965,
+    "max_r2": 0.931,
+    "medape": 1.5,
+    "medae": 1.5,
+    "n_shared": 7,
+    "category": "Math",
+    "raw_predictions": {
+      "model_indices": [
+        2,
+        3,
+        10,
+        19,
+        27,
+        56,
+        61
+      ],
+      "actuals": [
+        28.9,
+        35.0,
+        99.4,
+        92.9,
+        97.5,
+        97.3,
+        48.3
+      ],
+      "preds": [
+        30.710357,
+        37.611974,
+        98.017517,
+        94.133236,
+        99.000733,
+        97.278903,
+        45.34697
+      ]
+    }
+  },
+  "HMMT Feb 2026": {
+    "best_neighbor": "ARC-AGI-2",
+    "max_r": 0.938,
+    "max_r2": 0.879,
+    "medape": 1.8,
+    "medae": 1.66,
+    "n_shared": 6,
+    "category": "Math",
+    "raw_predictions": {
+      "model_indices": [
+        11,
+        20,
+        29,
+        39,
+        50,
+        54
+      ],
+      "actuals": [
+        97.7,
+        96.2,
+        94.7,
+        79.9,
+        81.3,
+        82.8
+      ],
+      "preds": [
+        96.265099,
+        95.880716,
+        96.591913,
+        78.593737,
+        86.335465,
+        80.209276
+      ]
+    }
+  },
+  "HMMT Nov 2025": {
+    "best_neighbor": "HMMT Feb 2025",
+    "max_r": 0.934,
+    "max_r2": 0.873,
+    "medape": 1.1,
+    "medae": 1.05,
+    "n_shared": 16,
+    "category": "Math",
+    "raw_predictions": {
+      "model_indices": [
+        7,
+        9,
+        10,
+        17,
+        19,
+        24,
+        27,
+        33,
+        39,
+        47,
+        48,
+        50,
+        52,
+        53,
+        55,
+        56
+      ],
+      "actuals": [
+        89.2,
+        91.67,
+        97.1,
+        81.7,
+        91.7,
+        80.0,
+        93.3,
+        88.33,
+        90.2,
+        92.7,
+        94.6,
+        91.1,
+        87.7,
+        93.5,
+        94.0,
+        93.3
+      ],
+      "preds": [
+        87.463922,
+        93.001968,
+        97.208728,
+        83.012651,
+        90.282695,
+        84.523284,
+        94.254043,
+        88.434775,
+        90.009347,
+        91.695527,
+        93.393084,
+        92.192387,
+        87.969622,
+        93.808652,
+        91.074648,
+        94.027209
+      ]
+    }
+  },
+  "HumanEval": {
+    "best_neighbor": "InFoBench",
+    "max_r": 0.917,
+    "max_r2": 0.84,
+    "medape": 4.0,
+    "medae": 2.97,
+    "n_shared": 9,
+    "category": "Coding",
+    "raw_predictions": {
+      "model_indices": [
+        36,
+        57,
+        67,
+        68,
+        69,
+        71,
+        74,
+        76,
+        77
+      ],
+      "actuals": [
+        82.6,
+        82.9,
+        77.2,
+        81.7,
+        80.5,
+        40.2,
+        78.91,
+        34.8,
+        72.6
+      ],
+      "preds": [
+        82.594525,
+        85.872256,
+        80.303854,
+        80.303854,
+        80.883244,
+        42.284043,
+        73.720181,
+        47.613858,
+        57.413401
+      ]
+    }
+  },
+  "IFBench": {
+    "best_neighbor": "Beyond AIME",
+    "max_r": 0.971,
+    "max_r2": 0.943,
+    "medape": 3.8,
+    "medae": 1.72,
+    "n_shared": 6,
+    "category": "Instruction Following",
+    "raw_predictions": {
+      "model_indices": [
+        10,
+        17,
+        19,
+        24,
+        27,
+        35
+      ],
+      "actuals": [
+        75.4,
+        57.0,
+        58.0,
+        49.0,
+        70.4,
+        38.0
+      ],
+      "preds": [
+        74.724314,
+        50.320793,
+        59.263044,
+        51.609917,
+        71.576279,
+        40.178031
+      ]
+    }
+  },
+  "IFEval": {
+    "best_neighbor": "Multi-IF",
+    "max_r": 0.964,
+    "max_r2": 0.928,
+    "medape": 2.0,
+    "medae": 1.72,
+    "n_shared": 16,
+    "category": "Instruction Following",
+    "raw_predictions": {
+      "model_indices": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        38,
+        42,
+        43,
+        44,
+        45,
+        46,
+        59,
+        60,
+        61,
+        80,
+        81
+      ],
+      "actuals": [
+        93.9,
+        88.2,
+        87.4,
+        84.1,
+        74.5,
+        79.3,
+        83.4,
+        85.0,
+        85.0,
+        86.5,
+        83.9,
+        81.0,
+        78.4,
+        92.2,
+        63.25,
+        52.37
+      ],
+      "preds": [
+        91.595434,
+        86.621438,
+        86.621438,
+        84.172055,
+        76.984626,
+        77.304414,
+        87.297936,
+        87.960254,
+        86.869092,
+        87.479965,
+        85.029978,
+        79.853873,
+        77.542701,
+        90.743738,
+        65.304298,
+        48.872403
+      ]
+    }
+  },
+  "IMO-AnswerBench": {
+    "best_neighbor": "BrowseComp-ZH",
+    "max_r": 0.967,
+    "max_r2": 0.935,
+    "medape": 2.6,
+    "medae": 1.91,
+    "n_shared": 13,
+    "category": "Math",
+    "raw_predictions": {
+      "model_indices": [
+        7,
+        10,
+        17,
+        19,
+        27,
+        39,
+        47,
+        49,
+        50,
+        52,
+        53,
+        54,
+        56
+      ],
+      "actuals": [
+        76.0,
+        86.3,
+        65.8,
+        78.5,
+        83.3,
+        78.3,
+        80.9,
+        45.8,
+        81.8,
+        73.5,
+        82.0,
+        82.5,
+        89.3
+      ],
+      "preds": [
+        78.54451,
+        86.299607,
+        63.890329,
+        78.167272,
+        80.882952,
+        79.785828,
+        82.966984,
+        51.286796,
+        78.104175,
+        69.400273,
+        80.761944,
+        84.362491,
+        89.795008
+      ]
+    }
+  },
+  "InFoBench": {
+    "best_neighbor": "RepoQA",
+    "max_r": 0.991,
+    "max_r2": 0.981,
+    "medape": 0.2,
+    "medae": 0.15,
+    "n_shared": 7,
+    "category": "Instruction following",
+    "raw_predictions": {
+      "model_indices": [
+        36,
+        57,
+        67,
+        69,
+        74,
+        76,
+        77
+      ],
+      "actuals": [
+        94.3,
+        94.9,
+        93.9,
+        94.0,
+        92.8,
+        88.3,
+        90.1
+      ],
+      "preds": [
+        94.16076,
+        94.579664,
+        93.93635,
+        94.456137,
+        92.74259,
+        88.15068,
+        90.299536
+      ]
+    }
+  },
+  "Internal API IF Hard": {
+    "best_neighbor": "MMLU-Pro",
+    "max_r": 0.937,
+    "max_r2": 0.877,
+    "medape": 4.6,
+    "medae": 2.94,
+    "n_shared": 5,
+    "category": "Instruction Following",
+    "raw_predictions": {
+      "model_indices": [
+        0,
+        2,
+        7,
+        59,
+        60
+      ],
+      "actuals": [
+        50.0,
+        49.1,
+        64.0,
+        29.2,
+        27.2
+      ],
+      "preds": [
+        49.427825,
+        48.228664,
+        61.061784,
+        37.86332,
+        23.297035
+      ]
+    }
+  },
+  "LiveBench": {
+    "best_neighbor": "BFCL",
+    "max_r": 0.958,
+    "max_r2": 0.918,
+    "medape": 1.3,
+    "medae": 0.96,
+    "n_shared": 6,
+    "category": "Composite",
+    "raw_predictions": {
+      "model_indices": [
+        42,
+        43,
+        45,
+        46,
+        69,
+        74
+      ],
+      "actuals": [
+        77.1,
+        74.9,
+        74.3,
+        72.0,
+        57.6,
+        57.6
+      ],
+      "preds": [
+        75.914386,
+        75.395988,
+        74.142359,
+        71.27518,
+        62.679051,
+        54.428527
+      ]
+    }
+  },
+  "LiveCodeBench": {
+    "best_neighbor": "CharXiv Descriptive",
+    "max_r": 0.99,
+    "max_r2": 0.979,
+    "medape": 2.4,
+    "medae": 2.02,
+    "n_shared": 7,
+    "category": "Coding",
+    "raw_predictions": {
+      "model_indices": [
+        2,
+        10,
+        19,
+        27,
+        56,
+        59,
+        61
+      ],
+      "actuals": [
+        44.7,
+        87.7,
+        84.8,
+        90.7,
+        87.8,
+        31.4,
+        63.4
+      ],
+      "preds": [
+        49.183327,
+        88.818191,
+        82.77592,
+        91.549411,
+        87.297571,
+        33.686283,
+        56.151051
+      ]
+    }
+  },
+  "LongBench-V2": {
+    "best_neighbor": "MMLU-Pro",
+    "max_r": 0.956,
+    "max_r2": 0.914,
+    "medape": 3.8,
+    "medae": 1.85,
+    "n_shared": 16,
+    "category": "Long Context",
+    "raw_predictions": {
+      "model_indices": [
+        10,
+        17,
+        19,
+        27,
+        36,
+        39,
+        47,
+        48,
+        50,
+        56,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69
+      ],
+      "actuals": [
+        54.5,
+        62.0,
+        64.4,
+        68.2,
+        48.7,
+        59.8,
+        63.2,
+        62.0,
+        61.0,
+        63.8,
+        31.6,
+        35.4,
+        39.4,
+        36.1,
+        41.0,
+        48.1
+      ],
+      "preds": [
+        59.91291,
+        62.578576,
+        64.673245,
+        66.280907,
+        45.127865,
+        57.121492,
+        61.847362,
+        63.137342,
+        60.60387,
+        60.429829,
+        29.826557,
+        35.76635,
+        40.656079,
+        42.354189,
+        47.54607,
+        41.644625
+      ]
+    }
+  },
+  "LongFact-Concepts (hallucination rate)": {
+    "best_neighbor": "LongFact-Objects (hallucination rate)",
+    "max_r": 0.997,
+    "max_r2": 0.994,
+    "medape": 5.4,
+    "medae": 0.37,
+    "n_shared": 12,
+    "category": "Hallucination",
+    "raw_predictions": {
+      "model_indices": [
+        2,
+        3,
+        5,
+        6,
+        7,
+        10,
+        17,
+        19,
+        27,
+        56,
+        82,
+        83
+      ],
+      "actuals": [
+        0.7,
+        1.1,
+        5.2,
+        3.0,
+        1.0,
+        99.7,
+        98.5,
+        98.8,
+        98.5,
+        92.8,
+        0.7,
+        1.0
+      ],
+      "preds": [
+        0.579441,
+        0.98883,
+        4.240273,
+        5.718904,
+        0.636753,
+        99.26205,
+        98.857165,
+        99.06121,
+        98.123995,
+        92.252827,
+        0.694495,
+        1.5999
+      ]
+    }
+  },
+  "LongFact-Objects (hallucination rate)": {
+    "best_neighbor": "LongFact-Concepts (hallucination rate)",
+    "max_r": 0.997,
+    "max_r2": 0.994,
+    "medape": 7.9,
+    "medae": 0.33,
+    "n_shared": 12,
+    "category": "Hallucination",
+    "raw_predictions": {
+      "model_indices": [
+        2,
+        3,
+        5,
+        6,
+        7,
+        10,
+        17,
+        19,
+        27,
+        56,
+        82,
+        83
+      ],
+      "actuals": [
+        1.1,
+        1.8,
+        6.8,
+        8.9,
+        1.2,
+        99.2,
+        98.8,
+        99.0,
+        98.1,
+        92.9,
+        1.3,
+        2.8
+      ],
+      "preds": [
+        1.341,
+        2.027487,
+        8.264254,
+        5.044273,
+        1.85843,
+        99.422568,
+        98.411744,
+        98.706785,
+        98.411744,
+        93.249192,
+        1.341,
+        1.85843
+      ]
+    }
+  },
+  "MATH": {
+    "best_neighbor": "InFoBench",
+    "max_r": 0.912,
+    "max_r2": 0.831,
+    "medape": 7.5,
+    "medae": 5.39,
+    "n_shared": 9,
+    "category": "Math",
+    "raw_predictions": {
+      "model_indices": [
+        36,
+        57,
+        67,
+        68,
+        69,
+        71,
+        74,
+        76,
+        77
+      ],
+      "actuals": [
+        68.5,
+        80.0,
+        73.8,
+        78.3,
+        70.2,
+        49.4,
+        71.8,
+        40.0,
+        42.5
+      ],
+      "preds": [
+        75.006859,
+        78.509468,
+        72.679816,
+        72.679816,
+        73.260168,
+        40.493934,
+        66.406187,
+        44.678262,
+        52.484543
+      ]
+    }
+  },
+  "MATH-500": {
+    "best_neighbor": "CNMO 2024",
+    "max_r": 0.991,
+    "max_r2": 0.983,
+    "medape": 2.1,
+    "medae": 1.58,
+    "n_shared": 9,
+    "category": "Math",
+    "raw_predictions": {
+      "model_indices": [
+        35,
+        36,
+        49,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69
+      ],
+      "actuals": [
+        97.3,
+        90.2,
+        97.4,
+        56.3,
+        74.7,
+        80.0,
+        73.8,
+        78.3,
+        74.6
+      ],
+      "preds": [
+        97.276614,
+        92.130386,
+        96.767353,
+        53.960367,
+        76.282276,
+        81.480457,
+        69.256172,
+        78.956776,
+        76.282276
+      ]
+    }
+  },
+  "MathArena Apex 2025": {
+    "best_neighbor": "CritPt",
+    "max_r": 0.93,
+    "max_r2": 0.865,
+    "medape": 59.1,
+    "medae": 4.71,
+    "n_shared": 5,
+    "category": "Math",
+    "raw_predictions": {
+      "model_indices": [
+        7,
+        10,
+        20,
+        27,
+        29
+      ],
+      "actuals": [
+        1.04,
+        13.54,
+        34.5,
+        24.5,
+        60.9
+      ],
+      "preds": [
+        1.654631,
+        23.027704,
+        29.786875,
+        9.871657,
+        65.197247
+      ]
+    }
+  },
+  "MathVision": {
+    "best_neighbor": "MultiChallenge",
+    "max_r": 0.979,
+    "max_r2": 0.959,
+    "medape": 0.6,
+    "medae": 0.54,
+    "n_shared": 6,
+    "category": "Math",
+    "raw_predictions": {
+      "model_indices": [
+        10,
+        19,
+        27,
+        47,
+        50,
+        56
+      ],
+      "actuals": [
+        83.0,
+        77.1,
+        86.1,
+        88.6,
+        84.2,
+        88.8
+      ],
+      "preds": [
+        81.337285,
+        78.082748,
+        86.15323,
+        88.403021,
+        85.085231,
+        88.837809
+      ]
+    }
+  },
+  "MathVista": {
+    "best_neighbor": "MMMU",
+    "max_r": 0.992,
+    "max_r2": 0.984,
+    "medape": 3.9,
+    "medae": 2.64,
+    "n_shared": 18,
+    "category": "Math/Vision",
+    "raw_predictions": {
+      "model_indices": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        10,
+        19,
+        27,
+        30,
+        56,
+        59,
+        60,
+        61,
+        62,
+        63,
+        68,
+        75
+      ],
+      "actuals": [
+        72.3,
+        72.2,
+        73.1,
+        56.2,
+        86.8,
+        84.3,
+        83.1,
+        80.6,
+        89.8,
+        73.7,
+        89.8,
+        61.4,
+        56.5,
+        71.8,
+        65.8,
+        68.1,
+        67.7,
+        0.0
+      ],
+      "preds": [
+        75.436507,
+        75.03487,
+        72.924924,
+        55.483339,
+        83.148586,
+        81.849491,
+        86.937342,
+        80.949343,
+        87.434786,
+        73.628482,
+        85.64275,
+        68.900424,
+        56.392384,
+        77.844444,
+        62.44935,
+        66.079627,
+        70.611654,
+        0.473677
+      ]
+    }
+  },
+  "MBPP+": {
+    "best_neighbor": "AIME 2024",
+    "max_r": -0.959,
+    "max_r2": 0.92,
+    "medape": 2.4,
+    "medae": 2.15,
+    "n_shared": 5,
+    "category": "Coding",
+    "raw_predictions": {
+      "model_indices": [
+        36,
+        66,
+        67,
+        69,
+        76
+      ],
+      "actuals": [
+        86.5,
+        88.6,
+        88.6,
+        89.9,
+        61.1
+      ],
+      "preds": [
+        83.494471,
+        87.653864,
+        87.653864,
+        92.050779,
+        64.69628
+      ]
+    }
+  },
+  "MCPAtlas Public": {
+    "best_neighbor": "CritPt",
+    "max_r": 0.986,
+    "max_r2": 0.973,
+    "medape": 5.9,
+    "medae": 1.78,
+    "n_shared": 6,
+    "category": "Agentic",
+    "raw_predictions": {
+      "model_indices": [
+        10,
+        20,
+        24,
+        25,
+        27,
+        29
+      ],
+      "actuals": [
+        60.6,
+        75.8,
+        8.8,
+        3.4,
+        54.1,
+        69.2
+      ],
+      "preds": [
+        62.157284,
+        65.467671,
+        8.776273,
+        3.672945,
+        52.088859,
+        77.722181
+      ]
+    }
+  },
+  "MCPMark": {
+    "best_neighbor": "Beyond AIME",
+    "max_r": 0.987,
+    "max_r2": 0.975,
+    "medape": 3.5,
+    "medae": 1.13,
+    "n_shared": 5,
+    "category": "Agentic",
+    "raw_predictions": {
+      "model_indices": [
+        10,
+        17,
+        19,
+        27,
+        56
+      ],
+      "actuals": [
+        57.5,
+        32.1,
+        42.3,
+        53.9,
+        54.7
+      ],
+      "preds": [
+        56.439765,
+        33.225347,
+        40.744147,
+        52.889121,
+        57.08561
+      ]
+    }
+  },
+  "MGSM": {
+    "best_neighbor": "MMMU",
+    "max_r": 0.937,
+    "max_r2": 0.879,
+    "medape": 1.6,
+    "medae": 1.31,
+    "n_shared": 8,
+    "category": "Math",
+    "raw_predictions": {
+      "model_indices": [
+        30,
+        59,
+        60,
+        61,
+        62,
+        63,
+        68,
+        75
+      ],
+      "actuals": [
+        92.3,
+        90.5,
+        86.5,
+        89.3,
+        82.6,
+        87.5,
+        91.6,
+        56.3
+      ],
+      "preds": [
+        89.762957,
+        89.092695,
+        87.382064,
+        90.392736,
+        88.208298,
+        88.703497,
+        89.332088,
+        55.394897
+      ]
+    }
+  },
+  "MMLU-Pro": {
+    "best_neighbor": "Aider Polyglot (whole mode)",
+    "max_r": 0.974,
+    "max_r2": 0.949,
+    "medape": 0.5,
+    "medae": 0.46,
+    "n_shared": 11,
+    "category": "Knowledge",
+    "raw_predictions": {
+      "model_indices": [
+        0,
+        2,
+        7,
+        24,
+        25,
+        35,
+        36,
+        39,
+        49,
+        59,
+        60
+      ],
+      "actuals": [
+        82.4,
+        81.8,
+        87.5,
+        86.0,
+        81.1,
+        84.0,
+        75.9,
+        85.0,
+        81.1,
+        75.8,
+        63.4
+      ],
+      "preds": [
+        82.670658,
+        80.103525,
+        87.120619,
+        85.658677,
+        81.848767,
+        83.539649,
+        79.758126,
+        84.077859,
+        81.527413,
+        76.069133,
+        62.032859
+      ]
+    }
+  },
+  "MMMLU": {
+    "best_neighbor": "Chatbot Arena Elo",
+    "max_r": 0.948,
+    "max_r2": 0.898,
+    "medape": 0.6,
+    "medae": 0.5,
+    "n_shared": 9,
+    "category": "Knowledge",
+    "raw_predictions": {
+      "model_indices": [
+        0,
+        9,
+        10,
+        13,
+        19,
+        20,
+        24,
+        28,
+        29
+      ],
+      "actuals": [
+        80.7,
+        89.5,
+        89.6,
+        85.9,
+        90.8,
+        91.1,
+        89.5,
+        91.8,
+        92.6
+      ],
+      "preds": [
+        83.270225,
+        89.165579,
+        89.101493,
+        84.083457,
+        90.939471,
+        92.307761,
+        89.727592,
+        91.155195,
+        92.165627
+      ]
+    }
+  },
+  "MMMU": {
+    "best_neighbor": "MathVista",
+    "max_r": 0.992,
+    "max_r2": 0.984,
+    "medape": 3.9,
+    "medae": 2.57,
+    "n_shared": 18,
+    "category": "Multimodal",
+    "raw_predictions": {
+      "model_indices": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        10,
+        19,
+        27,
+        30,
+        56,
+        59,
+        60,
+        61,
+        62,
+        63,
+        68,
+        75
+      ],
+      "actuals": [
+        75.2,
+        74.8,
+        72.7,
+        55.4,
+        82.9,
+        81.6,
+        86.7,
+        80.7,
+        87.2,
+        73.4,
+        85.4,
+        68.7,
+        56.3,
+        77.6,
+        62.3,
+        65.9,
+        70.4,
+        0.0
+      ],
+      "preds": [
+        72.013355,
+        71.915383,
+        72.797442,
+        56.31045,
+        86.350563,
+        83.853953,
+        82.660223,
+        80.181557,
+        89.367266,
+        73.385885,
+        89.367266,
+        61.37186,
+        56.602364,
+        71.523578,
+        65.660075,
+        67.90508,
+        67.514435,
+        0.580957
+      ]
+    }
+  },
+  "MMMU-Pro": {
+    "best_neighbor": "CharXiv Descriptive",
+    "max_r": 0.983,
+    "max_r2": 0.966,
+    "medape": 2.4,
+    "medae": 1.15,
+    "n_shared": 8,
+    "category": "Multimodal",
+    "raw_predictions": {
+      "model_indices": [
+        2,
+        3,
+        4,
+        10,
+        19,
+        27,
+        56,
+        59
+      ],
+      "actuals": [
+        60.3,
+        58.9,
+        33.0,
+        79.5,
+        70.6,
+        81.0,
+        78.2,
+        59.9
+      ],
+      "preds": [
+        60.654176,
+        61.969674,
+        34.100816,
+        78.29148,
+        74.646511,
+        80.345682,
+        77.281551,
+        54.302103
+      ]
+    }
+  },
+  "MRCR v1": {
+    "best_neighbor": "SimpleQA",
+    "max_r": 0.676,
+    "max_r2": 0.457,
+    "medape": 6.7,
+    "medae": 4.86,
+    "n_shared": 7,
+    "category": "Long-context",
+    "raw_predictions": {
+      "model_indices": [
+        23,
+        24,
+        25,
+        40,
+        41,
+        62,
+        63
+      ],
+      "actuals": [
+        70.5,
+        93.0,
+        74.0,
+        83.5,
+        78.7,
+        71.9,
+        82.6
+      ],
+      "preds": [
+        80.037207,
+        86.333241,
+        78.956808,
+        87.150658,
+        81.387516,
+        67.038142,
+        78.168444
+      ]
+    }
+  },
+  "MRCR v2": {
+    "best_neighbor": "Codeforces Rating",
+    "max_r": 0.988,
+    "max_r2": 0.977,
+    "medape": 1.8,
+    "medae": 1.31,
+    "n_shared": 6,
+    "category": "Long Context",
+    "raw_predictions": {
+      "model_indices": [
+        10,
+        17,
+        24,
+        25,
+        27,
+        29
+      ],
+      "actuals": [
+        83.8,
+        47.1,
+        58.0,
+        54.3,
+        77.0,
+        84.9
+      ],
+      "preds": [
+        84.687948,
+        43.681673,
+        58.891863,
+        58.720686,
+        76.71235,
+        83.163685
+      ]
+    }
+  },
+  "OpenAI MRCR v2 (2 needle, 128k)": {
+    "best_neighbor": "\u03c4\u00b2-bench Telecom",
+    "max_r": 0.881,
+    "max_r2": 0.777,
+    "medape": 18.8,
+    "medae": 6.87,
+    "n_shared": 5,
+    "category": "Long Context",
+    "raw_predictions": {
+      "model_indices": [
+        2,
+        3,
+        4,
+        82,
+        83
+      ],
+      "actuals": [
+        57.2,
+        47.2,
+        36.6,
+        84.3,
+        43.2
+      ],
+      "preds": [
+        52.026675,
+        59.441538,
+        29.727123,
+        78.653504,
+        53.203341
+      ]
+    }
+  },
+  "OpenAI MRCR v2 (8-needle)": {
+    "best_neighbor": "COLLIE",
+    "max_r": 0.901,
+    "max_r2": 0.812,
+    "medape": 21.2,
+    "medae": 7.75,
+    "n_shared": 6,
+    "category": "Long Context",
+    "raw_predictions": {
+      "model_indices": [
+        10,
+        17,
+        19,
+        24,
+        27,
+        56
+      ],
+      "actuals": [
+        89.4,
+        47.1,
+        56.2,
+        16.4,
+        79.7,
+        54.0
+      ],
+      "preds": [
+        85.506264,
+        38.739321,
+        42.343565,
+        23.541018,
+        78.132337,
+        74.295013
+      ]
+    }
+  },
+  "MT-AIME2024": {
+    "best_neighbor": "SMT 2025",
+    "max_r": 0.985,
+    "max_r2": 0.971,
+    "medape": 0.4,
+    "medae": 0.39,
+    "n_shared": 5,
+    "category": "Math",
+    "raw_predictions": {
+      "model_indices": [
+        5,
+        6,
+        13,
+        24,
+        25
+      ],
+      "actuals": [
+        91.6,
+        93.4,
+        80.0,
+        92.0,
+        88.0
+      ],
+      "preds": [
+        92.608958,
+        93.007363,
+        80.282836,
+        91.445963,
+        87.769095
+      ]
+    }
+  },
+  "Multi-IF": {
+    "best_neighbor": "IFEval",
+    "max_r": 0.964,
+    "max_r2": 0.928,
+    "medape": 2.9,
+    "medae": 2.01,
+    "n_shared": 16,
+    "category": "Instruction Following",
+    "raw_predictions": {
+      "model_indices": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        38,
+        42,
+        43,
+        44,
+        45,
+        46,
+        59,
+        60,
+        61,
+        80,
+        81
+      ],
+      "actuals": [
+        79.5,
+        70.8,
+        70.8,
+        67.0,
+        57.2,
+        57.6,
+        71.9,
+        73.0,
+        71.2,
+        72.2,
+        68.3,
+        60.9,
+        57.9,
+        77.9,
+        44.31,
+        30.16
+      ],
+      "preds": [
+        83.08975,
+        72.850511,
+        71.595644,
+        66.762649,
+        54.994044,
+        60.523968,
+        65.799979,
+        68.030552,
+        68.030552,
+        70.225331,
+        66.48556,
+        62.641469,
+        59.439138,
+        79.751675,
+        43.962608,
+        35.025997
+      ]
+    }
+  },
+  "Multi-SWE-bench": {
+    "best_neighbor": "Vending-Bench 2",
+    "max_r": 0.969,
+    "max_r2": 0.939,
+    "medape": 4.1,
+    "medae": 2.16,
+    "n_shared": 5,
+    "category": "Coding",
+    "raw_predictions": {
+      "model_indices": [
+        10,
+        17,
+        19,
+        27,
+        39
+      ],
+      "actuals": [
+        47.7,
+        44.3,
+        52.8,
+        50.2,
+        30.6
+      ],
+      "preds": [
+        45.418939,
+        44.841868,
+        50.639449,
+        53.26911,
+        31.312695
+      ]
+    }
+  },
+  "MultiChallenge": {
+    "best_neighbor": "MathVision",
+    "max_r": 0.979,
+    "max_r2": 0.959,
+    "medape": 0.8,
+    "medae": 0.47,
+    "n_shared": 6,
+    "category": "Instruction Following",
+    "raw_predictions": {
+      "model_indices": [
+        10,
+        19,
+        27,
+        47,
+        50,
+        56
+      ],
+      "actuals": [
+        57.9,
+        54.2,
+        64.2,
+        67.6,
+        62.7,
+        68.3
+      ],
+      "preds": [
+        60.058503,
+        53.547974,
+        64.062403,
+        67.706374,
+        61.550422,
+        68.017546
+      ]
+    }
+  },
+  "MultiChallenge (o3-mini grader)": {
+    "best_neighbor": "Aider Polyglot (whole mode)",
+    "max_r": 0.98,
+    "max_r2": 0.961,
+    "medape": 4.2,
+    "medae": 1.91,
+    "n_shared": 10,
+    "category": "Instruction Following",
+    "raw_predictions": {
+      "model_indices": [
+        0,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        59,
+        60,
+        61
+      ],
+      "actuals": [
+        50.2,
+        46.2,
+        42.2,
+        31.1,
+        60.4,
+        57.5,
+        69.6,
+        39.9,
+        25.6,
+        52.9
+      ],
+      "preds": [
+        54.376029,
+        49.025573,
+        43.148845,
+        30.668894,
+        60.803376,
+        55.225151,
+        64.950375,
+        41.637941,
+        23.526083,
+        53.589118
+      ]
+    }
+  },
+  "MultiPL-E (average)": {
+    "best_neighbor": "GPQA Main (full set)",
+    "max_r": 0.915,
+    "max_r2": 0.836,
+    "medape": 2.3,
+    "medae": 1.89,
+    "n_shared": 8,
+    "category": "Coding",
+    "raw_predictions": {
+      "model_indices": [
+        30,
+        42,
+        49,
+        57,
+        59,
+        73,
+        78,
+        79
+      ],
+      "actuals": [
+        76.4,
+        87.9,
+        85.7,
+        73.1,
+        79.8,
+        72.8,
+        70.4,
+        75.4
+      ],
+      "preds": [
+        81.578138,
+        85.881208,
+        83.80737,
+        74.54741,
+        81.687924,
+        72.424172,
+        68.393122,
+        74.03787
+      ]
+    }
+  },
+  "NL2Repo-Bench": {
+    "best_neighbor": "LongFact-Objects (hallucination rate)",
+    "max_r": 0.943,
+    "max_r2": 0.889,
+    "medape": 5.0,
+    "medae": 1.79,
+    "n_shared": 5,
+    "category": "Repository Code",
+    "raw_predictions": {
+      "model_indices": [
+        10,
+        17,
+        19,
+        27,
+        56
+      ],
+      "actuals": [
+        49.3,
+        39.9,
+        43.2,
+        34.2,
+        27.9
+      ],
+      "preds": [
+        45.433021,
+        41.688064,
+        43.364711,
+        37.536739,
+        26.500279
+      ]
+    }
+  },
+  "OJBench": {
+    "best_neighbor": "LiveCodeBench",
+    "max_r": 0.986,
+    "max_r2": 0.973,
+    "medape": 3.4,
+    "medae": 1.97,
+    "n_shared": 11,
+    "category": "Coding",
+    "raw_predictions": {
+      "model_indices": [
+        7,
+        17,
+        19,
+        20,
+        27,
+        29,
+        39,
+        42,
+        49,
+        50,
+        51
+      ],
+      "actuals": [
+        56.2,
+        30.4,
+        54.6,
+        60.3,
+        68.5,
+        70.7,
+        54.7,
+        32.5,
+        25.5,
+        57.4,
+        60.6
+      ],
+      "preds": [
+        54.583699,
+        30.890748,
+        55.08843,
+        62.585746,
+        66.7581,
+        69.154603,
+        52.633013,
+        36.921745,
+        23.465278,
+        55.42889,
+        64.286404
+      ]
+    }
+  },
+  "OmniDocBench 1.5": {
+    "best_neighbor": "GDPval (Artificial Analysis ELO)",
+    "max_r": 0.815,
+    "max_r2": 0.665,
+    "medape": 131.9,
+    "medae": 2.42,
+    "n_shared": 5,
+    "category": "Vision",
+    "raw_predictions": {
+      "model_indices": [
+        10,
+        11,
+        17,
+        19,
+        27
+      ],
+      "actuals": [
+        0.143,
+        89.1,
+        0.145,
+        0.123,
+        0.115
+      ],
+      "preds": [
+        4.849447,
+        52.944035,
+        0.336292,
+        2.538108,
+        0.103336
+      ]
+    }
+  },
+  "OSWorld": {
+    "best_neighbor": "\u03c4\u00b2-bench Retail",
+    "max_r": 0.986,
+    "max_r2": 0.972,
+    "medape": 1.8,
+    "medae": 1.09,
+    "n_shared": 6,
+    "category": "Agentic",
+    "raw_predictions": {
+      "model_indices": [
+        10,
+        17,
+        18,
+        19,
+        20,
+        21
+      ],
+      "actuals": [
+        47.3,
+        61.4,
+        50.7,
+        66.3,
+        72.7,
+        72.5
+      ],
+      "preds": [
+        49.141998,
+        58.253528,
+        51.572462,
+        65.080786,
+        73.654342,
+        73.049674
+      ]
+    }
+  },
+  "PopQA": {
+    "best_neighbor": "SimpleQA",
+    "max_r": 0.955,
+    "max_r2": 0.912,
+    "medape": 9.0,
+    "medae": 2.45,
+    "n_shared": 8,
+    "category": "QA",
+    "raw_predictions": {
+      "model_indices": [
+        26,
+        60,
+        66,
+        71,
+        72,
+        73,
+        74,
+        80
+      ],
+      "actuals": [
+        30.9,
+        39.0,
+        30.6,
+        28.3,
+        33.9,
+        21.1,
+        48.2,
+        9.6
+      ],
+      "preds": [
+        33.961469,
+        33.745236,
+        31.968523,
+        22.125749,
+        32.195311,
+        22.421557,
+        52.110752,
+        11.436074
+      ]
+    }
+  },
+  "RepoQA": {
+    "best_neighbor": "InFoBench",
+    "max_r": 0.991,
+    "max_r2": 0.981,
+    "medape": 1.0,
+    "medae": 0.74,
+    "n_shared": 7,
+    "category": "Coding",
+    "raw_predictions": {
+      "model_indices": [
+        36,
+        57,
+        67,
+        69,
+        74,
+        76,
+        77
+      ],
+      "actuals": [
+        91.2,
+        92.6,
+        90.4,
+        92.2,
+        85.6,
+        62.0,
+        73.6
+      ],
+      "preds": [
+        91.598194,
+        93.490718,
+        90.20286,
+        90.561426,
+        85.858646,
+        63.382321,
+        72.862775
+      ]
+    }
+  },
+  "Safety (OLMES suite)": {
+    "best_neighbor": "HumanEval",
+    "max_r": 0.622,
+    "max_r2": 0.387,
+    "medape": 8.1,
+    "medae": 5.81,
+    "n_shared": 12,
+    "category": "Safety",
+    "raw_predictions": {
+      "model_indices": [
+        60,
+        66,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80
+      ],
+      "actuals": [
+        84.9,
+        87.0,
+        75.5,
+        75.9,
+        79.3,
+        70.4,
+        69.1,
+        56.2,
+        70.2,
+        75.0,
+        82.4,
+        70.2
+      ],
+      "preds": [
+        80.95768,
+        77.905804,
+        68.132586,
+        71.188314,
+        76.406685,
+        78.401639,
+        75.301793,
+        66.568446,
+        76.545344,
+        80.414687,
+        81.885156,
+        68.491738
+      ]
+    }
+  },
+  "SciCode": {
+    "best_neighbor": "SuperGPQA",
+    "max_r": 0.96,
+    "max_r2": 0.922,
+    "medape": 2.5,
+    "medae": 1.27,
+    "n_shared": 8,
+    "category": "Coding",
+    "raw_predictions": {
+      "model_indices": [
+        10,
+        17,
+        19,
+        24,
+        27,
+        49,
+        50,
+        56
+      ],
+      "actuals": [
+        52.0,
+        44.7,
+        49.5,
+        43.0,
+        56.0,
+        30.7,
+        48.7,
+        48.5
+      ],
+      "preds": [
+        47.206075,
+        43.521561,
+        51.566426,
+        43.222865,
+        57.358735,
+        32.220082,
+        49.27772,
+        48.474738
+      ]
+    }
+  },
+  "ScreenSpot-Pro": {
+    "best_neighbor": "COLLIE",
+    "max_r": 0.972,
+    "max_r2": 0.945,
+    "medape": 13.4,
+    "medae": 4.85,
+    "n_shared": 5,
+    "category": "Multimodal",
+    "raw_predictions": {
+      "model_indices": [
+        10,
+        17,
+        19,
+        24,
+        27
+      ],
+      "actuals": [
+        86.3,
+        36.2,
+        45.7,
+        11.4,
+        72.7
+      ],
+      "preds": [
+        85.980304,
+        31.354852,
+        35.215175,
+        16.511546,
+        77.389191
+      ]
+    }
+  },
+  "SimpleQA": {
+    "best_neighbor": "PopQA",
+    "max_r": 0.955,
+    "max_r2": 0.912,
+    "medape": 11.5,
+    "medae": 1.06,
+    "n_shared": 8,
+    "category": "Knowledge",
+    "raw_predictions": {
+      "model_indices": [
+        26,
+        60,
+        66,
+        71,
+        72,
+        73,
+        74,
+        80
+      ],
+      "actuals": [
+        10.0,
+        9.9,
+        9.1,
+        5.3,
+        9.2,
+        5.4,
+        20.9,
+        2.2
+      ],
+      "preds": [
+        8.550885,
+        11.995431,
+        8.435453,
+        7.576345,
+        9.750439,
+        5.157551,
+        16.837087,
+        2.012534
+      ]
+    }
+  },
+  "SimpleQA-Verified": {
+    "best_neighbor": "MMMLU",
+    "max_r": 0.917,
+    "max_r2": 0.841,
+    "medape": 14.0,
+    "medae": 5.99,
+    "n_shared": 11,
+    "category": "Knowledge",
+    "raw_predictions": {
+      "model_indices": [
+        10,
+        17,
+        19,
+        20,
+        24,
+        25,
+        27,
+        28,
+        29,
+        34,
+        56
+      ],
+      "actuals": [
+        38.0,
+        29.3,
+        48.6,
+        46.2,
+        54.5,
+        28.1,
+        72.1,
+        68.7,
+        75.6,
+        19.5,
+        36.0
+      ],
+      "preds": [
+        43.32265,
+        38.942238,
+        54.970771,
+        58.0557,
+        42.421054,
+        22.112296,
+        65.331189,
+        65.331189,
+        73.441856,
+        23.158502,
+        31.195295
+      ]
+    }
+  },
+  "SMT 2025": {
+    "best_neighbor": "MT-AIME2024",
+    "max_r": 0.985,
+    "max_r2": 0.971,
+    "medape": 1.0,
+    "medae": 0.75,
+    "n_shared": 5,
+    "category": "Math",
+    "raw_predictions": {
+      "model_indices": [
+        5,
+        6,
+        13,
+        24,
+        25
+      ],
+      "actuals": [
+        87.74,
+        88.68,
+        56.6,
+        84.91,
+        75.47
+      ],
+      "preds": [
+        85.169906,
+        89.389482,
+        56.795557,
+        86.129973,
+        76.217804
+      ]
+    }
+  },
+  "SuperGPQA": {
+    "best_neighbor": "SciCode",
+    "max_r": 0.96,
+    "max_r2": 0.922,
+    "medape": 1.0,
+    "medae": 0.67,
+    "n_shared": 8,
+    "category": "Science",
+    "raw_predictions": {
+      "model_indices": [
+        10,
+        17,
+        19,
+        24,
+        27,
+        49,
+        50,
+        56
+      ],
+      "actuals": [
+        67.9,
+        65.5,
+        70.6,
+        65.3,
+        74.0,
+        57.2,
+        69.2,
+        68.7
+      ],
+      "preds": [
+        70.603879,
+        66.37272,
+        69.19325,
+        65.332057,
+        72.79429,
+        56.878089,
+        68.734038,
+        68.618602
+      ]
+    }
+  },
+  "SWE-bench Multilingual": {
+    "best_neighbor": "CritPt",
+    "max_r": 0.982,
+    "max_r2": 0.964,
+    "medape": 3.6,
+    "medae": 1.9,
+    "n_shared": 6,
+    "category": "Coding",
+    "raw_predictions": {
+      "model_indices": [
+        7,
+        10,
+        20,
+        27,
+        29,
+        35
+      ],
+      "actuals": [
+        55.3,
+        72.0,
+        77.8,
+        65.0,
+        76.9,
+        30.5
+      ],
+      "preds": [
+        58.87205,
+        71.577084,
+        72.950902,
+        67.400639,
+        78.306758,
+        29.422264
+      ]
+    }
+  },
+  "SWE-bench Pro": {
+    "best_neighbor": "\u03c4\u00b2-bench Airline",
+    "max_r": 0.921,
+    "max_r2": 0.849,
+    "medape": 6.8,
+    "medae": 2.53,
+    "n_shared": 6,
+    "category": "Coding",
+    "raw_predictions": {
+      "model_indices": [
+        7,
+        9,
+        14,
+        17,
+        18,
+        49
+      ],
+      "actuals": [
+        41.78,
+        50.8,
+        42.7,
+        48.4,
+        39.45,
+        27.67
+      ],
+      "preds": [
+        39.385598,
+        47.075741,
+        40.052312,
+        52.725769,
+        41.064943,
+        30.077859
+      ]
+    }
+  },
+  "SWE-bench Verified": {
+    "best_neighbor": "BrowseComp Long Context 128k",
+    "max_r": 0.988,
+    "max_r2": 0.975,
+    "medape": 0.6,
+    "medae": 0.35,
+    "n_shared": 5,
+    "category": "Coding",
+    "raw_predictions": {
+      "model_indices": [
+        7,
+        9,
+        10,
+        82,
+        83
+      ],
+      "actuals": [
+        74.9,
+        76.3,
+        80.0,
+        71.0,
+        54.7
+      ],
+      "preds": [
+        74.786147,
+        74.786147,
+        79.770141,
+        73.33683,
+        54.350758
+      ]
+    }
+  },
+  "SWE-Lancer IC Diamond": {
+    "best_neighbor": "AA Long Context Reasoning",
+    "max_r": 0.888,
+    "max_r2": 0.788,
+    "medape": 4.7,
+    "medae": 3.27,
+    "n_shared": 5,
+    "category": "Coding",
+    "raw_predictions": {
+      "model_indices": [
+        9,
+        10,
+        17,
+        19,
+        27
+      ],
+      "actuals": [
+        69.7,
+        74.6,
+        45.7,
+        56.1,
+        44.3
+      ],
+      "preds": [
+        72.973204,
+        65.238803,
+        46.406311,
+        62.258053,
+        44.396338
+      ]
+    }
+  },
+  "SWE-Lancer IC SWE Diamond Freelance ($)": {
+    "best_neighbor": "GPQA Main (full set)",
+    "max_r": 0.983,
+    "max_r2": 0.965,
+    "medape": 7.6,
+    "medae": 3746.4,
+    "n_shared": 8,
+    "category": "Coding",
+    "raw_predictions": {
+      "model_indices": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        82,
+        83
+      ],
+      "actuals": [
+        34000.0,
+        31000.0,
+        9000.0,
+        86000.0,
+        66000.0,
+        112000.0,
+        75000.0,
+        49000.0
+      ],
+      "preds": [
+        36394.002826,
+        33515.022795,
+        3201.633241,
+        82852.288667,
+        76319.29285,
+        102571.917178,
+        79345.082334,
+        47800.760109
+      ]
+    }
+  },
+  "\u03c4\u00b2-bench Airline": {
+    "best_neighbor": "SWE-bench Verified",
+    "max_r": 0.983,
+    "max_r2": 0.967,
+    "medape": 1.0,
+    "medae": 0.58,
+    "n_shared": 9,
+    "category": "Agentic",
+    "raw_predictions": {
+      "model_indices": [
+        7,
+        9,
+        14,
+        17,
+        18,
+        39,
+        49,
+        82,
+        83
+      ],
+      "actuals": [
+        62.6,
+        67.0,
+        63.0,
+        70.0,
+        63.6,
+        63.8,
+        56.5,
+        60.0,
+        41.0
+      ],
+      "preds": [
+        65.527845,
+        67.345184,
+        62.71685,
+        68.524971,
+        63.477995,
+        63.22382,
+        54.265399,
+        60.582873,
+        41.843656
+      ]
+    }
+  },
+  "\u03c4\u00b2-bench Retail": {
+    "best_neighbor": "OSWorld",
+    "max_r": 0.986,
+    "max_r2": 0.972,
+    "medape": 0.5,
+    "medae": 0.41,
+    "n_shared": 6,
+    "category": "Agentic",
+    "raw_predictions": {
+      "model_indices": [
+        10,
+        17,
+        18,
+        19,
+        20,
+        21
+      ],
+      "actuals": [
+        82.0,
+        86.2,
+        83.2,
+        88.9,
+        91.9,
+        91.7
+      ],
+      "preds": [
+        81.268123,
+        87.494226,
+        82.93716,
+        89.310476,
+        91.495309,
+        91.429752
+      ]
+    }
+  },
+  "\u03c4\u00b2-bench Telecom": {
+    "best_neighbor": "CritPt",
+    "max_r": 0.976,
+    "max_r2": 0.953,
+    "medape": 0.9,
+    "medae": 0.89,
+    "n_shared": 8,
+    "category": "Agentic",
+    "raw_predictions": {
+      "model_indices": [
+        5,
+        6,
+        7,
+        10,
+        20,
+        24,
+        27,
+        29
+      ],
+      "actuals": [
+        58.2,
+        40.5,
+        96.7,
+        98.7,
+        99.3,
+        54.0,
+        98.0,
+        99.3
+      ],
+      "preds": [
+        62.330605,
+        27.372455,
+        95.297855,
+        98.72531,
+        98.914627,
+        75.603168,
+        97.979854,
+        99.453622
+      ]
+    }
+  },
+  "\u03c4\u00b3-Bench": {
+    "best_neighbor": "Vending-Bench 2",
+    "max_r": 0.882,
+    "max_r2": 0.779,
+    "medape": 1.0,
+    "medae": 0.66,
+    "n_shared": 8,
+    "category": "Tool Use",
+    "raw_predictions": {
+      "model_indices": [
+        11,
+        20,
+        29,
+        39,
+        48,
+        50,
+        54,
+        55
+      ],
+      "actuals": [
+        72.9,
+        72.4,
+        67.1,
+        69.2,
+        70.7,
+        66.0,
+        69.2,
+        70.6
+      ],
+      "preds": [
+        71.41223,
+        72.80929,
+        67.291922,
+        67.392072,
+        70.626588,
+        67.525961,
+        70.098568,
+        71.024713
+      ]
+    }
+  },
+  "tau-bench Airline": {
+    "best_neighbor": "\u03c4\u00b2-bench Retail",
+    "max_r": 0.984,
+    "max_r2": 0.967,
+    "medape": 5.8,
+    "medae": 2.33,
+    "n_shared": 6,
+    "category": "Agentic",
+    "raw_predictions": {
+      "model_indices": [
+        2,
+        3,
+        4,
+        6,
+        14,
+        17
+      ],
+      "actuals": [
+        49.4,
+        36.0,
+        14.0,
+        49.2,
+        60.0,
+        70.0
+      ],
+      "preds": [
+        50.158596,
+        42.437292,
+        13.04062,
+        46.611205,
+        62.062305,
+        65.600628
+      ]
+    }
+  },
+  "Tau-Bench Retail": {
+    "best_neighbor": "\u03c4\u00b2-bench Retail",
+    "max_r": 0.985,
+    "max_r2": 0.97,
+    "medape": 5.2,
+    "medae": 2.12,
+    "n_shared": 7,
+    "category": "Agentic",
+    "raw_predictions": {
+      "model_indices": [
+        2,
+        3,
+        4,
+        6,
+        14,
+        17,
+        19
+      ],
+      "actuals": [
+        68.0,
+        55.8,
+        22.6,
+        71.8,
+        80.5,
+        86.2,
+        88.9
+      ],
+      "preds": [
+        71.647709,
+        63.499992,
+        20.476536,
+        68.06099,
+        81.904808,
+        84.473432,
+        87.395366
+      ]
+    }
+  },
+  "Terminal-Bench 2.0": {
+    "best_neighbor": "Tau-Bench Retail",
+    "max_r": 0.984,
+    "max_r2": 0.968,
+    "medape": 4.3,
+    "medae": 1.53,
+    "n_shared": 7,
+    "category": "Agentic",
+    "raw_predictions": {
+      "model_indices": [
+        8,
+        13,
+        14,
+        15,
+        16,
+        17,
+        19
+      ],
+      "actuals": [
+        18.7,
+        35.2,
+        35.5,
+        43.2,
+        43.3,
+        50.0,
+        59.3
+      ],
+      "preds": [
+        18.845587,
+        38.492863,
+        37.026674,
+        38.923534,
+        41.158355,
+        51.010317,
+        59.469517
+      ]
+    }
+  },
+  "Terminal-Bench 1.0": {
+    "best_neighbor": "SWE-bench Multilingual",
+    "max_r": 0.971,
+    "max_r2": 0.944,
+    "medape": 16.5,
+    "medae": 5.65,
+    "n_shared": 5,
+    "category": "Agentic",
+    "raw_predictions": {
+      "model_indices": [
+        7,
+        14,
+        17,
+        35,
+        58
+      ],
+      "actuals": [
+        41.3,
+        36.4,
+        51.0,
+        5.7,
+        42.0
+      ],
+      "preds": [
+        34.218883,
+        37.070078,
+        59.429368,
+        6.67954,
+        36.345675
+      ]
+    }
+  },
+  "Terminal-Bench Hard": {
+    "best_neighbor": "HLE (w/ tools)",
+    "max_r": 0.979,
+    "max_r2": 0.958,
+    "medape": 2.4,
+    "medae": 0.58,
+    "n_shared": 5,
+    "category": "Coding",
+    "raw_predictions": {
+      "model_indices": [
+        27,
+        39,
+        52,
+        53,
+        58
+      ],
+      "actuals": [
+        39.0,
+        35.4,
+        23.6,
+        33.3,
+        24.0
+      ],
+      "preds": [
+        38.555515,
+        33.389625,
+        23.270563,
+        35.433761,
+        24.580638
+      ]
+    }
+  },
+  "Toolathlon": {
+    "best_neighbor": "CritPt",
+    "max_r": 0.984,
+    "max_r2": 0.969,
+    "medape": 14.8,
+    "medae": 1.56,
+    "n_shared": 7,
+    "category": "Agentic",
+    "raw_predictions": {
+      "model_indices": [
+        7,
+        10,
+        20,
+        24,
+        25,
+        27,
+        29
+      ],
+      "actuals": [
+        29.0,
+        46.3,
+        47.2,
+        10.5,
+        3.7,
+        36.4,
+        48.8
+      ],
+      "preds": [
+        24.525444,
+        43.294536,
+        45.855097,
+        8.942469,
+        4.789831,
+        36.168103,
+        56.822864
+      ]
+    }
+  },
+  "TruthfulQA": {
+    "best_neighbor": "MMLU-Pro",
+    "max_r": 0.936,
+    "max_r2": 0.875,
+    "medape": 4.2,
+    "medae": 2.65,
+    "n_shared": 13,
+    "category": "Factuality",
+    "raw_predictions": {
+      "model_indices": [
+        26,
+        60,
+        66,
+        71,
+        72,
+        73,
+        74,
+        76,
+        77,
+        78,
+        79,
+        80,
+        81
+      ],
+      "actuals": [
+        63.9,
+        64.8,
+        69.9,
+        61.4,
+        64.6,
+        58.4,
+        66.1,
+        55.5,
+        55.1,
+        63.1,
+        70.6,
+        43.8,
+        41.5
+      ],
+      "preds": [
+        66.554454,
+        64.827178,
+        68.351384,
+        58.060282,
+        62.168675,
+        64.744218,
+        65.243562,
+        56.471949,
+        57.936253,
+        61.925722,
+        67.202192,
+        40.469067,
+        45.379517
+      ]
+    }
+  },
+  "USAMO 2025": {
+    "best_neighbor": "BRUMO 2025",
+    "max_r": 0.964,
+    "max_r2": 0.93,
+    "medape": 18.8,
+    "medae": 2.96,
+    "n_shared": 5,
+    "category": "Math",
+    "raw_predictions": {
+      "model_indices": [
+        13,
+        24,
+        33,
+        35,
+        37
+      ],
+      "actuals": [
+        3.65,
+        24.0,
+        37.5,
+        4.76,
+        30.06
+      ],
+      "preds": [
+        2.881253,
+        19.49067,
+        40.110793,
+        7.936432,
+        27.104102
+      ]
+    }
+  },
+  "Vending-Bench 2": {
+    "best_neighbor": "Multi-SWE-bench",
+    "max_r": 0.969,
+    "max_r2": 0.939,
+    "medape": 6.6,
+    "medae": 326.4,
+    "n_shared": 5,
+    "category": "Agentic",
+    "raw_predictions": {
+      "model_indices": [
+        10,
+        17,
+        19,
+        27,
+        39
+      ],
+      "actuals": [
+        3952.0,
+        3839.0,
+        4967.06,
+        5478.0,
+        1034.0
+      ],
+      "preds": [
+        4363.610677,
+        3740.027437,
+        5293.459363,
+        4819.308045,
+        1053.654478
+      ]
+    }
+  },
+  "Vibe-Eval": {
+    "best_neighbor": "MathVista",
+    "max_r": 0.982,
+    "max_r2": 0.964,
+    "medape": 3.1,
+    "medae": 2.22,
+    "n_shared": 6,
+    "category": "Multimodal",
+    "raw_predictions": {
+      "model_indices": [
+        10,
+        19,
+        27,
+        56,
+        62,
+        63
+      ],
+      "actuals": [
+        73.1,
+        70.3,
+        77.7,
+        81.4,
+        48.9,
+        53.9
+      ],
+      "preds": [
+        71.078523,
+        67.871746,
+        80.56911,
+        80.56911,
+        51.414143,
+        53.741777
+      ]
+    }
+  },
+  "Video-MME": {
+    "best_neighbor": "Aider Polyglot (whole mode)",
+    "max_r": 0.986,
+    "max_r2": 0.972,
+    "medape": 1.8,
+    "medae": 1.54,
+    "n_shared": 7,
+    "category": "Multimodal",
+    "raw_predictions": {
+      "model_indices": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        24
+      ],
+      "actuals": [
+        78.7,
+        68.4,
+        55.2,
+        84.9,
+        79.5,
+        86.7,
+        86.9
+      ],
+      "preds": [
+        76.021002,
+        70.361083,
+        55.108149,
+        85.0409,
+        81.118296,
+        87.599321,
+        85.356992
+      ]
+    }
+  },
+  "Video-MMMU": {
+    "best_neighbor": "OJBench",
+    "max_r": 0.977,
+    "max_r2": 0.955,
+    "medape": 0.4,
+    "medae": 0.35,
+    "n_shared": 5,
+    "category": "Video/Multimodal",
+    "raw_predictions": {
+      "model_indices": [
+        7,
+        17,
+        19,
+        27,
+        50
+      ],
+      "actuals": [
+        84.6,
+        77.8,
+        84.4,
+        87.6,
+        86.6
+      ],
+      "preds": [
+        85.122013,
+        77.912529,
+        84.750156,
+        87.878476,
+        85.397853
+      ]
+    }
+  },
+  "WideSearch (item-F1)": {
+    "best_neighbor": "GDPval (Artificial Analysis ELO)",
+    "max_r": 0.991,
+    "max_r2": 0.982,
+    "medape": 0.9,
+    "medae": 0.66,
+    "n_shared": 5,
+    "category": "Search Agent",
+    "raw_predictions": {
+      "model_indices": [
+        10,
+        17,
+        19,
+        27,
+        51
+      ],
+      "actuals": [
+        76.8,
+        65.1,
+        76.2,
+        57.0,
+        80.8
+      ],
+      "preds": [
+        78.584635,
+        64.615438,
+        75.53719,
+        57.401662,
+        79.82044
+      ]
+    }
+  },
+  "xbench-DeepSearch": {
+    "best_neighbor": "BrowseComp",
+    "max_r": 0.871,
+    "max_r2": 0.759,
+    "medape": 3.5,
+    "medae": 2.13,
+    "n_shared": 8,
+    "category": "Search Agent",
+    "raw_predictions": {
+      "model_indices": [
+        7,
+        14,
+        17,
+        24,
+        39,
+        49,
+        52,
+        58
+      ],
+      "actuals": [
+        77.8,
+        64.6,
+        66.0,
+        56.0,
+        71.0,
+        61.0,
+        70.0,
+        72.0
+      ],
+      "preds": [
+        73.313379,
+        60.249249,
+        70.878679,
+        58.698848,
+        72.552739,
+        61.33746,
+        71.152752,
+        70.901635
+      ]
+    }
+  }
+}

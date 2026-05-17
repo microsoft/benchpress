@@ -1,0 +1,37 @@
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
+*.egg-info/
+dist/
+build/
+.env
+*.swp
+*.swo
+tectonic
+paper/pdf_pages/
+
+# §5.3 LLM experiment artifacts (large: system prompts + raw responses per run)
+experiments/sec5_findings/llm_completer/*/predictions/
+
+# Downloaded/generated public data artifacts.
+benchpress/data/_hf_cache/
+benchpress/data/llm_benchmark_data.json
+benchpress/data/llm_benchmark_matrix.xlsx
+
+# Experiment outputs and caches. Keep scripts/READMEs in git; regenerate outputs
+# from the public data release when needed.
+experiments/**/results.json
+experiments/**/*results*.json
+experiments/**/manifest.json
+experiments/**/*.npz
+experiments/**/*.json.gz
+experiments/**/figures/
+experiments/**/predictions/
+experiments/**/results/
+experiments/**/shards/
+experiments/**/*.stdout.txt
+
+# Recomputed evaluation artifacts.
+benchpress/evaluation/default_predictions/benchpress_default/*.json
+benchpress/evaluation/default_predictions/benchpress_default/*.npz

@@ -1,0 +1,30 @@
+[
+  {
+    "n_benchmarks": 4,
+    "n_models": 42,
+    "stable_rank": 1.1065138941389359,
+    "var_rank1": 0.9037392167390518,
+    "var_rank2": 0.9763173595543265
+  },
+  {
+    "n_benchmarks": 7,
+    "n_models": 11,
+    "stable_rank": 1.2787331637802668,
+    "var_rank1": 0.7820239814878506,
+    "var_rank2": 0.9116497234991514
+  },
+  {
+    "n_benchmarks": 10,
+    "n_models": 7,
+    "stable_rank": 1.1557016343346962,
+    "var_rank1": 0.8652752321975135,
+    "var_rank2": 0.9498425899105102
+  },
+  {
+    "n_benchmarks": 13,
+    "n_models": 6,
+    "stable_rank": 1.116484090533418,
+    "var_rank1": 0.8956688308225103,
+    "var_rank2": 0.9594834260511425
+  }
+]

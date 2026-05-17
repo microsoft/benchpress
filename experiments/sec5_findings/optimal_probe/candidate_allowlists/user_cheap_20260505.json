@@ -1,0 +1,85 @@
+{
+  "name": "user_cheap_20260505",
+  "description": "User-provided cheap probe candidate set for the \u00a75.1 all-known cost-unaware greedy setting. Only the candidate set is changed; target cells, objective, predictor, and masking protocol stay identical to the cost-unaware greedy run. benchmark_ids contains only benchmarks present in the current 84x133 evaluation matrix; excluded_from_current_matrix records requested benchmarks without current matrix columns.",
+  "benchmark_ids": [
+    "vibe_eval",
+    "tau2_bench_telecom",
+    "bullshit_pushback",
+    "aime_2026",
+    "alpacaeval_2",
+    "aime_2025",
+    "tau2_bench_airline",
+    "brumo_2025",
+    "hmmt_nov_2025",
+    "ifbench",
+    "matharena_apex_2025",
+    "cmimc_2025",
+    "hmmt_feb_2026",
+    "smt_2025",
+    "aa_lcr",
+    "gpqa_diamond",
+    "tau2_bench_retail",
+    "aider_polyglot_whole",
+    "critpt",
+    "arena_hard",
+    "scicode",
+    "math_500",
+    "hmmt_feb_2025",
+    "aider_polyglot_diff",
+    "mmlu_pro"
+  ],
+  "source_names": [
+    "Vibe-Eval",
+    "\u03c4\u00b2-bench Telecom",
+    "Bullshit-Bench (Clear Pushback)",
+    "AIME 2026",
+    "LiveCodeBench v5",
+    "AlpacaEval 2.0 (LC-winrate)",
+    "AIME 2025",
+    "\u03c4\u00b2-bench Airline",
+    "BRUMO 2025",
+    "HMMT Nov 2025",
+    "IFBench",
+    "MathArena Apex 2025",
+    "Creative Writing v3 (Elo Normalized)",
+    "CMIMC 2025",
+    "HMMT Feb 2026",
+    "SMT 2025",
+    "EQ-Bench3 (Emotional Intelligence, Elo Normalized)",
+    "AA Long Context Reasoning",
+    "GPQA Diamond",
+    "\u03c4\u00b2-bench Retail",
+    "Aider Polyglot (whole mode)",
+    "CritPt",
+    "Arena-Hard Auto",
+    "USAMO 2026",
+    "SciCode",
+    "MATH-500",
+    "HMMT Feb 2025",
+    "Aider Polyglot (diff mode)",
+    "MMLU-Pro",
+    "Global MMLU Lite"
+  ],
+  "excluded_from_current_matrix": [
+    {
+      "benchmark_id": "livecodebench_v5",
+      "reason": "not_in_current_84x133_score_matrix"
+    },
+    {
+      "benchmark_id": "creative_writing_v3",
+      "reason": "not_in_current_84x133_score_matrix"
+    },
+    {
+      "benchmark_id": "eq_bench3",
+      "reason": "not_in_current_84x133_score_matrix"
+    },
+    {
+      "benchmark_id": "usamo_2026",
+      "reason": "not_in_current_84x133_score_matrix"
+    },
+    {
+      "benchmark_id": "global_mmlu_lite",
+      "reason": "not_in_current_84x133_score_matrix"
+    }
+  ]
+}
