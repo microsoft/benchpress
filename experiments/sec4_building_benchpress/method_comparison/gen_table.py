@@ -5,6 +5,7 @@ This is the Top-15 transform--method configurations table ranked by score-error 
 """
 
 import os
+from benchpress.artifact_utils import ensure_artifacts
 from benchpress.io_utils import load_json
 from benchpress.table_utils import format_hyperparameters
 
@@ -53,7 +54,13 @@ def highlight_benchpress(row, *cells):
 
 def load_rows():
     """Load all completed transform--method--HP configurations from manifest."""
-    manifest = load_json(os.path.join(SCRIPT_DIR, "manifest.json"))
+    manifest_path = os.path.join(SCRIPT_DIR, "manifest.json")
+    ensure_artifacts(
+        manifest_path,
+        ["{python}", os.path.join(SCRIPT_DIR, "run.py"), "--merge"],
+        description="Section 4.2 method-comparison manifest",
+    )
+    manifest = load_json(manifest_path)
 
     rows = []
     for row in manifest['completed']:

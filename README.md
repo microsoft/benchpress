@@ -52,6 +52,7 @@ Finally, we stress-test deployment: **five probe benchmarks predict the rest of 
   - [Add Your Own Model](#add-your-own-model)
 - [Step 4: Reproduce Paper Experiments](#step-4-reproduce-paper-experiments)
   - [Repository Structure](#repository-structure)
+  - [Artifact Policy](#artifact-policy)
   - [Run a Single Experiment](#run-a-single-experiment)
 - [Step 5: Cite Us](#step-5-cite-us)
 
@@ -103,9 +104,11 @@ After running `python -m benchpress.download_data`, local matrix files live in `
 ```
 benchpress/data/
 ├── llm_benchmark_data.json        # Machine-readable scores
-├── benchmark_cost_evidence.json   # Raw cost-evidence extracts
-└── *.md                           # Data schema and provenance notes
+├── benchmark_cost_evidence.json   # Raw cost-evidence extracts, when available
+└── *.md                           # Data schema and provenance notes, when available
 ```
+
+The downloader is artifact-first. If the full JSON export is available on Hugging Face, it downloads that exact artifact. If only the public table mirror is available, it reconstructs the paper score matrix from the mirror and prints the limitation explicitly; that fallback preserves the paper matrix but may not include every rich provenance field such as cost evidence and candidate-level score traces.
 
 `llm_benchmark_data.json` is the canonical source for code. It contains:
 
@@ -179,7 +182,7 @@ Predictions are inverted back to score space and **smart-clipped**: percentage-s
 |--------|----------|---------|---------------|---------------|----------|
 | **BenchPress (Logit Bias ALS)** | **7.8%** | **4.60** | **36.6%** | **52.8%** | **100%** |
 
-Canonical fold-level BenchPress predictions are stored in `benchpress/evaluation/default_predictions/benchpress_default/`.
+Canonical fold-level BenchPress predictions are generated under `benchpress/evaluation/default_predictions/benchpress_default/` when needed.
 
 All numbers use per-model 3-fold holdout (10 seeds × 3 folds = 30 folds): each seed partitions every model's observed benchmark scores into three disjoint test folds. Primary metric: MedAPE (median absolute percentage error). Matrix: 84 models × 133 benchmarks, 2,604 observed cells.
 
@@ -215,18 +218,24 @@ Each experiment leaf folder follows a consistent structure:
 experiments/sec4_building_benchpress/method_comparison/
 ├── run.py              # Run the experiment
 ├── plot.py             # Generate figures
-├── manifest.json       # Method/transform grid
-├── results.json        # Saved aggregate results
-├── predictions/        # Bottleneck fold-level predictions
+├── manifest.json       # Generated method/transform grid
+├── results.json        # Generated aggregate results
+├── predictions/        # Generated bottleneck fold-level predictions
 └── figures/            # Generated figures (PDF + PNG)
 ```
+
+## Artifact Policy
+
+Large generated artifacts are not checked into the release repository. Experiment scripts follow an artifact-first policy: read an existing artifact if present, generate it from the documented upstream command if it is missing, and fail with the missing path and command if the upstream job cannot complete in the current environment.
+
+This means plotting and table scripts can be run from a clean clone, but some first runs are intentionally expensive because they recreate fold-level prediction shards, confidence-calibration scores, API-model outputs, or other bottleneck artifacts. For example, `method_comparison/plot.py` will create missing `predictions/*.npz`, `manifest.json`, and `results.json` by running `method_comparison/run.py --merge`; confidence plots similarly create `confidence_scores.npz` and `results.json` via `confidence_calibration/run.py --ensure`.
 
 ## Run a Single Experiment
 
 ```bash
 conda activate benchpress
 
-python experiments/sec4_building_benchpress/method_comparison/run.py
+python experiments/sec4_building_benchpress/method_comparison/run.py --merge
 python experiments/sec4_building_benchpress/method_comparison/plot.py
 ```
 

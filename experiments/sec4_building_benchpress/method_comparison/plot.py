@@ -12,6 +12,7 @@ import matplotlib.colors as mcolors
 
 from benchpress.plot_helpers import style as S
 from benchpress.io_utils import load_json
+from benchpress.artifact_utils import ensure_artifacts
 
 TRANSFORM_NAMES = ['Identity', 'Log', 'Logit', 'Arcsinh', 'Square root', 'Probit', 'Quantile']
 TRANSFORM_KEYS  = ['identity', 'log', 'logit', 'asinh', 'sqrt', 'probit', 'quantile']
@@ -42,6 +43,11 @@ def load_grids(methods=None):
     """Load grid data. If methods is given, only include those methods."""
     if methods is None:
         methods = METHOD_NAMES
+    ensure_artifacts(
+        RESULTS_PATH,
+        ["{python}", os.path.join(os.path.dirname(os.path.abspath(__file__)), "run.py"), "--merge"],
+        description="Section 4.2 method-comparison results",
+    )
     results = load_json(RESULTS_PATH)
     grids = {}
     for key, label, direction in ALL_METRICS:

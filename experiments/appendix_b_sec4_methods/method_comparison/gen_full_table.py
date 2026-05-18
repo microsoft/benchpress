@@ -4,6 +4,7 @@
 Reads the same results.json produced by sec4 method_comparison/run.py.
 """
 import os
+from benchpress.artifact_utils import ensure_artifacts
 from benchpress.io_utils import load_json
 from benchpress.table_utils import format_hyperparameters
 
@@ -26,6 +27,11 @@ METHOD_NAMES = {
 }
 
 def gen_full_table():
+    ensure_artifacts(
+        RESULTS_PATH,
+        ["{python}", os.path.join(SEC4_DIR, "run.py"), "--merge"],
+        description="Section 4.2 method-comparison results",
+    )
     results = load_json(RESULTS_PATH)
     rows = []
     for tname, methods in results.items():

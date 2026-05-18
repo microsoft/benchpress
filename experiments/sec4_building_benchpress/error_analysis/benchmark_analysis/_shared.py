@@ -7,6 +7,7 @@ from scipy import stats as sp_stats
 from benchpress.all_methods import (
     BENCH_IDS, BENCH_NAMES, BENCH_CATS, M_FULL, N_BENCH, predict_benchpress_scores,
 )
+from benchpress.artifact_utils import ensure_default_predictions
 from benchpress.evaluation_harness import (
     compute_prediction_error,
     holdout_half_per_benchmark,
@@ -58,6 +59,7 @@ def load_benchpress_default_errors() -> dict:
 
     Returns: {bench_id: {medape, medae, n}}
     """
+    ensure_default_predictions()
     d = load_json(DEFAULT_PREDICTIONS_BY_BENCHMARK)
     return {
         r["bench_id"]: {

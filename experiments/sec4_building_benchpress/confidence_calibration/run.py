@@ -40,6 +40,7 @@ EXPECTED_TARGET = {
 
 
 with contextlib.redirect_stdout(io.StringIO()):
+    from benchpress.artifact_utils import ensure_method_comparison_results
     from benchpress.evaluation_harness import (
         M_FULL,
         compute_prediction_error,
@@ -74,6 +75,7 @@ def _prediction_path(rel_path):
 
 
 def _target_prediction_info():
+    ensure_method_comparison_results()
     results = load_json(os.path.join(METHOD_DIR, "results.json"))
     row = results["logit"]["Bias ALS"]
     actual = {key: row.get(key) for key in EXPECTED_TARGET}
@@ -108,6 +110,7 @@ def _target_metadata(data, path, row):
 
 
 def _manifest_rows():
+    ensure_method_comparison_results()
     manifest = load_json(os.path.join(METHOD_DIR, "manifest.json"))
     if int(manifest.get("n_missing_shards", -1)) != 0:
         raise ValueError("Method-comparison manifest has missing shards")
@@ -115,6 +118,7 @@ def _manifest_rows():
 
 
 def _method_results_rows():
+    ensure_method_comparison_results()
     results = load_json(os.path.join(METHOD_DIR, "results.json"))
     rows = []
     for transform, methods in results.items():
@@ -383,6 +387,26 @@ def merge_score_shards(paths, scores_path=SCORES_PATH, results_path=RESULTS_PATH
     return summarize(arrays, metadata, scores_path=scores_path, results_path=results_path)
 
 
+def ensure_confidence_results(scores_path=SCORES_PATH, results_path=RESULTS_PATH,
+                              num_fold_shards=12):
+    if os.path.exists(scores_path) and os.path.exists(results_path):
+        return
+    shard_dir = os.path.join(SCRIPT_DIR, "shards")
+    os.makedirs(shard_dir, exist_ok=True)
+    shard_paths = []
+    for i in range(num_fold_shards):
+        shard_path = os.path.join(shard_dir, f"shard_{i}.npz")
+        shard_paths.append(shard_path)
+        if os.path.exists(shard_path):
+            continue
+        build_confidence_scores(
+            fold_shard_index=i,
+            num_fold_shards=num_fold_shards,
+            scores_path=shard_path,
+        )
+    merge_score_shards(shard_paths, scores_path=scores_path, results_path=results_path)
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--ensemble-transform", default="logit",
@@ -400,7 +424,15 @@ def main():
     parser.add_argument("--results-path", default=RESULTS_PATH)
     parser.add_argument("--skip-results", action="store_true")
     parser.add_argument("--merge-scores", nargs="+")
+    parser.add_argument("--ensure", action="store_true",
+                        help="Build missing confidence_scores.npz/results.json from shards.")
     args = parser.parse_args()
+
+    if args.ensure:
+        ensure_confidence_results(args.scores_path, args.results_path)
+        print(f"Ensured {args.scores_path}")
+        print(f"Ensured {args.results_path}")
+        return
 
     if args.merge_scores:
         results = merge_score_shards(

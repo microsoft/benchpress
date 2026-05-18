@@ -57,6 +57,6 @@ The script is deterministic and resumable at the `(model, seed)` level. Reuse ex
 ## Rerun provenance
 - Code commit for the setting: `7f229b7` (`sec4: make model H6 nested peer support`).
 - Result commit: `7325b47` (`sec4: rerun model H6 peer-support ablation`).
-- Full rerun environment: GCR Sandbox, conda env `benchpress`, per-run worktree `~/projects/runs/benchpress_h6_7f229b7`.
+- Full rerun environment: remote CPU worker, conda env `benchpress`, clean per-run worktree.
 - Full rerun command: `python H6_neighbor_evidence/ablation.py --workers 16 --force`.
 - Notes: outputs were copied back to this directory after the remote run finished.

@@ -7,6 +7,7 @@ import sys
 import numpy as np
 import matplotlib.pyplot as plt
 
+from benchpress.artifact_utils import ensure_artifacts
 from benchpress.plot_helpers.visual_identity import (
     CHARCOAL, MEMENTO_MAGENTA, VANILLA_BLUE, save_fig
 )
@@ -21,6 +22,7 @@ _RUN_SPEC.loader.exec_module(_RUN)
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 RESULTS_PATH = os.path.join(SCRIPT_DIR, "results.json")
+SCORES_PATH = os.path.join(SCRIPT_DIR, "confidence_scores.npz")
 FIG_DIR = os.path.join(SCRIPT_DIR, "figures")
 DISPLAY_METHODS = [
     "disagreement",
@@ -40,6 +42,11 @@ def _label(name):
 
 
 def _load_methods():
+    ensure_artifacts(
+        [RESULTS_PATH, SCORES_PATH],
+        ["{python}", os.path.join(SCRIPT_DIR, "run.py"), "--ensure"],
+        description="Section 4.4 confidence-calibration artifacts",
+    )
     results = load_json(RESULTS_PATH)
 
     methods = {

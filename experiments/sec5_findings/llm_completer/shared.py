@@ -17,6 +17,7 @@ from benchpress.evaluation_harness import (
     compute_prediction_error,
     load_folds,
 )
+from benchpress.artifact_utils import ensure_default_predictions
 from benchpress.io_utils import load_json, write_json
 from benchpress.methods.transforms import benchmark_scale, clamp_score_for_benchmark
 from benchpress.stats import median_metric
@@ -516,9 +517,7 @@ def run_benchpress_baseline(M_train, test_cells, fold_id):
         return {'medape': float('nan'), 'medae': float('nan'),
                 'n': 0, 'n_total': 0, 'coverage': 0.0, 'raw_predictions': []}
     if not os.path.exists(DEFAULT_PREDICTIONS_PATH):
-        raise FileNotFoundError(
-            f"Missing canonical BenchPress default predictions: {DEFAULT_PREDICTIONS_PATH}"
-        )
+        ensure_default_predictions()
 
     cache = np.load(DEFAULT_PREDICTIONS_PATH, allow_pickle=False)
     fold_mask = cache['fold_id'] == fold_id

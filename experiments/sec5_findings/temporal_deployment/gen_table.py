@@ -11,6 +11,7 @@ REPO_ROOT = os.path.abspath(os.path.join(HERE, "..", "..", ".."))
 if REPO_ROOT not in sys.path:
     sys.path.insert(0, REPO_ROOT)
 
+from benchpress.artifact_utils import ensure_artifacts
 from benchpress.io_utils import load_json
 
 RESULTS_PATH = os.path.join(HERE, "results.json")
@@ -110,8 +111,11 @@ def _median(values):
 
 
 def main():
-    if not os.path.exists(RESULTS_PATH):
-        raise SystemExit(f"Missing {RESULTS_PATH}; run `python run.py --mode merge` first.")
+    ensure_artifacts(
+        [RESULTS_PATH],
+        ["{python}", os.path.join(HERE, "run.py"), "--mode", "merge"],
+        description="Section 5.4 temporal-deployment results",
+    )
     payload = load_json(RESULTS_PATH)
     table = build_table(payload)
     with open(TABLE_PATH, "w", encoding="utf-8") as f:

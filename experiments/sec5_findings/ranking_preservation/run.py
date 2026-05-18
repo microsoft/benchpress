@@ -26,6 +26,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 GITHUB_ROOT = os.path.abspath(os.path.join(HERE, "..", "..", ".."))
 if GITHUB_ROOT not in sys.path:
     sys.path.insert(0, GITHUB_ROOT)
+from benchpress.artifact_utils import ensure_default_predictions  # noqa: E402
 from benchpress.io_utils import write_json_atomic  # noqa: E402
 SOURCE_REL = (
     "experiments/sec4_building_benchpress/method_comparison/"
@@ -217,10 +218,7 @@ def _summarize_top(rows: list[dict[str, Any]]) -> dict[str, Any]:
 
 def main() -> None:
     if not os.path.exists(SOURCE_PATH):
-        raise FileNotFoundError(
-            f"Missing source prediction cache: {SOURCE_PATH}\n"
-            "Run or fetch the Section 4.2 method-comparison prediction shard first."
-        )
+        ensure_default_predictions()
 
     bench_ids, bench_names, bench_cats, M_full = _load_benchmark_metadata()
 

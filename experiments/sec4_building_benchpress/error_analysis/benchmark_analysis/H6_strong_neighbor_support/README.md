@@ -20,7 +20,7 @@ H6 tests whether weakening the target benchmark's best score-matrix neighbor hur
   - `wilcoxon`: paired benchmark-level summary at drop rate 0.75.
 
 ## Run
-This ablation is embarrassingly parallel across target benchmarks. A full serial run takes too long for interactive GCR use, so use a single-benchmark smoke test first and then run benchmark shards in a clean remote worktree.
+This ablation is embarrassingly parallel across target benchmarks. A full serial run takes too long for an interactive session, so use a single-benchmark smoke test first and then run benchmark shards in a clean remote worktree.
 
 ```bash
 cd ~/Documents/submission/benchpress/github/experiments/sec4_building_benchpress/error_analysis/benchmark_analysis

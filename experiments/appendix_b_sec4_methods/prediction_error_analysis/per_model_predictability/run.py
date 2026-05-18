@@ -22,6 +22,7 @@ from benchpress.evaluation_harness import (
     MODEL_IDS, MODEL_NAMES, MODEL_PROVIDERS, N_MODELS,
     compute_prediction_error,
 )
+from benchpress.artifact_utils import ensure_artifacts
 from benchpress.io_utils import load_json, write_json
 
 N_SEEDS = 10
@@ -32,9 +33,14 @@ RAW_SOURCE = os.path.abspath(os.path.join(
 
 
 def run():
-    if not os.path.exists(RAW_SOURCE):
-        sys.exit(f"Missing canonical raw predictions: {RAW_SOURCE}\n"
-                 "Run per_benchmark_predictability/run.py first.")
+    ensure_artifacts(
+        [RAW_SOURCE],
+        [
+            "{python}",
+            os.path.join(os.path.dirname(RAW_SOURCE), "run.py"),
+        ],
+        description="per-benchmark predictability raw predictions",
+    )
 
     src = load_json(RAW_SOURCE)
     raw = src['raw_predictions']  # dict[str(seed)] -> list of {i,j,actual,predicted}

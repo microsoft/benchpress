@@ -233,13 +233,11 @@ def _metrics_from_npz(path, expected_shard):
 
 def merge_results():
     shards = all_shards()
-    by_shard_id = {s['shard_id']: s for s in shards}
-    rows, missing = [], []
+    rows = []
 
     for shard in shards:
         if not os.path.exists(shard['path']):
-            missing.append(shard)
-            continue
+            run_shard(shard['shard_index'])
         meta, metrics = _metrics_from_npz(shard['path'], shard)
         row = {
             'shard_index': int(meta['shard_index']),
@@ -288,8 +286,6 @@ def merge_results():
     print(f"WROTE {RESULTS_PATH}")
     print(f"WROTE {MANIFEST_PATH}")
     print(f"Completed {len(rows)}/{len(shards)} shards")
-    if missing:
-        print("Missing shard indices:", ', '.join(str(s['shard_index']) for s in missing))
     return results
 
 
