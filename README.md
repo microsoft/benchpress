@@ -194,7 +194,7 @@ All numbers use per-model 3-fold holdout (10 seeds × 3 folds = 30 folds): each 
 benchpress/
 ├── benchpress/                           # Core library (editable install)
 │   ├── data/                             #   Canonical score/cost data + schema
-│   ├── evaluation/                       #   Folds + default prediction artifacts
+│   ├── evaluation/                       #   Folds + generated default prediction artifacts
 │   ├── methods/                          #   Transforms, completers, predictors, confidence
 │   ├── build_benchmark_matrix/           #   Raw sources → canonical matrix construction
 │   ├── plot_helpers/                     #   Shared plotting + visual identity
@@ -226,9 +226,9 @@ experiments/sec4_building_benchpress/method_comparison/
 
 ## Artifact Policy
 
-Large generated artifacts are not checked into the release repository. Experiment scripts follow an artifact-first policy: read an existing artifact if present, generate it from the documented upstream command if it is missing, and fail with the missing path and command if the upstream job cannot complete in the current environment.
+Large generated artifacts are not checked into the release repository. This includes `results.json`, `manifest.json`, `predictions/*.npz`, confidence-score caches, generated figures, and generated tables. Experiment scripts follow an artifact-first policy: read an existing artifact if present, generate it from the documented upstream command if it is missing, and fail with the missing path and command if the upstream job cannot complete in the current environment.
 
-This means plotting and table scripts can be run from a clean clone, but some first runs are intentionally expensive because they recreate fold-level prediction shards, confidence-calibration scores, API-model outputs, or other bottleneck artifacts. For example, `method_comparison/plot.py` will create missing `predictions/*.npz`, `manifest.json`, and `results.json` by running `method_comparison/run.py --merge`; confidence plots similarly create `confidence_scores.npz` and `results.json` via `confidence_calibration/run.py --ensure`.
+This means plotting and table scripts can be run from a clean clone, but some first runs are intentionally expensive because they recreate fold-level prediction shards, confidence-calibration scores, API-model outputs, or other bottleneck artifacts. For example, `method_comparison/plot.py` will create missing `predictions/*.npz`, `manifest.json`, and `results.json` by running `method_comparison/run.py --merge`; confidence plots similarly create `confidence_scores.npz` and `results.json` via `confidence_calibration/run.py --ensure`. Once generated, these artifacts stay local and are reused by later scripts.
 
 ## Run a Single Experiment
 
