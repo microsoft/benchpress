@@ -18,6 +18,7 @@ experiments/sec5_findings/llm_completer/*/predictions/
 benchpress/data/_hf_cache/
 benchpress/data/llm_benchmark_data.json
 benchpress/data/llm_benchmark_matrix.xlsx
+benchpress/data/metadata.json
 
 # Experiment outputs and caches. Keep scripts/READMEs in git; regenerate outputs
 # from the public data release when needed.
