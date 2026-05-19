@@ -357,28 +357,36 @@ body.theme-minimal .evidence-list {
 }
 
 body.theme-minimal .evidence-list li {
+  min-width: 0;
+  overflow: hidden;
   padding: 12px;
   border: 1px solid var(--line);
   background: #fff;
 }
 
 body.theme-minimal .evidence-list li > div {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: baseline;
   gap: 12px;
 }
 
 body.theme-minimal .evidence-list strong {
+  min-width: 0;
+  overflow: hidden;
   color: var(--ink);
   font-size: 0.82rem;
   font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 body.theme-minimal .evidence-list span {
   color: var(--ink);
   font-weight: 900;
   font-variant-numeric: tabular-nums;
+  justify-self: end;
+  white-space: nowrap;
 }
 
 body.theme-minimal .evidence-list p {
