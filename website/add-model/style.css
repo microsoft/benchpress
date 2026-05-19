@@ -358,7 +358,6 @@ body.theme-minimal .evidence-list {
 
 body.theme-minimal .evidence-list li {
   min-width: 0;
-  overflow: hidden;
   padding: 12px;
   border: 1px solid var(--line);
   background: #fff;
@@ -367,18 +366,16 @@ body.theme-minimal .evidence-list li {
 body.theme-minimal .evidence-list li > div {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  align-items: baseline;
+  align-items: start;
   gap: 12px;
 }
 
 body.theme-minimal .evidence-list strong {
   min-width: 0;
-  overflow: hidden;
   color: var(--ink);
   font-size: 0.82rem;
   font-weight: 900;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
 }
 
 body.theme-minimal .evidence-list span {
