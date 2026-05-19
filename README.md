@@ -22,7 +22,7 @@
 </p>
 
 <p align="center">
-  <a href="https://yzeng58.github.io/benchpress-site/">Project page</a> ·
+  <a href="https://microsoft.github.io/benchpress/">Project page</a> ·
   <a href="https://github.com/microsoft/benchpress">Code</a> ·
   <a href="https://huggingface.co/datasets/yzeng58/benchpress-score-matrix">Dataset</a> ·
   <a href="#">Paper coming soon</a>
