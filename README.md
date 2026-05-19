@@ -46,7 +46,7 @@ Finally, we stress-test deployment: **five probe benchmarks predict the rest of 
 # Contents
 
 - [Step 1: Set Up Environment](#step-1-set-up-environment)
-- [Step 2: The Data](#step-2-the-data)
+- [Step 2: Download the Data](#step-2-download-the-data)
 - [Step 3: Predict Scores](#step-3-predict-scores)
   - [Predict for an Existing Model](#predict-for-an-existing-model)
   - [Add Your Own Model](#add-your-own-model)
@@ -84,7 +84,7 @@ To set up the environment for using BenchPress, please follow the steps below.
    TBA
    </details>
 
-# Step 2: The Data
+# Step 2: Download the Data
 
 BenchPress uses a citation-backed evaluation matrix:
 
@@ -94,10 +94,18 @@ BenchPress uses a citation-backed evaluation matrix:
 - Paper-canonical filter (keep models with $\geq 15$ observed scores and benchmarks with $\geq 8$ observed models), with duplicate/setting-variant exclusions: **84 models × 133 benchmarks**, 2,604 observed (23.3% fill rate)
 - **Smart clip**: only percentage-scale benchmarks are clipped to [0, 100]; Elo/rating benchmarks (Codeforces, Chatbot Arena, GDP-Val) are left unclipped
 
+<p align="center">
+  <img width="720" alt="BenchPress score matrix observation pattern (84 models × 133 benchmarks, 23.3% filled)" src="imgs/score_matrix.png">
+  <br>
+  <em>Observed (blue) vs. missing (white) cells in the paper-canonical 84 × 133 score matrix.</em>
+</p>
+
 The paper-canonical dataset is published at:
 
 - **Hugging Face**: <https://huggingface.co/datasets/yzeng58/benchpress-score-matrix>
 - **Local cache after download**: `benchpress/data/llm_benchmark_data.json`
+
+BenchPress is a living dataset: new model releases, benchmark updates, and corrected citations can be added as the evaluation landscape changes. We welcome pull requests that add citation-backed scores, new models, new benchmarks, or provenance fixes.
 
 After running `python -m benchpress.download_data`, local matrix files live in `benchpress/data/`:
 
