@@ -164,7 +164,7 @@ Provide a few known scores; BenchPress predicts the rest.
 
 ```bash
 python predict.py --add-model my-model \
-  --scores "mmlu=85.0,gpqa_diamond=70.0,aime_2025=55.0"
+  --scores "simpleqa=50.0,gpqa_diamond=70.0,aime_2025=55.0"
 ```
 
 <details><summary> What happens under the hood </summary>
