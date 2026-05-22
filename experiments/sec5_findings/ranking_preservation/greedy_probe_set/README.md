@@ -99,6 +99,15 @@ The model-split validation script has the same resume behavior, with the model s
 
 ## Last valid result
 
+Model-split validation run at commit `6109f74`.
+
+| Candidate pool | k | Probe prefix | Train margin-5 pairwise accuracy | Held-out non-probe accuracy | Held-out with-probe-zero accuracy |
+|---|---:|---|---:|---:|---:|
+| Any benchmark | 5 | `gpqa_diamond`, `hle`, `bullshit_pushback`, `mmlu_pro`, `erqa` | 0.8462 | 0.9310 | 0.9370 |
+| Any benchmark | 10 | `gpqa_diamond`, `hle`, `bullshit_pushback`, `mmlu_pro`, `erqa`, `c_eval`, `aime_2024`, `arena_hard`, `babyvision`, `popqa` | 0.8800 | 0.8868 | 0.9412 |
+| Low-cost benchmarks | 5 | `gpqa_diamond`, `mmlu_pro`, `arena_hard`, `alpacaeval_2`, `hmmt_feb_2026` | 0.8208 | 0.9091 | 0.9214 |
+| Low-cost benchmarks | 10 | `gpqa_diamond`, `mmlu_pro`, `arena_hard`, `alpacaeval_2`, `hmmt_feb_2026`, `math_500`, `aime_2025`, `vibe_eval`, `tau2_bench_airline`, `aider_polyglot_whole` | 0.8512 | 0.9091 | 0.9304 |
+
 Cost-unaware legacy run at commit `3d6ac50`, using 48 workers. The selected top-10 prefix ends with `alpacaeval_2` and reaches margin-5 pairwise ranking accuracy `0.888543823326432` over `27245` comparable pairs.
 
 Cost-aware candidate-constrained legacy run at commit `2ccb061`, using 48 workers. The selected top-10 prefix is `gpqa_diamond`, `mmlu_pro`, `aime_2025`, `bullshit_pushback`, `hmmt_feb_2026`, `math_500`, `alpacaeval_2`, `hmmt_feb_2025`, `aider_polyglot_whole`, `arena_hard`, and reaches margin-5 pairwise ranking accuracy `0.8619555353901995` over `27245` comparable pairs.
