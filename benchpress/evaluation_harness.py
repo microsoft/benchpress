@@ -540,6 +540,84 @@ def observed_benchmarks_by_model(model_limit=None):
     return targets
 
 
+def target_by_model_from_models(model_indices, include_bench_indices=None,
+                                exclude_bench_indices=None):
+    """Observed benchmark targets for a selected set of model rows."""
+    model_set = {int(i) for i in model_indices}
+    include_set = (
+        None if include_bench_indices is None
+        else {int(j) for j in include_bench_indices}
+    )
+    exclude_set = (
+        set() if exclude_bench_indices is None
+        else {int(j) for j in exclude_bench_indices}
+    )
+    targets = []
+    for i in range(N_MODELS):
+        if i not in model_set:
+            targets.append([])
+            continue
+        obs = np.where(OBSERVED[i])[0].tolist()
+        if include_set is not None:
+            obs = [j for j in obs if j in include_set]
+        if exclude_set:
+            obs = [j for j in obs if j not in exclude_set]
+        targets.append(obs)
+    return targets
+
+
+def split_models_for_probe_validation(train_fraction=0.7, seed=42,
+                                      min_observed=1, model_indices=None):
+    """Deterministic model split for probe-set selection and validation."""
+    if not (0 < float(train_fraction) < 1):
+        raise ValueError(f"train_fraction must be in (0, 1), got {train_fraction}")
+    candidates = (
+        list(range(N_MODELS)) if model_indices is None
+        else [int(i) for i in model_indices]
+    )
+    eligible = [
+        i for i in candidates
+        if 0 <= i < N_MODELS and int(OBSERVED[i].sum()) >= int(min_observed)
+    ]
+    if len(eligible) < 2:
+        raise ValueError(
+            f"Need at least two eligible models for split, found {len(eligible)}"
+        )
+    rng = np.random.RandomState(int(seed))
+    perm = rng.permutation(np.asarray(eligible, dtype=int))
+    n_train = int(round(len(eligible) * float(train_fraction)))
+    n_train = min(max(1, n_train), len(eligible) - 1)
+    train = sorted(int(i) for i in perm[:n_train])
+    validation = sorted(int(i) for i in perm[n_train:])
+    return train, validation
+
+
+def base_matrix_for_model_context(context_model_indices):
+    """Matrix with only context model rows visible."""
+    M_train = np.full_like(M_FULL, np.nan, dtype=float)
+    context = [int(i) for i in context_model_indices]
+    if context:
+        M_train[context, :] = M_FULL[context, :]
+    return M_train
+
+
+def base_matrix_for_isolated_probe_target(target_model_idx, probe_indices,
+                                          context_model_indices):
+    """Context rows plus one target row's observed probe cells.
+
+    This simulates a new held-out model: the predictor sees the training-model
+    score matrix and the target model's selected probe scores, but not other
+    held-out model rows.
+    """
+    M_train = base_matrix_for_model_context(context_model_indices)
+    i = int(target_model_idx)
+    for j in probe_indices:
+        j = int(j)
+        if OBSERVED[i, j]:
+            M_train[i, j] = M_FULL[i, j]
+    return M_train
+
+
 def load_benchmark_allowlist(path, benchmark_ids=BENCH_IDS, label='Benchmark allowlist'):
     """Load a JSON benchmark-id allowlist and return (index set, id list)."""
     if path is None:
@@ -641,6 +719,47 @@ def evaluate_probe_set(probe_indices, predict_fn, metric='medape',
         for j_known in probe_targets:
             true = float(M_FULL[i, j_known])
             predictions.append((i, j_known, true, true))
+
+    actual = np.array([p[2] for p in predictions])
+    predicted = np.array([p[3] for p in predictions])
+    metrics = compute_prediction_error(actual, predicted, aggregation='pool')
+    score_field = PROBE_SCORE_KEY[metric]
+    score = float(metrics[score_field]) if np.isfinite(metrics[score_field]) else float('inf')
+    return predictions, {
+        'medape': metrics['medape'],
+        'medae': metrics['medae'],
+        'n': metrics['n'],
+    }, score
+
+
+def evaluate_probe_set_on_heldout_models(probe_indices, predict_fn,
+                                         target_model_indices,
+                                         context_model_indices,
+                                         metric='medape',
+                                         include_probe_targets=False):
+    """Evaluate a probe set on held-out models with isolated target rows."""
+    if metric not in PROBE_SCORE_KEY:
+        raise ValueError(f"Unknown probe metric: {metric!r}")
+
+    probe_set = set(int(p) for p in probe_indices)
+    predictions = []
+    for i in [int(x) for x in target_model_indices]:
+        target_js = np.where(OBSERVED[i])[0].tolist()
+        non_probe_targets = [j for j in target_js if j not in probe_set]
+        probe_targets = [j for j in target_js if j in probe_set]
+
+        if non_probe_targets:
+            M_train = base_matrix_for_isolated_probe_target(
+                i, probe_set, context_model_indices,
+            )
+            M_pred = predict_fn(M_train)
+            for j in non_probe_targets:
+                predictions.append((i, j, float(M_FULL[i, j]), float(M_pred[i, j])))
+
+        if include_probe_targets:
+            for j_known in probe_targets:
+                true = float(M_FULL[i, j_known])
+                predictions.append((i, j_known, true, true))
 
     actual = np.array([p[2] for p in predictions])
     predicted = np.array([p[3] for p in predictions])
