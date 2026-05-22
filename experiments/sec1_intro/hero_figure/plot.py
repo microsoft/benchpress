@@ -485,7 +485,13 @@ def render_panel_b(curves) -> Path:
 
     ax.set_xlim(0.65, 10.45)
     ax.set_xticks(list(range(1, 11)))
-    ax.set_ylim(3.6, 7.85)
+    y_max = max(
+        float(np.nanmax(random_q3)),
+        float(np.nanmax(random_y)),
+        float(np.nanmax(greedy_y)),
+        float(np.nanmax(cost_y)),
+    )
+    ax.set_ylim(3.6, np.ceil(y_max * 10) / 10 + 0.35)
     ax.set_xlabel("# Top benchmarks", fontsize=18.0, labelpad=1.5)
     ax.set_ylabel("Median Absolute Error", fontsize=18.0)
     ax.set_title("Held-out model score prediction", fontsize=18.0, fontweight="bold", color=CHARCOAL, pad=3)
