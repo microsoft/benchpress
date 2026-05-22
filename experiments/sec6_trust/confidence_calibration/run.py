@@ -21,8 +21,9 @@ SEED = 42
 np.random.seed(SEED)
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-SEC4_DIR = os.path.dirname(SCRIPT_DIR)
-METHOD_DIR = os.path.join(SEC4_DIR, "method_comparison")
+REPO_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "..", ".."))
+METHOD_DIR = os.path.join(
+    REPO_ROOT, "experiments", "sec4_building_benchpress", "method_comparison")
 RESULTS_PATH = os.path.join(SCRIPT_DIR, "results.json")
 SCORES_PATH = os.path.join(SCRIPT_DIR, "confidence_scores.npz")
 TARGET_PREDICTION_REL = "predictions/0154__logit__bias_als__hp04_b16f05a66b.npz"
