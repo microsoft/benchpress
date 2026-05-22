@@ -44,6 +44,8 @@ This renders and verifies the canonical current arXiv assets:
 - `sec5_findings/optimal_probe/results/random_medape_hero_all_known.json.gz`
 - `sec5_findings/optimal_probe/results/greedy_medae_targets_tall_candidates_tall.json.gz`
 - `sec5_findings/optimal_probe/results/greedy_medae_targets_tall_candidates_usercheap.json.gz`
+- `sec5_findings/optimal_probe/results/model_split_validation_medae_train70_all.json.gz`
+- `sec5_findings/optimal_probe/results/model_split_validation_medae_train70_usercheap.json.gz`
 - `sec5_findings/ranking_preservation/greedy_probe_set/results/greedy_pairwise_margin5_top10_targets_all_candidates_all.json.gz`
 - `sec5_findings/ranking_preservation/greedy_probe_set/results/greedy_pairwise_margin5_top10_targets_usercheap_candidates_usercheap.json.gz`
 - `sec3_low_rank/data_collection/observation_pattern/figures/bp_matrix_clean_white.pdf` for the NeurIPS matrix panel

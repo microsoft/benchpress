@@ -46,6 +46,14 @@ GREEDY_MEDAE_COST_AWARE_PATH = (
     HERE / ".." / ".." / "sec5_findings" / "optimal_probe" / "results"
     / "greedy_medae_targets_tall_candidates_usercheap.json.gz"
 ).resolve()
+MODEL_SPLIT_MEDAE_PATH = (
+    HERE / ".." / ".." / "sec5_findings" / "optimal_probe" / "results"
+    / "model_split_validation_medae_train70_all.json.gz"
+).resolve()
+MODEL_SPLIT_MEDAE_COST_AWARE_PATH = (
+    HERE / ".." / ".." / "sec5_findings" / "optimal_probe" / "results"
+    / "model_split_validation_medae_train70_usercheap.json.gz"
+).resolve()
 RANK_GREEDY_PATH = (
     HERE / ".." / ".." / "sec5_findings" / "ranking_preservation"
     / "greedy_probe_set" / "results"
@@ -130,6 +138,8 @@ def probe_policy_curves():
     random = load_json(RANDOM_PATH)
     greedy = load_json(GREEDY_MEDAE_PATH)
     greedy_cost_aware = load_json(GREEDY_MEDAE_COST_AWARE_PATH)
+    model_split = load_json(MODEL_SPLIT_MEDAE_PATH)
+    model_split_cost_aware = load_json(MODEL_SPLIT_MEDAE_COST_AWARE_PATH)
     rank_greedy = load_json(RANK_GREEDY_PATH)
     rank_greedy_cost_aware = load_json(RANK_GREEDY_COST_AWARE_PATH)
 
@@ -229,6 +239,12 @@ def probe_policy_curves():
         "rank_cost_aware_acc": rank_cost_aware_acc,
         "greedy_trajectory": greedy["trajectory"],
         "greedy_cost_aware_trajectory": greedy_cost_aware["trajectory"],
+        "model_split_k5_medae": float(
+            model_split["trajectory"][4]["validation_non_probe"]["score"]
+        ),
+        "model_split_cost_aware_k5_medae": float(
+            model_split_cost_aware["trajectory"][4]["validation_non_probe"]["score"]
+        ),
     }
 
 
@@ -367,6 +383,16 @@ def render_panel_b(curves) -> Path:
     ax.plot(random_x, random_y, color=GRAY, lw=2.3, ls="--", marker="o", ms=5.5)
     ax.plot(greedy_x, greedy_y, color=MAGENTA, lw=2.5, ls="-", marker="o", ms=5.5)
     ax.plot(cost_x, cost_y, color=BLUE, lw=2.5, ls="-", marker="s", ms=5.2)
+    ax.scatter(
+        [5, 5],
+        [curves["model_split_k5_medae"], curves["model_split_cost_aware_k5_medae"]],
+        s=78,
+        marker="X",
+        color=[MAGENTA, BLUE],
+        edgecolors="white",
+        linewidths=0.8,
+        zorder=6,
+    )
     ax.plot(
         [0], [base], marker="D", color="white", markeredgecolor=CHARCOAL,
         markeredgewidth=1.0, ms=5.6, zorder=5,
@@ -422,6 +448,30 @@ def render_panel_b(curves) -> Path:
             ),
         )
 
+    ax.annotate(
+        "held-out models\n5.31 / 5.60",
+        xy=(5, curves["model_split_cost_aware_k5_medae"]),
+        xytext=(18, 18),
+        textcoords="offset points",
+        fontsize=12.2,
+        color=CHARCOAL,
+        ha="left",
+        va="bottom",
+        bbox=dict(
+            boxstyle="round,pad=0.22",
+            facecolor="white",
+            edgecolor=GRID,
+            alpha=0.94,
+        ),
+        arrowprops=dict(
+            arrowstyle="-",
+            color=CHARCOAL,
+            lw=0.9,
+            shrinkA=0,
+            shrinkB=4,
+        ),
+    )
+
     ax.set_xlim(-0.45, 10.45)
     ax.set_xticks(list(range(0, 11)))
     ax.set_ylim(bottom=1.5)
@@ -435,6 +485,7 @@ def render_panel_b(curves) -> Path:
         Line2D([0], [0], color=GRAY, lw=1.55, linestyle="--", marker="o", markersize=5.2, label="Random benchmark set"),
         Line2D([0], [0], color=MAGENTA, lw=1.75, linestyle="-", marker="o", markersize=5.2, label="Most predictive benchmarks"),
         Line2D([0], [0], color=BLUE, lw=1.75, linestyle="-", marker="s", markersize=5.0, label="Low-cost benchmarks"),
+        Line2D([0], [0], color=CHARCOAL, lw=0, marker="X", markersize=6.0, label="Held-out model split"),
     ]
     fig_b.legend(
         handles=handles, loc="lower center", ncol=2, frameon=False,
