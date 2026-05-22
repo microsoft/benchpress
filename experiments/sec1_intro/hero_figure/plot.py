@@ -54,6 +54,10 @@ MODEL_SPLIT_MEDAE_COST_AWARE_PATH = (
     HERE / ".." / ".." / "sec5_findings" / "optimal_probe" / "results"
     / "model_split_validation_medae_train70_usercheap.json.gz"
 ).resolve()
+MODEL_SPLIT_RANDOM_PATH = (
+    HERE / ".." / ".." / "sec5_findings" / "optimal_probe" / "results"
+    / "model_split_random_medae_train70.json.gz"
+).resolve()
 RANK_GREEDY_PATH = (
     HERE / ".." / ".." / "sec5_findings" / "ranking_preservation"
     / "greedy_probe_set" / "results"
@@ -140,6 +144,7 @@ def probe_policy_curves():
     greedy_cost_aware = load_json(GREEDY_MEDAE_COST_AWARE_PATH)
     model_split = load_json(MODEL_SPLIT_MEDAE_PATH)
     model_split_cost_aware = load_json(MODEL_SPLIT_MEDAE_COST_AWARE_PATH)
+    model_split_random = load_json(MODEL_SPLIT_RANDOM_PATH)
     rank_greedy = load_json(RANK_GREEDY_PATH)
     rank_greedy_cost_aware = load_json(RANK_GREEDY_COST_AWARE_PATH)
 
@@ -161,6 +166,24 @@ def probe_policy_curves():
     random_q3 = np.array([
         np.percentile([r["medae"] for r in random_by_k[k]], 75)
         for k in random_k
+    ])
+    model_split_random_by_k = defaultdict(list)
+    for row in model_split_random["summary_by_k_seed"]:
+        k = int(row["k"])
+        if 1 <= k <= 10:
+            model_split_random_by_k[k].append(row)
+    model_split_random_k = np.arange(1, 11)
+    model_split_random_medae = np.array([
+        np.median([r["medae"] for r in model_split_random_by_k[k]])
+        for k in model_split_random_k
+    ])
+    model_split_random_q1 = np.array([
+        np.percentile([r["medae"] for r in model_split_random_by_k[k]], 25)
+        for k in model_split_random_k
+    ])
+    model_split_random_q3 = np.array([
+        np.percentile([r["medae"] for r in model_split_random_by_k[k]], 75)
+        for k in model_split_random_k
     ])
     greedy_k = np.array([
         int(s["step"]) for s in greedy["trajectory"]
@@ -231,6 +254,10 @@ def probe_policy_curves():
         "random_medae": random_medae,
         "random_q1": random_q1,
         "random_q3": random_q3,
+        "model_split_random_k": model_split_random_k,
+        "model_split_random_medae": model_split_random_medae,
+        "model_split_random_q1": model_split_random_q1,
+        "model_split_random_q3": model_split_random_q3,
         "greedy_k": greedy_k,
         "greedy_medae": greedy_medae,
         "greedy_cost_aware_k": greedy_cost_aware_k,
@@ -380,11 +407,17 @@ def render_panel_a(selected) -> Path:
 
 def render_panel_b(curves) -> Path:
     fig_b, ax = plt.subplots(1, 1, figsize=(7.6, 7.2))
+    random_x = curves["model_split_random_k"]
+    random_y = curves["model_split_random_medae"]
+    random_q1 = curves["model_split_random_q1"]
+    random_q3 = curves["model_split_random_q3"]
     greedy_x = curves["model_split_k"]
     greedy_y = curves["model_split_medae"]
     cost_x = curves["model_split_cost_aware_k"]
     cost_y = curves["model_split_cost_aware_medae"]
 
+    ax.fill_between(random_x, random_q1, random_q3, color=GRAY, alpha=0.14, lw=0)
+    ax.plot(random_x, random_y, color=GRAY, lw=2.3, ls="--", marker="o", ms=5.5)
     ax.plot(greedy_x, greedy_y, color=MAGENTA, lw=2.5, ls="-", marker="o", ms=5.5)
     ax.plot(cost_x, cost_y, color=BLUE, lw=2.5, ls="-", marker="s", ms=5.2)
 
@@ -452,7 +485,7 @@ def render_panel_b(curves) -> Path:
 
     ax.set_xlim(0.65, 10.45)
     ax.set_xticks(list(range(1, 11)))
-    ax.set_ylim(3.6, 7.05)
+    ax.set_ylim(3.6, 7.85)
     ax.set_xlabel("# Top benchmarks", fontsize=18.0, labelpad=1.5)
     ax.set_ylabel("Median Absolute Error", fontsize=18.0)
     ax.set_title("Held-out model score prediction", fontsize=18.0, fontweight="bold", color=CHARCOAL, pad=3)
@@ -460,16 +493,17 @@ def render_panel_b(curves) -> Path:
     ax.tick_params(labelsize=16.0, pad=1.5)
 
     handles = [
+        Line2D([0], [0], color=GRAY, lw=1.55, linestyle="--", marker="o", markersize=5.2, label="Random benchmark set"),
         Line2D([0], [0], color=MAGENTA, lw=1.75, linestyle="-", marker="o", markersize=5.2, label="Most predictive benchmarks"),
         Line2D([0], [0], color=BLUE, lw=1.75, linestyle="-", marker="s", markersize=5.0, label="Low-cost benchmarks"),
     ]
     fig_b.legend(
-        handles=handles, loc="lower center", ncol=2, frameon=False,
+        handles=handles, loc="lower center", ncol=3, frameon=False,
         fontsize=14.0, bbox_to_anchor=(0.5, 0.012),
         handlelength=1.2, columnspacing=0.65,
         labelspacing=0.25, handletextpad=0.45,
     )
-    fig_b.subplots_adjust(left=0.105, right=0.99, top=0.89, bottom=0.205)
+    fig_b.subplots_adjust(left=0.13, right=0.99, top=0.84, bottom=0.205)
     output = FIGURES_DIR / "bp_hero_panel_b_overall.pdf"
     save_pdf(fig_b, output)
     return output
