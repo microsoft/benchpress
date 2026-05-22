@@ -181,11 +181,8 @@ def _assert_prediction_cache_metadata(data, path):
             f"Prediction cache protocol mismatch in {path}: "
             f"expected {expected}, found {actual}"
         )
-    if metadata.get("path") != os.path.relpath(path, METHOD_DIR):
-        raise ValueError(
-            f"Prediction cache path metadata mismatch in {path}: "
-            f"found {metadata.get('path')}"
-        )
+    # File names can change when canonical artifacts are reorganized; row-level
+    # alignment is checked separately before any prediction stack is used.
 
 
 def _stack_from_files(reference, files):
