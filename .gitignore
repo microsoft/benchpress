@@ -12,7 +12,7 @@ tectonic
 paper/pdf_pages/
 
 # §5.3 LLM experiment artifacts (large: system prompts + raw responses per run)
-experiments/sec5_findings/llm_completer/*/predictions/
+experiments/sec4_building_benchpress/llm_completer/*/predictions/
 
 # Downloaded/generated public data artifacts.
 benchpress/data/_hf_cache/

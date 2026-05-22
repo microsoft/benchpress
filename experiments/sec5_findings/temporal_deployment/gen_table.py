@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Generate the Appendix C temporal-deployment table from results.json."""
+"""Generate the Section 5.3 temporal-deployment table from results.json."""
 
 from __future__ import annotations
 

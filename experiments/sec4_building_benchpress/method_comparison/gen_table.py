@@ -120,12 +120,12 @@ def gen_table():
     return "\n".join(lines)
 
 def gen_full_table():
-    """DEPRECATED: moved to experiments/appendix_b_sec4_methods/method_comparison/gen_full_table.py
-    (Appendix B owns the full 84-row transform-method table; sec4 only owns the top-10 leaderboard.)
+    """DEPRECATED: moved to experiments/appendix_c_sec4_methods/method_comparison/gen_full_table.py
+    (Appendix C owns the full 84-row transform-method table; sec4 only owns the top-10 leaderboard.)
     """
     raise RuntimeError(
         "Full table generation moved to "
-        "experiments/appendix_b_sec4_methods/method_comparison/gen_full_table.py — run that instead."
+        "experiments/appendix_c_sec4_methods/method_comparison/gen_full_table.py — run that instead."
     )
 
 

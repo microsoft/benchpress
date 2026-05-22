@@ -4,7 +4,7 @@
 
 - Main text: `\Cref{sec:method_comparison}`, `\Cref{tab:top15}`
 - Appendix: `\Cref{fig:transform_method_grid}` and `\Cref{tab:full_grid}`
-- Appendix script: `experiments/appendix_b_sec4_methods/method_comparison/gen_full_table.py` reads this directory's `results.json`
+- Appendix script: `experiments/appendix_c_sec4_methods/method_comparison/gen_full_table.py` reads this directory's `results.json`
 
 ## Purpose
 
@@ -110,7 +110,7 @@ Do not delete `predictions/` unless intentionally invalidating the whole experim
 | Nuclear Norm | `λ ∈ {0.1, 0.5, 1.0, 5.0}` |
 | MLP | `lr ∈ {1e-4, 1e-3, 1e-2}` |
 
-BenchReg and ModelReg also require at least 5 shared observations for a pairwise regression; this fixed guard is part of the method definition and is documented in Appendix B.1.
+BenchReg and ModelReg also require at least 5 shared observations for a pairwise regression; this fixed guard is part of the method definition and is documented in Appendix C.1.
 
 ## Last valid result
 

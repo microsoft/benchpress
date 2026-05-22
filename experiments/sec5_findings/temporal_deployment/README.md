@@ -2,7 +2,7 @@
 
 ## Paper mapping
 
-Section 5.3 (Predicting Newly Released Models) in the main body, with the full protocol parked in Appendix C. Previously this experiment lived appendix-only; it was promoted to §5.3 because it answers the third operational question of Section 5 (deployment against a brand-new release).
+Section 5.3 (Predicting Newly Released Models) in the main body. Previously this experiment lived appendix-only; it was promoted to §5.3 because it answers the third operational question of Section 5 (deployment against a brand-new release).
 
 ## Purpose
 
