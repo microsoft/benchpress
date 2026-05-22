@@ -410,48 +410,10 @@ def render_panel_b(curves) -> Path:
         ),
     )
 
-    SHORT = {
-        "HLE (Humanity's Last Exam)": "HLE",
-        "Terminal-Bench 2.0": "Terminal-Bench",
-        "Bullshit-Bench (Clear Pushback)": "Bullshit-Bench",
-        "GDPval (Artificial Analysis ELO)": "GDPval",
-        "Aider Polyglot (diff mode)": "Aider Polyglot",
-        "\u03c4\u00b2-bench Airline": "\u03c4\u00b2-bench",
-        "Codeforces Rating": "Codeforces",
-    }
-    def _short(n):
-        return SHORT.get(n, n)
-
-    greedy_names = [_short(s["added_benchmark_name"]) for s in curves["greedy_trajectory"][:10]]
-    cost_names = [_short(s["added_benchmark_name"]) for s in curves["greedy_cost_aware_trajectory"][:10]]
-
-    for i, name in enumerate(greedy_names, start=1):
-        ax.annotate(
-            name, xy=(i, curves["greedy_medae"][i-1]),
-            xytext=(-3, -7), textcoords="offset points",
-            fontsize=12, color=MAGENTA, ha="right", va="top",
-            rotation=30,
-            bbox=dict(
-                boxstyle="round,pad=0.18", facecolor="white",
-                edgecolor="none", alpha=0.78,
-            ),
-        )
-    for i, name in enumerate(cost_names, start=1):
-        ax.annotate(
-            name, xy=(i, curves["greedy_cost_aware_medae"][i-1]),
-            xytext=(3, 7), textcoords="offset points",
-            fontsize=12, color=BLUE, ha="left", va="bottom",
-            rotation=30,
-            bbox=dict(
-                boxstyle="round,pad=0.18", facecolor="white",
-                edgecolor="none", alpha=0.78,
-            ),
-        )
-
     ax.annotate(
         "held-out models\n5.31 / 5.60",
         xy=(5, curves["model_split_cost_aware_k5_medae"]),
-        xytext=(18, 18),
+        xytext=(28, 18),
         textcoords="offset points",
         fontsize=12.2,
         color=CHARCOAL,
