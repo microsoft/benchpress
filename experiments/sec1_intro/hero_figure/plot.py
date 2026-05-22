@@ -178,6 +178,22 @@ def probe_policy_curves():
         float(s["medae"]) for s in greedy_cost_aware["trajectory"]
         if 1 <= int(s["step"]) <= 10
     ])
+    model_split_k = np.array([
+        int(s["step"]) for s in model_split["trajectory"]
+        if 1 <= int(s["step"]) <= 10
+    ])
+    model_split_medae = np.array([
+        float(s["validation_non_probe"]["score"]) for s in model_split["trajectory"]
+        if 1 <= int(s["step"]) <= 10
+    ])
+    model_split_cost_aware_k = np.array([
+        int(s["step"]) for s in model_split_cost_aware["trajectory"]
+        if 1 <= int(s["step"]) <= 10
+    ])
+    model_split_cost_aware_medae = np.array([
+        float(s["validation_non_probe"]["score"]) for s in model_split_cost_aware["trajectory"]
+        if 1 <= int(s["step"]) <= 10
+    ])
     rank_k = np.array([
         0,
         *[
@@ -210,15 +226,6 @@ def probe_policy_curves():
     ])
     rand_rank_k, rand_rank_acc, rand_rank_q1, rand_rank_q3 = ranking_data_from_raw(random["raw_predictions"])
 
-    # k=0 baseline: predict every observed cell with its benchmark column median
-    from benchpress.evaluation_harness import M_FULL, OBSERVED, compute_prediction_error
-    from benchpress.all_methods import predict_benchmark_median_scores
-    M_pred_baseline = predict_benchmark_median_scores(M_FULL)
-    test_cells = list(zip(*np.where(OBSERVED)))
-    baseline_metrics = compute_prediction_error(
-        M_FULL, M_pred_baseline, test_set=test_cells, aggregation='pool')
-    baseline_medae = float(baseline_metrics['medae'])
-
     return {
         "random_k": random_k,
         "random_medae": random_medae,
@@ -228,7 +235,10 @@ def probe_policy_curves():
         "greedy_medae": greedy_medae,
         "greedy_cost_aware_k": greedy_cost_aware_k,
         "greedy_cost_aware_medae": greedy_cost_aware_medae,
-        "baseline_medae": baseline_medae,
+        "model_split_k": model_split_k,
+        "model_split_medae": model_split_medae,
+        "model_split_cost_aware_k": model_split_cost_aware_k,
+        "model_split_cost_aware_medae": model_split_cost_aware_medae,
         "rand_rank_k": rand_rank_k,
         "rand_rank_acc": rand_rank_acc,
         "rand_rank_q1": rand_rank_q1,
@@ -239,6 +249,8 @@ def probe_policy_curves():
         "rank_cost_aware_acc": rank_cost_aware_acc,
         "greedy_trajectory": greedy["trajectory"],
         "greedy_cost_aware_trajectory": greedy_cost_aware["trajectory"],
+        "model_split_trajectory": model_split["trajectory"],
+        "model_split_cost_aware_trajectory": model_split_cost_aware["trajectory"],
         "model_split_k5_medae": float(
             model_split["trajectory"][4]["validation_non_probe"]["score"]
         ),
@@ -368,47 +380,13 @@ def render_panel_a(selected) -> Path:
 
 def render_panel_b(curves) -> Path:
     fig_b, ax = plt.subplots(1, 1, figsize=(7.6, 7.2))
-    base = float(curves["baseline_medae"])
+    greedy_x = curves["model_split_k"]
+    greedy_y = curves["model_split_medae"]
+    cost_x = curves["model_split_cost_aware_k"]
+    cost_y = curves["model_split_cost_aware_medae"]
 
-    random_x = np.concatenate([[0], curves["random_k"]])
-    random_y = np.concatenate([[base], curves["random_medae"]])
-    random_q1 = np.concatenate([[base], curves["random_q1"]])
-    random_q3 = np.concatenate([[base], curves["random_q3"]])
-    greedy_x = np.concatenate([[0], curves["greedy_k"]])
-    greedy_y = np.concatenate([[base], curves["greedy_medae"]])
-    cost_x = np.concatenate([[0], curves["greedy_cost_aware_k"]])
-    cost_y = np.concatenate([[base], curves["greedy_cost_aware_medae"]])
-
-    ax.fill_between(random_x, random_q1, random_q3, color=GRAY, alpha=0.14, lw=0)
-    ax.plot(random_x, random_y, color=GRAY, lw=2.3, ls="--", marker="o", ms=5.5)
     ax.plot(greedy_x, greedy_y, color=MAGENTA, lw=2.5, ls="-", marker="o", ms=5.5)
     ax.plot(cost_x, cost_y, color=BLUE, lw=2.5, ls="-", marker="s", ms=5.2)
-    ax.scatter(
-        [5, 5],
-        [curves["model_split_k5_medae"], curves["model_split_cost_aware_k5_medae"]],
-        s=78,
-        marker="X",
-        color=[MAGENTA, BLUE],
-        edgecolors="white",
-        linewidths=0.8,
-        zorder=6,
-    )
-    ax.plot(
-        [0], [base], marker="D", color="white", markeredgecolor=CHARCOAL,
-        markeredgewidth=1.0, ms=5.6, zorder=5,
-    )
-    ax.annotate(
-        "Benchmark median", (0, base), xytext=(8, -2),
-        textcoords="offset points", fontsize=12.0, color=CHARCOAL,
-        ha="left", va="top",
-        bbox=dict(
-            boxstyle="round,pad=0.18", facecolor="white",
-            edgecolor="none", alpha=0.92,
-        ),
-        arrowprops=dict(
-            arrowstyle="-", color=CHARCOAL, lw=0.9, shrinkA=0, shrinkB=3,
-        ),
-    )
 
     SHORT = {
         "HLE (Humanity's Last Exam)": "HLE",
@@ -422,12 +400,12 @@ def render_panel_b(curves) -> Path:
     def _short(n):
         return SHORT.get(n, n)
 
-    greedy_names = [_short(s["added_benchmark_name"]) for s in curves["greedy_trajectory"][:10]]
-    cost_names = [_short(s["added_benchmark_name"]) for s in curves["greedy_cost_aware_trajectory"][:10]]
+    greedy_names = [_short(s["added_benchmark_name"]) for s in curves["model_split_trajectory"][:10]]
+    cost_names = [_short(s["added_benchmark_name"]) for s in curves["model_split_cost_aware_trajectory"][:10]]
 
     for i, name in enumerate(greedy_names, start=1):
         ax.annotate(
-            name, xy=(i, curves["greedy_medae"][i-1]),
+            name, xy=(i, curves["model_split_medae"][i-1]),
             xytext=(-3, -7), textcoords="offset points",
             fontsize=12, color=MAGENTA, ha="right", va="top",
             rotation=30,
@@ -438,7 +416,7 @@ def render_panel_b(curves) -> Path:
         )
     for i, name in enumerate(cost_names, start=1):
         ax.annotate(
-            name, xy=(i, curves["greedy_cost_aware_medae"][i-1]),
+            name, xy=(i, curves["model_split_cost_aware_medae"][i-1]),
             xytext=(3, 7), textcoords="offset points",
             fontsize=12, color=BLUE, ha="left", va="bottom",
             rotation=30,
@@ -472,20 +450,18 @@ def render_panel_b(curves) -> Path:
         ),
     )
 
-    ax.set_xlim(-0.45, 10.45)
-    ax.set_xticks(list(range(0, 11)))
-    ax.set_ylim(bottom=1.5)
+    ax.set_xlim(0.65, 10.45)
+    ax.set_xticks(list(range(1, 11)))
+    ax.set_ylim(3.6, 7.05)
     ax.set_xlabel("# Top benchmarks", fontsize=18.0, labelpad=1.5)
     ax.set_ylabel("Median Absolute Error", fontsize=18.0)
-    ax.set_title("Overall score prediction", fontsize=18.0, fontweight="bold", color=CHARCOAL, pad=3)
+    ax.set_title("Held-out model score prediction", fontsize=18.0, fontweight="bold", color=CHARCOAL, pad=3)
     ax.grid(axis="y", color=GRID, alpha=0.55, lw=0.6)
     ax.tick_params(labelsize=16.0, pad=1.5)
 
     handles = [
-        Line2D([0], [0], color=GRAY, lw=1.55, linestyle="--", marker="o", markersize=5.2, label="Random benchmark set"),
         Line2D([0], [0], color=MAGENTA, lw=1.75, linestyle="-", marker="o", markersize=5.2, label="Most predictive benchmarks"),
         Line2D([0], [0], color=BLUE, lw=1.75, linestyle="-", marker="s", markersize=5.0, label="Low-cost benchmarks"),
-        Line2D([0], [0], color=CHARCOAL, lw=0, marker="X", markersize=6.0, label="Held-out model split"),
     ]
     fig_b.legend(
         handles=handles, loc="lower center", ncol=2, frameon=False,
@@ -493,7 +469,7 @@ def render_panel_b(curves) -> Path:
         handlelength=1.2, columnspacing=0.65,
         labelspacing=0.25, handletextpad=0.45,
     )
-    fig_b.subplots_adjust(left=0.105, right=0.99, top=0.905, bottom=0.205)
+    fig_b.subplots_adjust(left=0.105, right=0.99, top=0.89, bottom=0.205)
     output = FIGURES_DIR / "bp_hero_panel_b_overall.pdf"
     save_pdf(fig_b, output)
     return output

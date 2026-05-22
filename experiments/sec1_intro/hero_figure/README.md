@@ -69,4 +69,4 @@ This renders and verifies the canonical current arXiv assets:
 ## Last valid result
 - **Matrix**: 84×133 (2604 observed, 23.3% fill).
 - **Paper Figure 1**: `plot.py` writes current arXiv panel PDFs under `figures/`; copy paper-facing PDFs to Overleaf and validate the compiled Overleaf output.
-- **Key interpretation**: the Figure 1 random keep-k rule can directly reveal the plotted target cell, producing zero-error drops in selected-cell panels. The §5.1 random experiments still use the shared global probe-set setting.
+- **Key interpretation**: panel A uses the selected-cell keep-k setting, where a random keep-k prefix can directly reveal the plotted target cell and produce zero-error drops. Panel B uses model-split validation curves from `model_split_validation_medae_train70_{all,usercheap}.json.gz`; it should not mix in all-known-cell random or current-matrix greedy curves.
