@@ -8,6 +8,7 @@ import warnings
 
 import numpy as np
 from scipy import stats as sp_stats
+from sklearn.linear_model import Ridge
 from sklearn.neural_network import MLPRegressor
 from sklearn.preprocessing import StandardScaler
 
@@ -28,6 +29,12 @@ DEFAULT_CONFIDENCE_METHODS = [
     "disagreement",
     "structural_support",
     "combined_risk_model",
+]
+DEFAULT_RISK_MODEL_GRID = [
+    ("ridge", ()),
+    ("mlp", (16,)),
+    ("mlp", (32,)),
+    ("mlp", (64, 32)),
 ]
 CONFIDENCE_METHODS = {
     "disagreement": "Ensemble-spread uncertainty model",
@@ -214,63 +221,103 @@ def feature_matrix(feature_dict):
     return X, feature_names
 
 
-def fit_mlp_predict(X_train, y_train, X_test, hidden_layers, seed):
-    """Fit one MLP risk model and predict held-out risk."""
-    scaler, model = fit_mlp_model(X_train, y_train, hidden_layers, seed)
+def risk_model_config_metadata(config):
+    """Serialize a risk-model config for JSON metadata."""
+    model_type, hidden_layers = config
+    return {
+        "model": model_type,
+        "hidden_layers": list(hidden_layers),
+    }
+
+
+def risk_model_grid_metadata(model_grid=DEFAULT_RISK_MODEL_GRID):
+    """Serialize the risk-model candidate grid for JSON metadata."""
+    return [risk_model_config_metadata(config) for config in model_grid]
+
+
+def fit_risk_model_predict(X_train, y_train, X_test, config, seed):
+    """Fit one risk model and predict held-out risk."""
+    scaler, model = fit_risk_model(X_train, y_train, config, seed)
     return model.predict(scaler.transform(X_test))
 
 
-def fit_mlp_model(X_train, y_train, hidden_layers, seed):
-    """Fit and return the scaler/model pair for a confidence MLP."""
+def fit_risk_model(X_train, y_train, config, seed):
+    """Fit and return the scaler/model pair for a reliability risk model."""
+    model_type, hidden_layers = config
     scaler = StandardScaler()
     X_train_scaled = scaler.fit_transform(X_train)
-    model = MLPRegressor(
-        hidden_layer_sizes=hidden_layers,
-        activation="relu",
-        solver="adam",
-        alpha=1e-3,
-        learning_rate_init=3e-3,
-        max_iter=500,
-        early_stopping=True,
-        validation_fraction=0.15,
-        n_iter_no_change=25,
-        random_state=seed,
-    )
+    if model_type == "ridge":
+        model = Ridge(alpha=1e-3)
+    elif model_type == "mlp":
+        model = MLPRegressor(
+            hidden_layer_sizes=hidden_layers,
+            activation="relu",
+            solver="adam",
+            alpha=1e-3,
+            learning_rate_init=3e-3,
+            max_iter=500,
+            early_stopping=True,
+            validation_fraction=0.15,
+            n_iter_no_change=25,
+            random_state=seed,
+        )
+    else:
+        raise ValueError(f"Unknown risk model type: {model_type!r}")
     model.fit(X_train_scaled, y_train)
     return scaler, model
 
 
-def select_mlp_config(X, y, fold_id, train_mask, hidden_grid, seed=SEED):
-    """Choose the confidence MLP width/depth using training-fold validation."""
+def fit_mlp_predict(X_train, y_train, X_test, hidden_layers, seed):
+    """Fit one MLP risk model and predict held-out risk."""
+    return fit_risk_model_predict(
+        X_train, y_train, X_test, ("mlp", tuple(hidden_layers)), seed)
+
+
+def fit_mlp_model(X_train, y_train, hidden_layers, seed):
+    """Fit and return the scaler/model pair for a confidence MLP."""
+    return fit_risk_model(X_train, y_train, ("mlp", tuple(hidden_layers)), seed)
+
+
+def select_risk_model_config(X, y, fold_id, train_mask,
+                             model_grid=DEFAULT_RISK_MODEL_GRID, seed=SEED):
+    """Choose the reliability risk model using training-fold validation."""
     inner_train = train_mask & ((fold_id % 5) != 0)
     inner_val = train_mask & ((fold_id % 5) == 0)
     if inner_val.sum() < 50 or inner_train.sum() < X.shape[1] + 50:
         inner_train = train_mask & ((fold_id % 3) != 0)
         inner_val = train_mask & ((fold_id % 3) == 0)
     if inner_val.sum() < 50 or inner_train.sum() < X.shape[1] + 50:
-        return hidden_grid[0]
+        return model_grid[0]
 
     scores = []
-    for idx, hidden_layers in enumerate(hidden_grid):
-        pred = fit_mlp_predict(
+    for idx, config in enumerate(model_grid):
+        pred = fit_risk_model_predict(
             X[inner_train], y[inner_train], X[inner_val],
-            hidden_layers, seed=seed + idx)
+            config, seed=seed + idx)
         score = compute_prediction_error(y[inner_val], pred)["medae"]
-        scores.append((score, hidden_layers))
+        scores.append((score, config))
     scores.sort(key=lambda row: row[0])
     return scores[0][1]
 
 
+def select_mlp_config(X, y, fold_id, train_mask, hidden_grid, seed=SEED):
+    """Choose the confidence MLP width/depth using training-fold validation."""
+    model_grid = [("mlp", tuple(hidden_layers)) for hidden_layers in hidden_grid]
+    _, hidden_layers = select_risk_model_config(
+        X, y, fold_id, train_mask, model_grid=model_grid, seed=seed)
+    return hidden_layers
+
+
 def leave_fold_mlp_error_calibrator(actual, predicted, fold_id, feature_dict,
                                     folds_to_run=None, label="mlp", seed=SEED):
-    """Cross-fit an MLP that predicts log absolute error from confidence features."""
+    """Cross-fit a risk model that predicts log absolute error from features."""
     actual = np.asarray(actual, dtype=float)
     predicted = np.asarray(predicted, dtype=float)
     fold_id = np.asarray(fold_id, dtype=int)
     X, feature_names = feature_matrix(feature_dict)
     y = np.log1p(np.abs(predicted - actual))
     out = np.full(len(y), np.nan, dtype=float)
-    hidden_grid = [(16,), (32,), (64, 32)]
+    model_grid = DEFAULT_RISK_MODEL_GRID
     selected = {}
 
     valid_all = np.isfinite(y) & np.all(np.isfinite(X), axis=1)
@@ -284,13 +331,14 @@ def leave_fold_mlp_error_calibrator(actual, predicted, fold_id, feature_dict,
         test = (fold_id == fold) & np.all(np.isfinite(X), axis=1)
         if train.sum() < X.shape[1] + 50 or test.sum() == 0:
             continue
-        hidden_layers = select_mlp_config(X, y, fold_id, train, hidden_grid, seed=seed)
-        selected[str(int(fold))] = list(hidden_layers)
-        pred = fit_mlp_predict(
+        config = select_risk_model_config(
+            X, y, fold_id, train, model_grid=model_grid, seed=seed)
+        selected[str(int(fold))] = risk_model_config_metadata(config)
+        pred = fit_risk_model_predict(
             X[train], y[train], X[test],
-            hidden_layers, seed=seed + 1000 + int(fold))
+            config, seed=seed + 1000 + int(fold))
         out[test] = np.expm1(pred)
-        print(f"[{label}] fold {int(fold)} done hidden={hidden_layers}", flush=True)
+        print(f"[{label}] fold {int(fold)} done config={config}", flush=True)
     return np.maximum(out, 0.0), feature_names, selected
 
 
@@ -511,17 +559,18 @@ def _fit_final_confidence_model(actual, predicted, fold_id, feature_dict,
     y = np.log1p(np.abs(np.asarray(predicted, dtype=float)
                         - np.asarray(actual, dtype=float)))
     valid = np.isfinite(y) & np.all(np.isfinite(X), axis=1)
-    hidden_grid = [(16,), (32,), (64, 32)]
-    hidden_layers = select_mlp_config(
-        X, y, np.asarray(fold_id, dtype=int), valid, hidden_grid, seed=seed)
-    scaler, model = fit_mlp_model(X[valid], y[valid], hidden_layers, seed=seed + 2000)
+    config = select_risk_model_config(
+        X, y, np.asarray(fold_id, dtype=int), valid,
+        model_grid=DEFAULT_RISK_MODEL_GRID, seed=seed)
+    scaler, model = fit_risk_model(X[valid], y[valid], config, seed=seed + 2000)
     unc = np.asarray(crossfit_uncertainty, dtype=float)
     ratio_valid = valid & np.isfinite(unc) & (unc > 1e-8)
     scale = float(np.quantile(np.abs(predicted[ratio_valid] - actual[ratio_valid])
                               / unc[ratio_valid], ci))
     return {
         "feature_names": feature_names,
-        "hidden_layers": list(hidden_layers),
+        "risk_model_config": risk_model_config_metadata(config),
+        "hidden_layers": list(config[1]),
         "scaler": scaler,
         "model": model,
         "conformal_ci": float(ci),
@@ -566,7 +615,8 @@ def train_default_confidence_calibrator(M=None, folds=None, methods=None,
         "seed": int(seed),
         "methods": methods,
         "calibrators": calibrators,
-        "crossfit_selected_hidden_layers_by_fold": crossfit_selected,
+        "risk_model_grid": risk_model_grid_metadata(),
+        "crossfit_selected_risk_model_by_fold": crossfit_selected,
     }
     if artifact_path is None:
         artifact_path = default_confidence_artifact_path()

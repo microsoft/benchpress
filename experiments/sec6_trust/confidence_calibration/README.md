@@ -13,7 +13,7 @@ This experiment keeps the point predictor fixed to the current BenchPress recipe
 
 The confidence methods are implemented in `benchpress/methods/confidence.py`. This experiment imports those package methods and evaluates them on the paper's held-out folds; it should not redefine the confidence logic locally.
 
-All three main generators train a leave-fold-out multilayer perceptron (MLP) to predict `log1p(abs(predicted - actual))` for the fixed Logit Bias ALS point predictor. At test time, the MLP sees only pre-evaluation features for the hidden cell and outputs an uncertainty/risk score; larger means less confident.
+All three main generators train a leave-fold-out reliability model to predict `log1p(abs(predicted - actual))` for the fixed Logit Bias ALS point predictor. At test time, the model sees only pre-evaluation features for the hidden cell and outputs an uncertainty/risk score; larger means less confident.
 
 1. **Ensemble-spread uncertainty model**: uses only prediction-spread features. For each held-out cell, it compares the selected Logit Bias ALS prediction against two prediction stacks:
    - Same-family Logit Bias ALS variants: rank 2 with `lam` in `{0.01, 0.1, 1.0}`. The `lam=0.1` member is the selected point predictor; the other two measure nearby regularization sensitivity under the same transform and method.
@@ -21,11 +21,11 @@ All three main generators train a leave-fold-out multilayer perceptron (MLP) to 
 
    For each stack, the feature vector contains standard deviation, median absolute deviation, central 80% span (`p90 - p10`), and distance from the selected Logit Bias ALS prediction to the stack median. All nonnegative features are transformed with `log1p` before split-local standardization.
 2. **Matrix-support uncertainty model**: uses only training-matrix evidence features. The feature vector contains target-model observation count, target-benchmark observation count, target-model median score, target-benchmark median score, target-benchmark score dispersion, strongest peer-model correlation and overlap, and strongest benchmark-neighbor correlation. The peer model and benchmark neighbor are chosen by absolute correlation in the training matrix. The benchmark-neighbor overlap feature is excluded because the stricter H7 ablation does not support it as a joint benchmark-side factor.
-3. **Hybrid uncertainty model**: uses both the ensemble-spread features and the matrix-support features in one MLP.
+3. **Hybrid uncertainty model**: uses both the ensemble-spread features and the matrix-support features in one reliability model.
 4. **Diagnostic generators**: raw Bias ALS hyperparameter disagreement and raw strong-method disagreement are retained in the cache/results for ablations and debugging, but they are not part of the main figure.
 5. **Leave-fold-out conformal scaling**: post-processes any raw uncertainty score into a calibrated 90% interval by fitting the scale multiplier on all other folds and evaluating on the held-out fold. This is a calibration wrapper, not a standalone generator.
 
-All three MLP generators standardize inputs within each training split and use ReLU, Adam, `alpha=1e-3`, `learning_rate_init=3e-3`, early stopping, and `max_iter=500`. Hidden layers are selected inside the training folds from `(16,)`, `(32,)`, and `(64, 32)`. The risk score for each evaluated fold is always produced by an MLP trained on the other folds only.
+All three generators standardize inputs within each training split and select the risk-model architecture inside the training folds from a 0-hidden-layer Ridge regression (`alpha=1e-3`) and three ReLU MLPs: `(16,)`, `(32,)`, and `(64, 32)`. MLP candidates use Adam, `alpha=1e-3`, `learning_rate_init=3e-3`, early stopping, and `max_iter=500`. The risk score for each evaluated fold is always produced by a model trained on the other folds only.
 
 ## How to run
 

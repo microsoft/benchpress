@@ -51,6 +51,7 @@ with contextlib.redirect_stdout(io.StringIO()):
         conformal_interval,
         coverage_width,
         leave_fold_mlp_error_calibrator,
+        risk_model_grid_metadata,
         stack_features,
         structural_support_features,
         summarize_confidence_method,
@@ -287,8 +288,8 @@ def build_confidence_scores(ensemble_transform="logit",
         "disagreement_features": disagreement_feature_names,
         "structural_support_features": structural_feature_names,
         "combined_risk_model_features": combined_feature_names,
-        "mlp_hidden_grid": [[16], [32], [64, 32]],
-        "mlp_selected_hidden_layers_by_fold": selected_by_method,
+        "risk_model_grid": risk_model_grid_metadata(),
+        "selected_risk_model_by_fold": selected_by_method,
         "risk_methods": sorted(risk_methods),
         "folds_run": [int(f) for f in folds_to_run],
         "matrix_shape": list(M_FULL.shape),
@@ -354,7 +355,7 @@ def merge_score_shards(paths, scores_path=SCORES_PATH, results_path=RESULTS_PATH
     for shard in shards:
         meta = _metadata(shard)
         for key, value in meta.items():
-            if key == "mlp_selected_hidden_layers_by_fold":
+            if key in {"selected_risk_model_by_fold", "mlp_selected_hidden_layers_by_fold"}:
                 for method, folds in value.items():
                     selected.setdefault(method, {}).update(folds)
             elif key in {"risk_methods", "folds_run"}:
@@ -369,7 +370,7 @@ def merge_score_shards(paths, scores_path=SCORES_PATH, results_path=RESULTS_PATH
                 arrays[key] = np.full_like(value, np.nan, dtype=float)
             valid = np.isfinite(value)
             arrays[key][valid] = value[valid]
-    metadata["mlp_selected_hidden_layers_by_fold"] = selected
+    metadata["selected_risk_model_by_fold"] = selected
     metadata["risk_methods"] = sorted(
         key[:-len("_uncertainty")]
         for key in arrays
