@@ -11,6 +11,8 @@ This experiment asks which probes best preserve benchmark leaderboards when the 
 
 The greedy objective is Section 5.2's pairwise ranking accuracy at margin 5. For each candidate probe set, the script groups the completed predictions by benchmark and calls `benchpress.evaluation_harness.compute_ranking_accuracy(..., margin=5, aggregation="per_group_median")`. Probe cells are exact predictions and remain in the fixed all-known-cell denominator, so adding a probe improves the completed leaderboard rather than removing that benchmark from evaluation.
 
+`run_model_split_validation.py` is the held-out check. It uses the same 70/30 model split and isolated held-out model protocol as Section 5.1's probe validation: select probes on training model rows, then validate the fixed prefix on held-out model rows where BenchPress sees only training rows plus that held-out target model's probe scores.
+
 ## How to run
 
 This is a slow CPU sweep. Recommended on a remote machine with many cores.
@@ -34,6 +36,24 @@ CANDIDATE_ALLOWLIST=../../optimal_probe/candidate_allowlists/user_cheap_20260505
   WORKERS=48 ./run.sh
 ```
 
+Model-split validation smoke test:
+
+```bash
+MAX_STEPS=1 CANDIDATE_LIMIT=2 MODEL_LIMIT=8 WORKERS=2 \
+  OUT=smoke_model_split_pairwise_margin5.json.gz \
+  ./run_model_split_validation.sh
+```
+
+Model-split validation full runs:
+
+```bash
+WORKERS=48 ./run_model_split_validation.sh
+
+CANDIDATE_ALLOWLIST=../../optimal_probe/candidate_allowlists/user_cheap_20260505.json \
+  OUT=model_split_validation_pairwise_margin5_train70_usercheap.json.gz \
+  WORKERS=48 ./run_model_split_validation.sh
+```
+
 ## Inputs
 
 - Score matrix and benchmark IDs from `benchpress.evaluation_harness`.
@@ -46,6 +66,8 @@ Results are written under `results/`:
 
 - `greedy_pairwise_margin5_top10_targets_all_candidates_all.json.gz`
 - `greedy_pairwise_margin5_top10_targets_usercheap_candidates_usercheap.json.gz`
+- `model_split_validation_pairwise_margin5_train70_all.json.gz`
+- `model_split_validation_pairwise_margin5_train70_usercheap.json.gz`
 
 The result file contains:
 
@@ -58,11 +80,22 @@ The result file contains:
 | `trajectory[*].pairwise_accuracy_margin5` | selected prefix's benchmark-median margin-5 pairwise ranking accuracy |
 | `trajectory[*].candidate_results[*].per_benchmark_ranking` | per-benchmark ranking accuracy/count diagnostics |
 
+The model-split validation result files additionally contain:
+
+| Key | Meaning |
+|-----|---------|
+| `split` | train and validation model IDs |
+| `trajectory[*].train` | selected prefix's train-split ranking accuracy and diagnostics |
+| `trajectory[*].validation_non_probe` | held-out ranking accuracy excluding already measured probe cells |
+| `trajectory[*].validation_with_probe_zero` | held-out ranking accuracy including observed probe cells as exact predictions |
+
 Raw per-cell predictions are the bottleneck output and are saved for every candidate at every step.
 
 ## Resume / rerun
 
 Re-running the same `OUT=...` resumes from the completed trajectory and candidate cache when the objective, margin, protocol, candidate allowlist, candidate limit, and candidate count match. Candidate caches are keyed by step, candidate benchmark, and the probe prefix before the candidate, so a changed greedy prefix refuses to reuse stale shards.
+
+The model-split validation script has the same resume behavior, with the model split and protocol included in the cache key and output config.
 
 ## Last valid result
 
