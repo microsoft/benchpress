@@ -54,6 +54,7 @@ METRIC=medae OUT=model_split_validation_medae_train70_all.json.gz \
 CANDIDATE_ALLOWLIST=candidate_allowlists/user_cheap_20260505.json \
   METRIC=medae OUT=model_split_validation_medae_train70_usercheap.json.gz \
   MAX_STEPS=10 WORKERS=48 ./run_model_split_validation.sh
+python run_model_split_random.py --k-max 10 --n-seeds 10 --workers 48
 
 python plot.py --compare \
   --random-in random_medape_hero_all_known.json.gz \
@@ -85,6 +86,7 @@ Results are written under `results/`:
 - `random_medape_hero_all_known.json.gz` (random probe-prefix raw predictions)
 - `model_split_validation_medae_train70_all.json.gz` (model-split validation; all candidates)
 - `model_split_validation_medae_train70_usercheap.json.gz` (model-split validation; user-provided cheap candidate allowlist)
+- `model_split_random_medae_train70.json.gz` (model-split validation; random probe-prefix baseline)
 
 The greedy result files contain:
 
@@ -111,9 +113,16 @@ The model-split validation files contain:
 - `trajectory[*].validation_non_probe`: held-out-model metrics and raw predictions excluding already measured probe cells. This is the primary generalization metric.
 - `trajectory[*].validation_with_probe_zero`: held-out-model metrics and raw predictions with observed probe cells included as `pred=true`, for denominator compatibility with the all-known-cell plots.
 
+The model-split random file contains:
+
+- `config`: protocol, seed, train fraction, model split, and validation masking protocol.
+- `summary_by_k_seed`: held-out non-probe MedAPE / MedAE summaries for each `(k, seed)` random probe prefix.
+- `raw_predictions`: held-out non-probe cells with `seed`, `k`, model index, benchmark index, actual score, and prediction.
+- `probe_sets`: benchmark IDs selected for each `(k, seed)` random prefix.
+
 The raw predictions are the expensive output. MedAPE, MedAE, and per-benchmark summaries can be recomputed from them without rerunning BenchPress.
 
-The random baseline stores the same all-observed evaluation universe as greedy, uses the same shared `benchpress.evaluation_harness.evaluate_probe_set` primitive, and differs only in how the probe set is chosen: nested random prefixes rather than greedy minimization. The MedAPE random output currently stores `k=1..30` with 10 seeds and 781,200 raw predictions over the 84-by-133 matrix; Section 5.1 plots display the first 10 points, while Figure 1 displays the random curve at `k=0,3,6,...,30`. `plot.py --compare --random-in random_medape_hero_all_known.json.gz --cheap-in greedy_medape_targets_tall_candidates_usercheap.json.gz` compares random, all-candidate greedy, and user-cheap greedy on the same denominator.
+The all-known-cell random baseline stores the same all-observed evaluation universe as the all-known-cell greedy curves. The model-split random baseline stores the same held-out-model evaluation universe as the model-split validation curves. Figure 1 panel B must use the model-split random file when plotted with model-split greedy curves.
 
 ## Resume / rerun
 
