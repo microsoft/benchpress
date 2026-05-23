@@ -2,8 +2,9 @@
 
 ## Paper mapping
 
-- Main text: `\Cref{sec:probe_selection}` robustness check.
-- Hero Figure panel B uses these held-out model-split curves.
+- Robustness artifacts for `\Cref{sec:probe_selection}`.
+- Current paper-facing Hero Figure panel B uses the full-matrix `all_known/`
+  curves; this directory is for held-out sensitivity checks and update notes.
 
 ## Purpose
 

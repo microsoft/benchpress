@@ -17,7 +17,9 @@ protocols use the same curated low-cost benchmark universe.
 
 - Main text: `\Cref{sec:probe_selection}`.
 - Appendix: `\Cref{app:probe_selection}`.
-- Hero Figure panel B reads both all-known and holdout outputs.
+- Current paper-facing Hero Figure panel B uses the `all_known/` curves. The
+  `holdout/` outputs are robustness artifacts for sensitivity checks and update
+  notes, not the active main recommendation.
 
 ## Protocol decision
 

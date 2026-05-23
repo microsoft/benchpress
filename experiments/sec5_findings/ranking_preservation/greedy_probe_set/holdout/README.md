@@ -2,7 +2,8 @@
 
 ## Paper mapping
 
-- Main text and appendix robustness check for ranking-aware probe sets.
+- Robustness artifacts for ranking-aware probe sets. Current paper-facing text
+  uses the full-matrix `all_known/` construction as the main recommendation.
 
 ## Purpose
 
@@ -53,7 +54,8 @@ and candidate count match.
 
 ## Last valid result
 
-Bonete CPU job `remote-cpu-job`, synced in commit `0e725b0`.
+Bonete CPU job `remote-cpu-job` generated the result files.
+They now live under this directory after the protocol split in commit `16b4b07`.
 
 - Any-benchmark k=5 held-out non-probe accuracy: 93.1%; k=10: 88.7%.
 - Low-cost k=5 held-out non-probe accuracy: 90.9%; k=10: 90.9%.
