@@ -23,7 +23,7 @@ python run_pairwise_ols.py
 
 - Current score matrix from `benchpress.all_methods`
 - Shared normalization and metric helpers from `benchpress.evaluation_harness`
-- Greedy probe outputs under `experiments/sec5_findings/optimal_probe/results/` for the optional MDS overlays
+- Greedy probe outputs under `experiments/sec5_findings/optimal_probe/all_known/results/` for the optional MDS overlays
 
 ## Outputs
 

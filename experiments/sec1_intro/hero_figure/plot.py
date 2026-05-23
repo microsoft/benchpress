@@ -35,37 +35,37 @@ FIGURES_DIR = HERE / "figures"
 SUMMARY_PATH = RESULTS_DIR / "hero_candidate_grid_summary.json"
 PHI_SUMMARY_PATH = RESULTS_DIR / "phi4_reasoning_plus_gpqa_keepk_summary.json"
 RANDOM_PATH = (
-    HERE / ".." / ".." / "sec5_findings" / "optimal_probe" / "results"
+    HERE / ".." / ".." / "sec5_findings" / "optimal_probe" / "all_known" / "results"
     / "random_medape_hero_all_known.json.gz"
 ).resolve()
 GREEDY_MEDAE_PATH = (
-    HERE / ".." / ".." / "sec5_findings" / "optimal_probe" / "results"
+    HERE / ".." / ".." / "sec5_findings" / "optimal_probe" / "all_known" / "results"
     / "greedy_medae_targets_tall_candidates_tall.json.gz"
 ).resolve()
 GREEDY_MEDAE_COST_AWARE_PATH = (
-    HERE / ".." / ".." / "sec5_findings" / "optimal_probe" / "results"
+    HERE / ".." / ".." / "sec5_findings" / "optimal_probe" / "all_known" / "results"
     / "greedy_medae_targets_tall_candidates_usercheap.json.gz"
 ).resolve()
 MODEL_SPLIT_MEDAE_PATH = (
-    HERE / ".." / ".." / "sec5_findings" / "optimal_probe" / "results"
+    HERE / ".." / ".." / "sec5_findings" / "optimal_probe" / "holdout" / "results"
     / "model_split_validation_medae_train70_all.json.gz"
 ).resolve()
 MODEL_SPLIT_MEDAE_COST_AWARE_PATH = (
-    HERE / ".." / ".." / "sec5_findings" / "optimal_probe" / "results"
+    HERE / ".." / ".." / "sec5_findings" / "optimal_probe" / "holdout" / "results"
     / "model_split_validation_medae_train70_usercheap.json.gz"
 ).resolve()
 MODEL_SPLIT_RANDOM_PATH = (
-    HERE / ".." / ".." / "sec5_findings" / "optimal_probe" / "results"
+    HERE / ".." / ".." / "sec5_findings" / "optimal_probe" / "holdout" / "results"
     / "model_split_random_medae_train70.json.gz"
 ).resolve()
 RANK_GREEDY_PATH = (
     HERE / ".." / ".." / "sec5_findings" / "ranking_preservation"
-    / "greedy_probe_set" / "results"
+    / "greedy_probe_set" / "all_known" / "results"
     / "greedy_pairwise_margin5_top10_targets_all_candidates_all.json.gz"
 ).resolve()
 RANK_GREEDY_COST_AWARE_PATH = (
     HERE / ".." / ".." / "sec5_findings" / "ranking_preservation"
-    / "greedy_probe_set" / "results"
+    / "greedy_probe_set" / "all_known" / "results"
     / "greedy_pairwise_margin5_top10_targets_usercheap_candidates_usercheap.json.gz"
 ).resolve()
 

@@ -1,154 +1,31 @@
 # Optimal probe selection
 
+## Directory split
+
+Probe-set experiments are separated by protocol so code, results, and figures do
+not share a directory across incompatible evaluation settings.
+
+| Protocol | Directory | Owns |
+|---|---|---|
+| Current-matrix / all-known-cell construction | `all_known/` | `run.py`, `run_random.py`, `plot.py`, `results/`, `figures/` |
+| Model-split held-out validation | `holdout/` | `run_model_split_validation.py`, `run_model_split_random.py`, Bonete launcher, `results/` |
+
+Shared candidate-set definitions stay in `candidate_allowlists/` because both
+protocols use the same curated low-cost benchmark universe.
+
 ## Paper mapping
 
-- Section: `\Cref{sec:probe_selection}` in the main text.
-- Main figure: `bp_probe_evaluation_cost_unaware.pdf` and `bp_probe_evaluation_medae_cost_unaware.pdf` as side-by-side MedAPE / MedAE panels.
+- Main text: `\Cref{sec:probe_selection}`.
+- Appendix: `\Cref{app:probe_selection}`.
+- Hero Figure panel B reads both all-known and holdout outputs.
 
-## Purpose
+## Protocol decision
 
-This experiment asks which benchmark probes a practitioner should run on a new model so that BenchPress can recover the model's full known score profile. The active setting evaluates the fixed universe of all observed model--benchmark cells at every probe-set size. A revealed probe cell is already known and contributes zero error (`pred=true`); unrevealed known cells are predicted by BenchPress.
+Use `all_known/` when the question is the full-matrix construction result: all
+historical rows are available, a target model reveals only the chosen probe
+columns, and every observed target-model cell remains in the denominator with
+probe cells counted as exact.
 
-Two greedy probe selectors use the same all-known-cell evaluator and objective. The cost-unaware selector can choose any benchmark as a probe. The constrained selector uses an explicit user-provided cheap benchmark set as its complete candidate universe. At each step, both selectors add the candidate that gives the lowest pooled MedAPE over all observed cells.
-
-The all-known-cell protocol is an in-matrix probe-construction result: it selects and evaluates the probe set on the current observed matrix. The model-split validation script (`run_model_split_validation.py`) is the generalization check. It selects probes on a training split of model rows and validates each selected prefix on held-out model rows. Validation uses an isolated-new-model protocol: BenchPress sees the training-model score matrix plus the target held-out model's probe scores, but not other held-out model rows. The primary validation metric excludes already measured probe cells; a compatibility metric also includes probe cells as zero-error observations.
-
-Main-text results use pooled MedAPE as the greedy objective (`METRIC=medape`). Appendix sensitivity runs may switch only the objective to pooled MedAE (`METRIC=medae`); the target cells, predictor, masking protocol, raw-prediction logging, and parallel execution rules stay identical. The random baseline follows the same all-known-cell protocol: for each seed, it draws one global random benchmark ordering, applies the first `k` benchmarks in that ordering to every model, stores observed probe cells with zero error, and predicts unrevealed known cells.
-
-If a held-out BenchPress reference is shown alongside probe-set curves, label it as a reference line rather than as another probe-set method. It does not share the all-known-cell zero-error contribution from revealed probes, so it should anchor the best-method prediction scale without replacing the fixed-universe comparison between random and greedy probe sets.
-
-## Inputs
-
-- Score matrix and observed mask from `benchpress.evaluation_harness`.
-- Explicit candidate allowlists under `candidate_allowlists/` for user-provided candidate-set runs.
-- Predictor: `predict_benchpress_scores` from `benchpress.all_methods` (Logit Bias ALS default).
-
-## Run commands
-
-This is a slow greedy sweep. Recommended on a remote CPU machine with many cores.
-For CPU-only independent configurations, submit one job per configuration and run them in parallel whenever resources allow. Do not serialize independent objectives in one job: the pooled-MedAPE and pooled-MedAE greedy runs should be separate processes. Within each greedy step, all remaining candidate benchmarks are independent; set `WORKERS` close to the number of candidates, capped by the CPU available on one machine. The only serial dependency is between greedy steps, because step `k+1` depends on the probe selected at step `k`.
-
-```bash
-cd experiments/sec5_findings/optimal_probe
-
-# Cost-unaware upper bound: all benchmarks are eligible probes.
-OUT=greedy_medape_targets_tall_candidates_tall.json.gz MAX_STEPS=10 WORKERS=48 ./run.sh
-
-# User-provided cheap probe set: the allowlist is the full candidate universe.
-CANDIDATE_ALLOWLIST=candidate_allowlists/user_cheap_20260505.json \
-  OUT=greedy_medape_targets_tall_candidates_usercheap.json.gz \
-  MAX_STEPS=10 WORKERS=48 ./run.sh
-
-# Appendix sensitivity: same two policies, but optimize pooled MedAE.
-METRIC=medae OUT=greedy_medae_targets_tall_candidates_tall.json.gz MAX_STEPS=10 WORKERS=48 ./run.sh
-CANDIDATE_ALLOWLIST=candidate_allowlists/user_cheap_20260505.json \
-  METRIC=medae OUT=greedy_medae_targets_tall_candidates_usercheap.json.gz \
-  MAX_STEPS=10 WORKERS=48 ./run.sh
-
-# Random probe-prefix baseline, reusable by Figure 1 and Figure 8.
-python run_random.py --k-max 30 --n-seeds 10 --workers 24
-
-# Model-split validation: select probes on 70% of model rows, validate on 30%.
-METRIC=medae OUT=model_split_validation_medae_train70_all.json.gz \
-  MAX_STEPS=10 WORKERS=48 ./run_model_split_validation.sh
-CANDIDATE_ALLOWLIST=candidate_allowlists/user_cheap_20260505.json \
-  METRIC=medae OUT=model_split_validation_medae_train70_usercheap.json.gz \
-  MAX_STEPS=10 WORKERS=48 ./run_model_split_validation.sh
-python run_model_split_random.py --k-max 10 --n-seeds 10 --workers 48
-
-python plot.py --compare \
-  --random-in random_medape_hero_all_known.json.gz \
-  --cheap-in greedy_medape_targets_tall_candidates_usercheap.json.gz \
-  --out bp_probe_evaluation_cost_unaware
-python plot.py --compare \
-  --all-in greedy_medae_targets_tall_candidates_tall.json.gz \
-  --cheap-in greedy_medae_targets_tall_candidates_usercheap.json.gz \
-  --metric medae \
-  --random-in random_medape_hero_all_known.json.gz \
-  --out bp_probe_evaluation_medae_cost_unaware
-```
-
-Smoke test (small problem, finishes in seconds):
-
-```bash
-CANDIDATE_ALLOWLIST=candidate_allowlists/user_cheap_20260505.json \
-  MAX_STEPS=1 CANDIDATE_LIMIT=2 WORKERS=2 OUT=smoke_usercheap.json.gz ./run.sh
-```
-
-## Outputs
-
-Results are written under `results/`:
-
-- `greedy_medape_targets_tall_candidates_tall.json.gz`
-- `greedy_medae_targets_tall_candidates_tall.json.gz` (appendix sensitivity)
-- `greedy_medape_targets_tall_candidates_usercheap.json.gz` (user-provided cheap candidate allowlist)
-- `greedy_medae_targets_tall_candidates_usercheap.json.gz` (user-provided cheap candidate allowlist; MedAE objective)
-- `random_medape_hero_all_known.json.gz` (random probe-prefix raw predictions)
-- `model_split_validation_medae_train70_all.json.gz` (model-split validation; all candidates)
-- `model_split_validation_medae_train70_usercheap.json.gz` (model-split validation; user-provided cheap candidate allowlist)
-- `model_split_random_medae_train70.json.gz` (model-split validation; random probe-prefix baseline)
-
-The greedy result files contain:
-
-- `config`: matrix size, candidate source, target-cell count, seed, workers.
-- `trajectory`: one entry per greedy step.
-- `trajectory[*].candidate_results`: raw candidate evaluations for that step.
-- `trajectory[*].candidate_results[*].predictions`: raw per-cell prediction lists (`i`, `j`, `true`, `pred`).
-- `trajectory[*].medape` and `trajectory[*].medae`: both are saved regardless of which objective was optimized.
-- When `CANDIDATE_ALLOWLIST` is set, `config.candidate_allowlist_path`
-  and `config.candidate_allowlist_ids` record the exact candidate universe.
-
-The random probe-prefix result file contains:
-
-- `config`: protocol, matrix size, benchmark IDs, `k_max`, `n_seeds`, and `base_seed`.
-- `summary_by_k_seed`: MedAPE / MedAE summaries for each `(k, seed)` shard.
-- `raw_predictions`: all observed cells with `seed`, `k`, model index, benchmark index, actual score, and prediction. Revealed cells have `pred=actual`; the revealed cells are exactly the observed cells that fall in the first `k` columns of that seed's global random benchmark ordering.
-
-The model-split validation files contain:
-
-- `config`: protocol, seed, train fraction, candidate universe, model split, and validation masking protocol.
-- `split`: train and validation model IDs.
-- `trajectory`: one entry per greedy step.
-- `trajectory[*].candidate_results`: training-split raw candidate evaluations for that step.
-- `trajectory[*].validation_non_probe`: held-out-model metrics and raw predictions excluding already measured probe cells. This is the primary generalization metric.
-- `trajectory[*].validation_with_probe_zero`: held-out-model metrics and raw predictions with observed probe cells included as `pred=true`, for denominator compatibility with the all-known-cell plots.
-
-The model-split random file contains:
-
-- `config`: protocol, seed, train fraction, model split, and validation masking protocol.
-- `summary_by_k_seed`: held-out non-probe MedAPE / MedAE summaries for each `(k, seed)` random probe prefix.
-- `raw_predictions`: held-out non-probe cells with `seed`, `k`, model index, benchmark index, actual score, and prediction.
-- `probe_sets`: benchmark IDs selected for each `(k, seed)` random prefix.
-
-The raw predictions are the expensive output. MedAPE, MedAE, and per-benchmark summaries can be recomputed from them without rerunning BenchPress.
-
-The all-known-cell random baseline stores the same all-observed evaluation universe as the all-known-cell greedy curves. The model-split random baseline stores the same held-out-model evaluation universe as the model-split validation curves. Figure 1 panel B must use the model-split random file when plotted with model-split greedy curves.
-
-## Resume / rerun
-
-The greedy-search script resumes from an existing output file only when `metric`,
-`candidate_source`, `candidate_allowlist_ids`, `candidate_limit`,
-`n_target_cells`, `n_candidates`, and `eval_protocol` match the requested run. Within an
-unfinished greedy step, candidate evaluations are cached under
-`results/.candidate_cache/` as soon as each candidate completes, including the raw
-per-cell predictions. If a remote pod is preempted mid-step, re-running the same
-`OUT=...` reuses the completed candidate shards and evaluates only the missing
-candidates. The cache is keyed by output name, metric, candidate source, step,
-candidate benchmark, and the probe set before that candidate, so a
-changed greedy prefix refuses to reuse stale shards instead of silently mixing
-objectives.
-
-The random baseline uses one shard file per `(k, seed)` and resumes only when the
-existing shard declares the nested probe-prefix protocol and matches the requested
-`k`, `seed`, `model_limit`, matrix shape, and seed configuration. Merge is
-fail-fast: the shard directory must contain exactly the requested grid and no
-extra smoke-test or stale-protocol shards.
-
-The model-split validation script resumes from an existing output file only when
-the metric, candidate universe, candidate limit, train fraction, seed, model
-limit, selected train model IDs, selected validation model IDs, and candidate
-count match. Within an unfinished greedy step, training candidate evaluations are
-cached under `results/.candidate_cache/`, keyed by output name, metric, candidate
-universe, split digest, step, candidate benchmark, and the probe set before that
-candidate. Validation is recomputed once per completed greedy step and stored in
-the main result file.
+Use `holdout/` when the question is model-level validation: split model rows
+70/30, select probes on training rows, and validate fixed prefixes on held-out
+model rows under the isolated target-row protocol.

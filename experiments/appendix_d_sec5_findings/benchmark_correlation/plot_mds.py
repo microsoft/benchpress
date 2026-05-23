@@ -35,7 +35,7 @@ GREEDY_RESULTS = {
         'MedAPE greedy probes',
         os.path.join(
             REPO_ROOT,
-            'experiments/sec5_findings/optimal_probe/results/'
+            'experiments/sec5_findings/optimal_probe/all_known/results/'
             'greedy_medape_targets_tall_candidates_tall.json.gz',
         ),
         'bp_benchmark_correlation_mds_medape_greedy',
@@ -44,7 +44,7 @@ GREEDY_RESULTS = {
         'MedAE greedy probes',
         os.path.join(
             REPO_ROOT,
-            'experiments/sec5_findings/optimal_probe/results/'
+            'experiments/sec5_findings/optimal_probe/all_known/results/'
             'greedy_medae_targets_tall_candidates_tall.json.gz',
         ),
         'bp_benchmark_correlation_mds_medae_greedy',

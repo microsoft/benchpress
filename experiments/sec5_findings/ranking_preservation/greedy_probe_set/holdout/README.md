@@ -1,0 +1,59 @@
+# Held-out ranking-preservation probe validation
+
+## Paper mapping
+
+- Main text and appendix robustness check for ranking-aware probe sets.
+
+## Purpose
+
+Validate ranking-aware probe selection on held-out model rows. The split is the
+same 70/30 model split used by scorecard-recovery probe validation. Probe
+prefixes are selected on training rows by margin-5 pairwise ranking accuracy and
+validated on held-out rows under the isolated target-row protocol.
+
+## How to run
+
+```bash
+cd experiments/sec5_findings/ranking_preservation/greedy_probe_set/holdout
+WORKERS=48 ./run_model_split_validation.sh
+
+CANDIDATE_ALLOWLIST=../../../optimal_probe/candidate_allowlists/user_cheap_20260505.json \
+  OUT=model_split_validation_pairwise_margin5_train70_usercheap.json.gz \
+  WORKERS=48 ./run_model_split_validation.sh
+```
+
+Smoke test:
+
+```bash
+MAX_STEPS=1 CANDIDATE_LIMIT=2 MODEL_LIMIT=8 WORKERS=2 \
+  OUT=smoke_model_split_pairwise_margin5.json.gz \
+  ./run_model_split_validation.sh
+```
+
+## Inputs
+
+- `evaluate_probe_set_on_heldout_models` and `compute_ranking_accuracy` from `benchpress.evaluation_harness`.
+- Shared low-cost allowlist from `../../../optimal_probe/candidate_allowlists/`.
+
+## Outputs
+
+Results are under `results/`.
+
+- `results/model_split_validation_pairwise_margin5_train70_all.json.gz`
+- `results/model_split_validation_pairwise_margin5_train70_usercheap.json.gz`
+
+Each result contains train accuracy, held-out non-probe accuracy, and
+held-out with-probe-zero accuracy for every selected prefix.
+
+## Resume / rerun
+
+Reruns resume from completed trajectories and candidate caches only when the
+model split, objective, margin, protocol, candidate allowlist, candidate limit,
+and candidate count match.
+
+## Last valid result
+
+Bonete CPU job `remote-cpu-job`, synced in commit `0e725b0`.
+
+- Any-benchmark k=5 held-out non-probe accuracy: 93.1%; k=10: 88.7%.
+- Low-cost k=5 held-out non-probe accuracy: 90.9%; k=10: 90.9%.

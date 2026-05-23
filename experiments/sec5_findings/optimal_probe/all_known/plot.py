@@ -16,7 +16,7 @@ import sys
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 RESULTS_DIR = os.path.join(SCRIPT_DIR, 'results')
-REPO_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, '..', '..', '..'))
+REPO_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, '..', '..', '..', '..'))
 from benchpress.plot_helpers.visual_identity import (
     apply_single, save_fig, integer_ticks,
     VANILLA_BLUE, PALETTE, GRAY,

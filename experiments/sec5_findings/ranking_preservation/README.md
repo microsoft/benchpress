@@ -34,7 +34,7 @@ bash experiments/sec5_findings/ranking_preservation/run.sh
 ## Outputs
 
 - `results.json`: raw per-benchmark/per-fold metric rows plus benchmark-median summaries.
-- `greedy_probe_set/results/greedy_pairwise_margin5_top10_targets_all_candidates_all.json.gz`: top-10 cost-unaware greedy probe set selected for margin-5 pairwise ranking accuracy.
+- `greedy_probe_set/all_known/results/greedy_pairwise_margin5_top10_targets_all_candidates_all.json.gz`: top-10 cost-unaware greedy probe set selected for margin-5 pairwise ranking accuracy.
 
 The file contains:
 
