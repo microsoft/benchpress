@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 """Temporal deployment stress test for newly released model families.
 
-For each landmark family, train on only models released before the family
-cutoff. Reveal k observed benchmark scores per target model, predict the
-remaining observed target scores, and write every observed target cell.
+For each hard-rule-selected target model, train on only models released before
+the target cutoff. Reveal k observed benchmark scores per target model, predict
+the remaining observed target scores, and write every observed target cell.
 """
 
 from __future__ import annotations
@@ -39,66 +39,17 @@ from benchpress.io_utils import load_json, safe_token, write_json, write_json_at
 from benchpress.methods.predictors import predict_benchpress_scores
 from benchpress.shard_utils import short_text_hash
 
-PROTOCOL_VERSION = "temporal_deployment_all_observed_v3"
+PROTOCOL_VERSION = "temporal_deployment_hard_rule_v4"
 BASE_SEED = 42
-K_VALUES = [1, 3, 5, 8, 10, 15]
+K_VALUES = [1, 5, 10]
 N_SEEDS = 10
+SELECTION_START_DATE = "2025-01-20"
+SELECTION_END_DATE = "2025-11-13"
+MIN_OBSERVED_SCORES = 20
 
 RESULTS_DIR = os.path.join(HERE, "results")
 SHARD_DIR = os.path.join(RESULTS_DIR, "shards")
 RESULTS_PATH = os.path.join(HERE, "results.json")
-
-
-LANDMARKS = [
-    {
-        "family_key": "deepseek_r1",
-        "family_name": "DeepSeek R1",
-        "cutoff_date": "2025-01-20",
-        "match": {"startswith": ["deepseek-r1"], "exclude_contains": ["0528"]},
-    },
-    {
-        "family_key": "gemini_2_5_pro",
-        "family_name": "Gemini 2.5 Pro",
-        "cutoff_date": "2025-03-25",
-        "match": {"ids": ["gemini-2.5-pro"]},
-    },
-    {
-        "family_key": "gpt_4_1_family",
-        "family_name": "GPT-4.1 family",
-        "cutoff_date": "2025-04-14",
-        "match": {"startswith": ["gpt-4.1"]},
-    },
-    {
-        "family_key": "qwen_3",
-        "family_name": "Qwen 3",
-        "cutoff_date": "2025-05-15",
-        "match": {"startswith": ["qwen3-"]},
-    },
-    {
-        "family_key": "claude_sonnet_opus_4",
-        "family_name": "Claude Sonnet/Opus 4",
-        "cutoff_date": "2025-05-22",
-        "match": {"ids": ["claude-sonnet-4", "claude-opus-4"]},
-    },
-    {
-        "family_key": "gpt_5",
-        "family_name": "GPT-5",
-        "cutoff_date": "2025-08-01",
-        "match": {"ids": ["gpt-5"]},
-    },
-    {
-        "family_key": "claude_sonnet_4_5",
-        "family_name": "Claude Sonnet 4.5",
-        "cutoff_date": "2025-09-29",
-        "match": {"ids": ["claude-sonnet-4.5"]},
-    },
-    {
-        "family_key": "gpt_5_1",
-        "family_name": "GPT-5.1",
-        "cutoff_date": "2025-11-13",
-        "match": {"ids": ["gpt-5.1"]},
-    },
-]
 
 
 MODEL_RELEASE_DATES = {
@@ -106,6 +57,41 @@ MODEL_RELEASE_DATES = {
     for m in MODELS
     if len(m) > 3 and m[3] and m[0] in MODEL_IDX
 }
+
+
+def observed_count(model_id: str) -> int:
+    return int(OBSERVED[MODEL_IDX[model_id]].sum())
+
+
+def build_hard_rule_landmarks() -> list[dict]:
+    """Select target models from metadata only, before any prediction results."""
+    selected = []
+    for mid in MODEL_IDS:
+        release_date = MODEL_RELEASE_DATES.get(mid)
+        if not release_date:
+            continue
+        n_observed = observed_count(mid)
+        if not (
+            SELECTION_START_DATE <= release_date <= SELECTION_END_DATE
+            and n_observed > MIN_OBSERVED_SCORES
+        ):
+            continue
+        selected.append({
+            "family_key": safe_token(f"model_{mid}"),
+            "family_name": MODEL_NAMES[mid],
+            "cutoff_date": release_date,
+            "target_model_ids": [mid],
+            "selection_rule": {
+                "release_date_min": SELECTION_START_DATE,
+                "release_date_max": SELECTION_END_DATE,
+                "observed_score_count_gt": MIN_OBSERVED_SCORES,
+            },
+            "target_observed_counts": {mid: n_observed},
+        })
+    return sorted(selected, key=lambda row: (row["cutoff_date"], row["family_name"]))
+
+
+LANDMARKS = build_hard_rule_landmarks()
 
 
 def model_matches(model_id: str, rule: dict) -> bool:
@@ -127,6 +113,8 @@ def landmark_by_key(family_key: str) -> dict:
 
 
 def target_model_ids(landmark: dict) -> list[str]:
+    if "target_model_ids" in landmark:
+        return list(landmark["target_model_ids"])
     return [
         mid
         for mid in MODEL_IDS
@@ -185,10 +173,15 @@ def shard_config(landmark: dict, k: int, seed: int) -> dict:
         "base_seed": BASE_SEED,
         "predictor": "predict_benchpress_scores",
         "train_rule": "models with release_date strictly before cutoff_date",
+        "selection_rule": landmark.get("selection_rule"),
         "probe_rule": "for each target model, randomly reveal k of that model's observed benchmark scores",
         "metric_rule": "pool observed target cells with finite predictions; revealed cells are exact zero-error predictions; non-predictable cells are recorded separately",
         "matrix_shape": [int(N_MODELS), int(N_BENCH)],
         "target_model_ids": target_ids,
+        "target_observed_counts": {
+            mid: int(observed_count(mid))
+            for mid in target_ids
+        },
         "train_model_ids": train_ids,
     }
 
@@ -421,6 +414,7 @@ def merge_results(family_keys: list[str], k_values: list[int], n_seeds: int):
             "family_name": cfg["family_name"],
             "cutoff_date": cfg["cutoff_date"],
             "target_model_ids": cfg["target_model_ids"],
+            "target_observed_counts": cfg["target_observed_counts"],
             "train_model_ids": cfg["train_model_ids"],
             "n_target_models": len(cfg["target_model_ids"]),
             "n_train_models": len(cfg["train_model_ids"]),
@@ -484,6 +478,12 @@ def merge_results(family_keys: list[str], k_values: list[int], n_seeds: int):
             "k_values": k_values,
             "n_seeds": int(n_seeds),
             "family_keys": family_keys,
+            "selection_rule": {
+                "release_date_min": SELECTION_START_DATE,
+                "release_date_max": SELECTION_END_DATE,
+                "observed_score_count_gt": MIN_OBSERVED_SCORES,
+                "selection_basis": "metadata and observed-score count only; prediction errors are not used for selection",
+            },
             "matrix_shape": [int(N_MODELS), int(N_BENCH)],
             "predictor": "predict_benchpress_scores",
             "evaluation_universe": "all observed cells for active target models are recorded; metrics use revealed cells plus hidden cells with finite BenchPress predictions",
