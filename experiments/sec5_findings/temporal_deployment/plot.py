@@ -61,7 +61,7 @@ def _metric_values(payload: dict, metric: str) -> list[list[float]]:
     return values
 
 
-def _plot_metric(ax, values: list[list[float]], ylabel: str, title: str):
+def _plot_metric(ax, values: list[list[float]], ylabel: str):
     positions = np.arange(len(DISPLAY_K))
     box = ax.boxplot(
         values,
@@ -107,7 +107,6 @@ def _plot_metric(ax, values: list[list[float]], ylabel: str, title: str):
     ax.set_xticks(positions)
     ax.set_xticklabels([str(k) for k in DISPLAY_K])
     ax.set_ylabel(ylabel, labelpad=2)
-    ax.set_title(title, pad=3, fontweight="bold")
     ax.grid(axis="y", color=GRAY, alpha=0.25, linewidth=0.8)
 
 
@@ -128,8 +127,8 @@ def main():
 
     _apply_style()
     fig, axes = plt.subplots(1, 2, figsize=(3.9, 2.05), sharex=True)
-    _plot_metric(axes[0], _metric_values(payload, "medae"), "Error (pts)", "MedAE")
-    _plot_metric(axes[1], _metric_values(payload, "medape"), "Error (%)", "MedAPE")
+    _plot_metric(axes[0], _metric_values(payload, "medae"), "MedAE")
+    _plot_metric(axes[1], _metric_values(payload, "medape"), "MedAPE (%)")
     for ax in axes:
         ax.set_xlabel(r"Seed scores $k$", labelpad=1)
     fig.tight_layout(w_pad=1.4, pad=0.25)
