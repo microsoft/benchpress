@@ -4,7 +4,7 @@
 
 - Appendix: `app:reliability_analysis`, paragraph `app:per_benchmark_predictability`.
 - Figure: `fig:benchmark_predictability` (`bp_benchmark_predictability.pdf`).
-- Source comment: `overleaf/arxiv/appendix.tex`.
+- Overleaf location: `overleaf/arxiv/appendix.tex`.
 
 ## Purpose
 

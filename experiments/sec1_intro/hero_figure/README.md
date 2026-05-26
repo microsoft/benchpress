@@ -46,7 +46,7 @@ This renders and verifies the canonical current arXiv assets:
 - `sec5_findings/optimal_probe/all_known/results/greedy_medae_targets_tall_candidates_usercheap.json.gz`
 - `sec5_findings/ranking_preservation/greedy_probe_set/all_known/results/greedy_pairwise_margin5_top10_targets_all_candidates_all.json.gz`
 - `sec5_findings/ranking_preservation/greedy_probe_set/all_known/results/greedy_pairwise_margin5_top10_targets_usercheap_candidates_usercheap.json.gz`
-- `sec3_low_rank/data_collection/observation_pattern/figures/bp_matrix_clean_white.pdf` for the NeurIPS matrix panel
+- `sec3_low_rank/data_collection/observation_pattern/figures/bp_matrix_clean_white.pdf` for the compact venue-specific matrix panel
 
 ## Outputs
 `run.py` writes resumable keep-k raw predictions:

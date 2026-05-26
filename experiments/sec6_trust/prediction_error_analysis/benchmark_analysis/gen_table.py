@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate the §4.3 benchmark-side error-analysis table from per-H results.
+"""Generate the §6.1 benchmark-side error-analysis table from per-H results.
 
 Top block (H1-H3): correlational hypotheses — univariate Spearman ρ vs targets.
 Bottom block (H4-H7): ablation hypotheses — paired Wilcoxon Δ vs baseline.

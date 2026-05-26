@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Appendix version of the §4.3 benchmark-side composite figure.
+"""Appendix version of the §6.1 benchmark-side composite figure.
 
 Generates two figures with the same 1×5 layout as plot_section51.py
 (H3, H4, H5, H6, H7), one per error metric. The file naming

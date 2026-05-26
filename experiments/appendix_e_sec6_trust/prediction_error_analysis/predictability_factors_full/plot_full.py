@@ -25,8 +25,8 @@ from benchpress.plot_helpers.visual_identity import (
 from benchpress.io_utils import load_json
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-SRC = os.path.join(HERE, "..", "..", "..", "sec4_building_benchpress",
-                   "error_analysis", "benchmark_analysis")
+SRC = os.path.join(HERE, "..", "..", "..", "sec6_trust",
+                   "prediction_error_analysis", "benchmark_analysis")
 
 
 def _load_corr(subdir):

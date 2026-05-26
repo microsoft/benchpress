@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Appendix expansion of \\Cref{fig:error_hypotheses_52}.
 
-Main-text §4.3 figure shows only four hypotheses (H1, H5, H8, H9), single
+Main-text §6.1 figure shows selected model-side hypotheses, single
 metric per panel. This appendix variant shows the **full grid**:
 all 9 hypotheses (H1..H9) x both score-error metrics (MedAPE, MedAE).
 To keep labels readable in the paper, the figure is split into two horizontal
@@ -24,8 +24,8 @@ from benchpress.plot_helpers.visual_identity import (
 from benchpress.io_utils import load_json
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-SRC = os.path.join(HERE, "..", "..", "..", "sec4_building_benchpress",
-                   "error_analysis", "model_analysis")
+SRC = os.path.join(HERE, "..", "..", "..", "sec6_trust",
+                   "prediction_error_analysis", "model_analysis")
 
 
 def _load(subdir):

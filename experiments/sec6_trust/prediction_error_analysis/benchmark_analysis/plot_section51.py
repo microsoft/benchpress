@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Composite §4.3 benchmark-side error-analysis figure.
+"""Composite §6.1 benchmark-side error-analysis figure.
 
 Mirrors the §5.2 style (plot_section52.py): big fonts, conclusion-oriented
 titles, scatter + binned trend for correlational panels, grouped-bar (metric

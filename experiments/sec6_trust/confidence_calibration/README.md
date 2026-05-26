@@ -1,4 +1,4 @@
-# Section 4.4 Confidence Calibration
+# Section 6.2 Confidence Calibration
 
 ## Paper mapping
 
@@ -84,7 +84,7 @@ For debugging only, `run.py` can still be called directly. Use `--num-fold-shard
 | `bias_als_hp_disagreement_uncertainty` | `(n_test,)` float | Robust spread across same-method HP variants |
 | `strong_method_disagreement_uncertainty` | `(n_test,)` float | Robust spread across strong complete predictors |
 | `disagreement_uncertainty` | `(n_test,)` float | Cross-fit MLP risk score trained on `log1p(abs(error))` from disagreement features only |
-| `structural_support_uncertainty` | `(n_test,)` float | Cross-fit MLP risk score trained on `log1p(abs(error))` from Section 4.3-style structural features only |
+| `structural_support_uncertainty` | `(n_test,)` float | Cross-fit MLP risk score trained on `log1p(abs(error))` from Section 6.1-style structural features only |
 | `combined_risk_model_uncertainty` | `(n_test,)` float | Cross-fit MLP risk score trained on `log1p(abs(error))` from structural plus disagreement features |
 | `<method>_uncertainty` | `(n_test,)` float | Optional additional generator; larger means less confident |
 | `<method>_lower`, `<method>_upper` | `(n_test,)` float | Optional nominal interval endpoints |
@@ -107,7 +107,7 @@ Only rerun if the score matrix, canonical folds, Section 4.2 method-comparison p
 
 ## Existing reusable artifacts
 
-These checked-in artifacts are the canonical §4.4 result set and should be reused unless one of the rerun conditions above is met:
+These checked-in artifacts are the canonical §6.2 result set and should be reused unless one of the rerun conditions above is met:
 
 - `confidence_scores.npz`: source-of-truth per-cell confidence cache; last touched in commit `4ea402b`.
 - `results.json`: aggregate metrics used by the paper; last touched in commit `6fb7ce6`.
@@ -123,4 +123,4 @@ The canonical result uses the current 84 x 133 matrix, the cached Section 4.2 fo
 
 ## Reuse boundary for `predict.py`
 
-The §4.4 artifacts are evaluation artifacts: they contain cross-fit held-out uncertainty scores and aggregate paper metrics. They should be reused for paper figures, tables, text, and confidence-method comparisons. A deploy-time `predict.py` calibrator is a separate artifact because it must store a fitted scaler/model plus conformal scale for future missing cells; do not train or regenerate that deploy artifact until the desired deployment protocol is explicitly specified.
+The §6.2 artifacts are evaluation artifacts: they contain cross-fit held-out uncertainty scores and aggregate paper metrics. They should be reused for paper figures, tables, text, and confidence-method comparisons. A deploy-time `predict.py` calibrator is a separate artifact because it must store a fitted scaler/model plus conformal scale for future missing cells; do not train or regenerate that deploy artifact until the desired deployment protocol is explicitly specified.

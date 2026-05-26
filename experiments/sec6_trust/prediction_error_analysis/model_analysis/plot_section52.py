@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Composite §4.3 model-side error-analysis figure.
+"""Composite §6.1 model-side error-analysis figure.
 
 Main-text panel selection emphasizes the strongest and most interpretable
 current signals: H2, H3, H5, H8, and H9.

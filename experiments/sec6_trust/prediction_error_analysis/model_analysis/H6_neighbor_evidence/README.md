@@ -28,7 +28,7 @@ For each eligible `(target_model, seed)` unit:
 - `shards/model_<model_id>_seed_<seed>.json`: resumable per-unit cache.
 
 ## Current result
-`results.json` is the full rerun used by Section 4.3:
+`results.json` is the full rerun used by Section 6.1:
 
 | Drop rate | MedAPE median delta | MedAPE p | MedAE median delta | MedAE p |
 |-----------|---------------------|----------|--------------------|---------|

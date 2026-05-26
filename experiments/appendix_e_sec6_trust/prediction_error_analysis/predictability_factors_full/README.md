@@ -4,11 +4,11 @@
 
 - Appendix: `app:bench_analysis`, paragraph `app:predictability_factors_full`.
 - Figure: `fig:predictability_factors_full` (`bp_predictability_factors_full.pdf`).
-- Source comment: `overleaf/arxiv/appendix.tex`.
+- Overleaf location: `overleaf/arxiv/appendix.tex`.
 
 ## Purpose
 
-This appendix figure expands the main-text benchmark-side prediction-error figure into the full hypothesis grid. It shows all seven active benchmark-side hypotheses against both score-error metrics, using the same canonical Section 4.3 outputs as the main table and figure. The rendered layout splits H1--H3 and H4--H7 into left/right blocks so labels remain readable in the paper PDF.
+This appendix figure expands the main-text benchmark-side prediction-error figure into the full hypothesis grid. It shows all seven active benchmark-side hypotheses against both score-error metrics, using the same canonical Section 6.1 outputs as the main table and figure. The rendered layout splits H1--H3 and H4--H7 into left/right blocks so labels remain readable in the paper PDF.
 
 ## Inputs
 
@@ -27,4 +27,4 @@ cd ~/Documents/submission/benchpress/github/experiments/appendix_e_sec6_trust/pr
 python plot_full.py
 ```
 
-This script only redraws the appendix figure from existing Section 4.3 result files.
+This script only redraws the appendix figure from existing Section 6.1 result files.

@@ -1,4 +1,4 @@
-# §4.3 Model-Side Prediction Error Analysis
+# §6.1 Model-Side Prediction Error Analysis
 
 ## Paper mapping
 

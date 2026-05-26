@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate the §4.3 model-side error-analysis table from per-H results.
+"""Generate the §6.1 model-side error-analysis table from per-H results.
 
 H1–H4: univariate Spearman ρ (correlational)
 H5–H8: paired Wilcoxon Δ and p-value (ablation)

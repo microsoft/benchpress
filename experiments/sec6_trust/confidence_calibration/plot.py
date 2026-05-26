@@ -45,7 +45,7 @@ def _load_methods():
     ensure_artifacts(
         [RESULTS_PATH, SCORES_PATH],
         ["{python}", os.path.join(SCRIPT_DIR, "run.py"), "--ensure"],
-        description="Section 4.4 confidence-calibration artifacts",
+        description="Section 6.2 confidence-calibration artifacts",
     )
     results = load_json(RESULTS_PATH)
 
@@ -200,22 +200,22 @@ def main():
     save_fig("bp_confidence_calibration")
     print(os.path.join(FIG_DIR, "bp_confidence_calibration.pdf"))
 
-    # NeurIPS still uses single-panel risk-coverage in its appendix.
+    # Compact appendix variant: single-panel risk-coverage.
     fig, ax = plt.subplots(1, 1, figsize=(4.6, 3.1))
     _plot_risk_coverage(ax, methods, colors,
                         xlabel="Most confident predictions kept (%)",
                         metric="medae")
     fig.tight_layout()
-    save_fig("bp_confidence_risk_coverage_neurips")
-    print(os.path.join(FIG_DIR, "bp_confidence_risk_coverage_neurips.pdf"))
+    save_fig("bp_confidence_risk_coverage_appendix")
+    print(os.path.join(FIG_DIR, "bp_confidence_risk_coverage_appendix.pdf"))
 
-    # NeurIPS main body uses a compact bar of conformal interval widths.
+    # Compact interval-width bar.
     fig, ax = plt.subplots(1, 1, figsize=(4.2, 3.0))
     _plot_interval_width(ax, methods, colors, value_fontsize=10,
                          metric="absolute")
     fig.tight_layout()
-    save_fig("bp_confidence_interval_width_neurips")
-    print(os.path.join(FIG_DIR, "bp_confidence_interval_width_neurips.pdf"))
+    save_fig("bp_confidence_interval_width_appendix")
+    print(os.path.join(FIG_DIR, "bp_confidence_interval_width_appendix.pdf"))
 
 
 if __name__ == "__main__":

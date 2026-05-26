@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate Appendix A.1 benchmark/model inventory tables.
+"""Generate Appendix B.2 benchmark/model inventory tables.
 
 Usage:
     cd ~/Documents/submission/benchpress/github
@@ -370,7 +370,7 @@ def write_overleaf(tables: str) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--write-overleaf", action="store_true", help="replace Appendix A.1 inventory tables in overleaf/arxiv/appendix.tex")
+    parser.add_argument("--write-overleaf", action="store_true", help="replace Appendix B.2 inventory tables in overleaf/arxiv/appendix.tex")
     args = parser.parse_args()
     tables = render_tables()
     if args.write_overleaf:

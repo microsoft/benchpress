@@ -4,7 +4,7 @@
 
 - Appendix: `app:model_analysis`, paragraph `app:per_model_predictability`.
 - Figure: `fig:model_predictability` (`bp_model_predictability.pdf`).
-- Source comment: `overleaf/arxiv/appendix.tex`.
+- Overleaf location: `overleaf/arxiv/appendix.tex`.
 
 ## Purpose
 

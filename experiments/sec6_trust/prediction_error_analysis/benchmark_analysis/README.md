@@ -1,4 +1,4 @@
-# §4.3 Benchmark-Side Prediction Error Analysis
+# §6.1 Benchmark-Side Prediction Error Analysis
 
 ## Paper mapping
 

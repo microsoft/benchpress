@@ -1,9 +1,9 @@
-# Appendix A.1 inventory tables
+# Appendix B.2 inventory tables
 
 ## Workflow
 
 ```
-Need to update Appendix A.1 benchmark/model inventory tables
+Need to update Appendix B.2 benchmark/model inventory tables
   ↓
 Step 1: Regenerate from the canonical score matrix
   command:
@@ -52,7 +52,7 @@ Before committing an update, inspect the generated LaTeX and confirm:
 
 ## Output structure
 
-The generated LaTeX replaces only the Appendix A.1 inventory block between:
+The generated LaTeX replaces only the Appendix B.2 inventory block between:
 - `% ── Benchmark table`
 - `\end{table*}` for `tab:models`
 
