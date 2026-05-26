@@ -127,7 +127,7 @@ def main():
     n_targets = len(payload["landmarks"])
 
     _apply_style()
-    fig, axes = plt.subplots(1, 2, figsize=(4.9, 1.65), sharex=True)
+    fig, axes = plt.subplots(1, 2, figsize=(3.9, 2.05), sharex=True)
     _plot_metric(axes[0], _metric_values(payload, "medae"), "Error (pts)", "MedAE")
     _plot_metric(axes[1], _metric_values(payload, "medape"), "Error (%)", "MedAPE")
     for ax in axes:
