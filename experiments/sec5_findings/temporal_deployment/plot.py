@@ -21,13 +21,29 @@ from benchpress.plot_helpers.visual_identity import (
     GRAY,
     MEMENTO_MAGENTA,
     VANILLA_BLUE,
-    apply_double,
     save_fig,
 )
 
 RESULTS_PATH = os.path.join(HERE, "results.json")
 DISPLAY_K = [1, 5, 10]
 EXPECTED_PROTOCOL = "temporal_deployment_hard_rule_v4"
+
+
+def _apply_style():
+    plt.rcParams.update({
+        "font.family": "serif",
+        "font.size": 7.5,
+        "axes.titlesize": 8.5,
+        "axes.labelsize": 8,
+        "xtick.labelsize": 8,
+        "ytick.labelsize": 8,
+        "figure.dpi": 150,
+        "savefig.dpi": 300,
+        "savefig.bbox": "tight",
+        "savefig.pad_inches": 0.04,
+        "axes.spines.top": False,
+        "axes.spines.right": False,
+    })
 
 
 def _metric_values(payload: dict, metric: str) -> list[list[float]]:
@@ -51,10 +67,10 @@ def _plot_metric(ax, values: list[list[float]], ylabel: str, title: str):
         widths=0.46,
         patch_artist=True,
         showfliers=False,
-        medianprops={"color": CHARCOAL, "linewidth": 2.0},
-        boxprops={"edgecolor": CHARCOAL, "linewidth": 1.2},
-        whiskerprops={"color": CHARCOAL, "linewidth": 1.0},
-        capprops={"color": CHARCOAL, "linewidth": 1.0},
+        medianprops={"color": CHARCOAL, "linewidth": 1.4},
+        boxprops={"edgecolor": CHARCOAL, "linewidth": 0.9},
+        whiskerprops={"color": CHARCOAL, "linewidth": 0.8},
+        capprops={"color": CHARCOAL, "linewidth": 0.8},
     )
     for idx, patch in enumerate(box["boxes"]):
         patch.set_facecolor([VANILLA_BLUE, MEMENTO_MAGENTA, VANILLA_BLUE][idx])
@@ -66,11 +82,11 @@ def _plot_metric(ax, values: list[list[float]], ylabel: str, title: str):
         ax.scatter(
             np.full(len(ys), positions[idx]) + jitter,
             ys,
-            s=28,
+            s=14,
             color=MEMENTO_MAGENTA if idx == 1 else VANILLA_BLUE,
             alpha=0.62,
             edgecolor="white",
-            linewidth=0.45,
+            linewidth=0.25,
             zorder=3,
         )
         if ys:
@@ -81,16 +97,15 @@ def _plot_metric(ax, values: list[list[float]], ylabel: str, title: str):
                 f"{med:.1f}",
                 ha="center",
                 va="bottom",
-                fontsize=9,
+                fontsize=7.5,
                 color=CHARCOAL,
                 fontweight="bold",
             )
 
     ax.set_xticks(positions)
     ax.set_xticklabels([str(k) for k in DISPLAY_K])
-    ax.set_xlabel("Revealed seed scores per target model")
-    ax.set_ylabel(ylabel)
-    ax.set_title(title)
+    ax.set_ylabel(ylabel, labelpad=2)
+    ax.set_title(title, pad=3, fontweight="bold")
     ax.grid(axis="y", color=GRAY, alpha=0.25, linewidth=0.8)
 
 
@@ -109,18 +124,21 @@ def main():
         )
     n_targets = len(payload["landmarks"])
 
-    apply_double()
-    fig, axes = plt.subplots(1, 2, figsize=(7.0, 2.7), sharex=True)
-    _plot_metric(axes[0], _metric_values(payload, "medae"), "MedAE (points)", "Absolute error")
-    _plot_metric(axes[1], _metric_values(payload, "medape"), "MedAPE (%)", "Percentage error")
-    fig.suptitle(
-        f"Temporal deployment across {n_targets} post-R1 target models",
-        y=1.04,
-        fontsize=14,
-        fontweight="bold",
-    )
-    fig.tight_layout()
+    _apply_style()
+    fig, axes = plt.subplots(1, 2, figsize=(4.9, 1.65), sharex=True)
+    _plot_metric(axes[0], _metric_values(payload, "medae"), "Error (pts)", "MedAE")
+    _plot_metric(axes[1], _metric_values(payload, "medape"), "Error (%)", "MedAPE")
+    for ax in axes:
+        ax.set_xlabel(r"Seed scores $k$", labelpad=1)
+    fig.tight_layout(w_pad=1.4, pad=0.25)
     save_fig("bp_temporal_deployment_boxplot")
+    fig, axes = plt.subplots(1, 2, figsize=(4.9, 1.65), sharex=True)
+    _plot_metric(axes[0], _metric_values(payload, "medae"), "Error (pts)", "MedAE")
+    _plot_metric(axes[1], _metric_values(payload, "medape"), "Error (%)", "MedAPE")
+    for ax in axes:
+        ax.set_xlabel(r"Seed scores $k$", labelpad=1)
+    fig.tight_layout(w_pad=1.4, pad=0.25)
+    save_fig("bp_temporal_deployment_boxplot_preview")
 
 
 if __name__ == "__main__":

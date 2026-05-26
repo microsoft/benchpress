@@ -54,4 +54,4 @@ Existing shards are reused only if their config matches the requested `(target, 
 
 ## Last valid result
 
-Previous landmark rerun: commit `5fe3d99`, protocol `temporal_deployment_all_observed_v3`, 480 shards, 34,320 raw target-cell rows. The current hard-rule protocol is `temporal_deployment_hard_rule_v4`; rerun before using the new plot/table in the paper. The historical `main:results/bp/rolling_temporal.json` used an older predictor and aggregate-only output, so it is not valid for this experiment.
+Canonical hard-rule rerun: code commit `94c559b`, protocol `temporal_deployment_hard_rule_v4`, 27 target models, 810 shards, and 30,090 raw target-cell rows. Full rerun environment: GCR Sandbox, conda env `benchpress`, detached worktree `~/projects/runs/benchpress-temporal-hard-94c559b`; remote output mirror `~/projects/outputs/BenchPress/temporal-hard-94c559b`. Previous landmark rerun: commit `5fe3d99`, protocol `temporal_deployment_all_observed_v3`, 480 shards, 34,320 raw target-cell rows. The historical `main:results/bp/rolling_temporal.json` used an older predictor and aggregate-only output, so it is not valid for this experiment.
