@@ -132,13 +132,6 @@ def main():
         ax.set_xlabel(r"Seed scores $k$", labelpad=1)
     fig.tight_layout(w_pad=1.4, pad=0.25)
     save_fig("bp_temporal_deployment_boxplot")
-    fig, axes = plt.subplots(1, 2, figsize=(4.9, 1.65), sharex=True)
-    _plot_metric(axes[0], _metric_values(payload, "medae"), "Error (pts)", "MedAE")
-    _plot_metric(axes[1], _metric_values(payload, "medape"), "Error (%)", "MedAPE")
-    for ax in axes:
-        ax.set_xlabel(r"Seed scores $k$", labelpad=1)
-    fig.tight_layout(w_pad=1.4, pad=0.25)
-    save_fig("bp_temporal_deployment_boxplot_preview")
 
 
 if __name__ == "__main__":
