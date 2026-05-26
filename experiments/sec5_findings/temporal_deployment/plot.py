@@ -17,6 +17,7 @@ if REPO_ROOT not in sys.path:
 from benchpress.artifact_utils import ensure_artifacts
 from benchpress.io_utils import load_json
 from benchpress.plot_helpers.visual_identity import (
+    ANSWER_VIOLET,
     CHARCOAL,
     GRAY,
     MEMENTO_MAGENTA,
@@ -27,6 +28,7 @@ from benchpress.plot_helpers.visual_identity import (
 RESULTS_PATH = os.path.join(HERE, "results.json")
 DISPLAY_K = [1, 5, 10]
 EXPECTED_PROTOCOL = "temporal_deployment_hard_rule_v4"
+K_COLORS = [VANILLA_BLUE, MEMENTO_MAGENTA, ANSWER_VIOLET]
 
 
 def _apply_style():
@@ -73,7 +75,7 @@ def _plot_metric(ax, values: list[list[float]], ylabel: str, title: str):
         capprops={"color": CHARCOAL, "linewidth": 0.8},
     )
     for idx, patch in enumerate(box["boxes"]):
-        patch.set_facecolor([VANILLA_BLUE, MEMENTO_MAGENTA, VANILLA_BLUE][idx])
+        patch.set_facecolor(K_COLORS[idx])
         patch.set_alpha(0.16)
 
     rng = np.random.RandomState(42)
@@ -83,7 +85,7 @@ def _plot_metric(ax, values: list[list[float]], ylabel: str, title: str):
             np.full(len(ys), positions[idx]) + jitter,
             ys,
             s=14,
-            color=MEMENTO_MAGENTA if idx == 1 else VANILLA_BLUE,
+            color=K_COLORS[idx],
             alpha=0.62,
             edgecolor="white",
             linewidth=0.25,
