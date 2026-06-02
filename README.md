@@ -105,6 +105,10 @@ The public dataset is published at:
 - **Hugging Face**: <https://huggingface.co/datasets/microsoft/benchpress-score-matrix>
 - **Local cache after download**: `benchpress/data/llm_benchmark_data.json`
 
+The BenchPress code is released under MIT. The score-matrix dataset is released
+under the Community Data License Agreement - Permissive - Version 2.0
+(`CDLA-Permissive-2.0`); see `benchpress/data/LICENSE-CDLA-2.0.md`.
+
 BenchPress is a living dataset: new model releases, benchmark updates, and corrected citations can be added as the evaluation landscape changes. We welcome pull requests that add citation-backed scores, new models, new benchmarks, or provenance fixes.
 
 After running `python -m benchpress.download_data`, the package creates a local
