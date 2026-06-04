@@ -8,6 +8,7 @@ not share a directory across incompatible evaluation settings.
 | Protocol | Directory | Owns |
 |---|---|---|
 | Current-matrix / all-known-cell construction | `all_known/` | `run.py`, `run_random.py`, `plot.py`, `results/`, `figures/` |
+| Current-matrix / all-known-cell exhaustive optimum | `brute_force/` | `run.py`, `run_bonete.sh`, `submit_bonete.py`, chunked `results/` |
 | Model-split held-out validation | `holdout/` | `run_model_split_validation.py`, `run_model_split_random.py`, Bonete launcher, `results/` |
 
 Shared candidate-set definitions stay in `candidate_allowlists/` because both
@@ -27,6 +28,10 @@ Use `all_known/` when the question is the full-matrix construction result: all
 historical rows are available, a target model reveals only the chosen probe
 columns, and every observed target-model cell remains in the denominator with
 probe cells counted as exact.
+
+Use `brute_force/` for the same all-known-cell construction when the algorithmic
+question is whether the greedy probe set matches the exhaustive optimum over a
+finite candidate universe.
 
 Use `holdout/` when the question is model-level validation: split model rows
 70/30, select probes on training rows, and validate fixed prefixes on held-out
