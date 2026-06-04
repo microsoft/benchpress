@@ -16,7 +16,7 @@ from urllib.error import HTTPError, URLError
 from urllib.request import urlretrieve
 
 
-HF_REPO = "yzeng58/benchpress-score-matrix"
+HF_REPO = "microsoft/benchpress-score-matrix"
 HF_BASE_URL = f"https://huggingface.co/datasets/{HF_REPO}/raw/main"
 PACKAGE_DATA_DIR = Path(__file__).resolve().parent / "data"
 

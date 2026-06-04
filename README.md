@@ -24,7 +24,7 @@
 <p align="center">
   <a href="https://microsoft.github.io/benchpress/">Project page</a> ·
   <a href="https://github.com/microsoft/benchpress">Code</a> ·
-  <a href="https://huggingface.co/datasets/yzeng58/benchpress-score-matrix">Dataset</a> ·
+  <a href="https://huggingface.co/datasets/microsoft/benchpress-score-matrix">Dataset</a> ·
   <a href="#">Paper coming soon</a>
 </p>
 
@@ -102,7 +102,7 @@ BenchPress uses a citation-backed evaluation matrix:
 
 The paper-canonical dataset is published at:
 
-- **Hugging Face**: <https://huggingface.co/datasets/yzeng58/benchpress-score-matrix>
+- **Hugging Face**: <https://huggingface.co/datasets/microsoft/benchpress-score-matrix>
 - **Local cache after download**: `benchpress/data/llm_benchmark_data.json`
 
 BenchPress is a living dataset: new model releases, benchmark updates, and corrected citations can be added as the evaluation landscape changes. We welcome pull requests that add citation-backed scores, new models, new benchmarks, or provenance fixes.
@@ -147,7 +147,7 @@ Or load the public Hugging Face mirror:
 ```python
 from datasets import load_dataset
 
-ds = load_dataset("yzeng58/benchpress-score-matrix", "scores_paper")
+ds = load_dataset("microsoft/benchpress-score-matrix", "scores_paper")
 ```
 
 # Step 3: Predict Scores
