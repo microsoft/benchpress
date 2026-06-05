@@ -11,8 +11,13 @@ fi
 args=(
   --source-greedy-result "$SOURCE_GREEDY_RESULT"
   --metric "${METRIC:-medae}"
-  --keep-fraction "${KEEP_FRACTION:-0.30}"
 )
+
+if [[ -n "${KEEP_COUNT:-}" ]]; then
+  args+=(--keep-count "$KEEP_COUNT")
+else
+  args+=(--keep-fraction "${KEEP_FRACTION:-0.30}")
+fi
 
 if [[ -n "${MAX_STEPS:-}" ]]; then
   args+=(--max-steps "$MAX_STEPS")

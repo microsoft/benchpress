@@ -12,7 +12,7 @@ Use greedy search as an elimination signal, not as the final selector. The
 runner derives candidate ranks from an existing all-known greedy result. For
 each greedy context, lower candidate-set MedAE is a better rank. Candidates are
 aggregated by average normalized rank across source greedy steps, then only the
-top fraction is kept.
+requested top count or top fraction is kept.
 
 The runner does not re-evaluate candidates. The source greedy result is the raw
 prediction artifact; this directory only stores rank-pruning manifests and
@@ -20,15 +20,15 @@ allowlists.
 
 ## How to run
 
-Derive the top-30% rank-pruned allowlist from the existing full all-known greedy
+Derive the top-30 benchmark rank-pruned allowlist from the existing full all-known greedy
 result:
 
 ```bash
 METRIC=medae \
-KEEP_FRACTION=0.30 \
+KEEP_COUNT=30 \
 SOURCE_GREEDY_RESULT=../all_known/results/greedy_medae_targets_tall_candidates_tall.json.gz \
-OUT=results/rank_pruning_medae_top30_from_existing_greedy.json \
-ALLOWLIST_OUT=../candidate_allowlists/full_rank_top30_by_greedy_20260605.json \
+OUT=results/rank_pruning_medae_top30_count_from_existing_greedy.json \
+ALLOWLIST_OUT=../candidate_allowlists/full_rank_top30_count_by_greedy_20260605.json \
 ./run.sh
 ```
 
@@ -45,7 +45,7 @@ By default `MAX_STEPS` is unset, so all source greedy steps are used.
 Results are written under `results/`.
 
 ```text
-results/rank_pruning_<metric>_top<pct>_from_existing_greedy.json
+results/rank_pruning_<metric>_<keep-label>_from_existing_greedy.json
 ```
 
 The result stores:
@@ -59,7 +59,8 @@ The result stores:
 
 - Source: `../all_known/results/greedy_medae_targets_tall_candidates_tall.json.gz`
 - Source greedy trajectory length: 10 steps.
-- Derived result: `results/rank_pruning_medae_top30_from_existing_greedy.json`
-- Allowlist: `../candidate_allowlists/full_rank_top30_by_greedy_20260605.json`
-- Setting: no fixed/protected probes, all 10 source greedy steps, keep top 30%.
-- Decision: keep 40 candidates and remove 93.
+- Derived result: `results/rank_pruning_medae_top30_count_from_existing_greedy.json`
+- Allowlist: `../candidate_allowlists/full_rank_top30_count_by_greedy_20260605.json`
+- Setting: no fixed/protected probes, all 10 source greedy steps, keep top 30
+  benchmarks by aggregate rank.
+- Decision: keep 30 candidates and remove 103.

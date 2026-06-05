@@ -21,11 +21,10 @@ EVAL_PROTOCOL = "all_known_greedy_rank_pruning_v1"
 RESULTS_DIR = os.path.join(SCRIPT_DIR, "results")
 
 
-def _default_out(metric: str, keep_fraction: float) -> str:
-    keep_pct = int(round(keep_fraction * 100))
+def _default_out(metric: str, keep_label: str) -> str:
     return os.path.join(
         RESULTS_DIR,
-        f"rank_pruning_{safe_token(metric)}_top{keep_pct}_from_existing_greedy.json",
+        f"rank_pruning_{safe_token(metric)}_{safe_token(keep_label)}_from_existing_greedy.json",
     )
 
 
@@ -65,7 +64,7 @@ def _rank_step(source_step: dict) -> list[dict]:
 def _rank_prune(
     source_payload: dict,
     metric: str,
-    keep_fraction: float,
+    keep_count: int,
     max_steps: int | None,
 ) -> dict:
     source_metric = source_payload.get("config", {}).get("metric")
@@ -152,7 +151,10 @@ def _rank_prune(
             else None
         )
 
-    keep_count = math.ceil(len(candidate_ids) * keep_fraction)
+    if keep_count <= 0 or keep_count >= len(candidate_ids):
+        raise ValueError(
+            f"keep_count must be between 1 and {len(candidate_ids) - 1}; got {keep_count}"
+        )
     ranked_candidates = sorted(
         candidate_ids,
         key=lambda bid: (
@@ -203,35 +205,52 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--source-greedy-result", required=True)
     parser.add_argument("--metric", choices=["medape", "medae"], default="medae")
-    parser.add_argument("--keep-fraction", type=float, default=0.30)
+    parser.add_argument("--keep-fraction", type=float, default=None)
+    parser.add_argument("--keep-count", type=int, default=None)
     parser.add_argument("--max-steps", type=int, default=None)
     parser.add_argument("--out", default=None)
     parser.add_argument("--allowlist-out", default=None)
     args = parser.parse_args()
 
-    if args.keep_fraction <= 0 or args.keep_fraction >= 1:
+    if (args.keep_fraction is None) == (args.keep_count is None):
+        raise ValueError("Pass exactly one of --keep-fraction or --keep-count")
+    if args.keep_fraction is not None and (
+        args.keep_fraction <= 0 or args.keep_fraction >= 1
+    ):
         raise ValueError("--keep-fraction must be between 0 and 1")
 
     source_greedy_result = os.path.abspath(args.source_greedy_result)
     source_payload = load_json(source_greedy_result)
+    candidate_ids = _candidate_ids_from_source(source_payload)
+    keep_count = (
+        int(args.keep_count)
+        if args.keep_count is not None
+        else math.ceil(len(candidate_ids) * args.keep_fraction)
+    )
+    keep_label = (
+        f"top{keep_count}_count"
+        if args.keep_count is not None
+        else f"top{int(round(args.keep_fraction * 100))}pct"
+    )
     out_path = (
         os.path.abspath(args.out)
         if args.out
-        else _default_out(args.metric, args.keep_fraction)
+        else _default_out(args.metric, keep_label)
     )
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
 
     summary = _rank_prune(
         source_payload,
         args.metric,
-        args.keep_fraction,
+        keep_count,
         args.max_steps,
     )
     config = {
         "eval_protocol": EVAL_PROTOCOL,
         "metric": args.metric,
-        "keep_fraction": float(args.keep_fraction),
+        "keep_fraction": float(args.keep_fraction) if args.keep_fraction is not None else None,
         "keep_count": summary["keep_count"],
+        "keep_label": keep_label,
         "source_steps_used": (
             args.max_steps
             if args.max_steps is not None
