@@ -9,6 +9,7 @@ not share a directory across incompatible evaluation settings.
 |---|---|---|
 | Current-matrix / all-known-cell construction | `all_known/` | `run.py`, `run_random.py`, `plot.py`, `results/`, `figures/` |
 | Current-matrix / all-known-cell exhaustive optimum | `brute_force/` | `run.py`, `run_bonete.sh`, `submit_bonete.py`, chunked `results/` |
+| Current-matrix / all-known candidate pruning | `pruning/` | Greedy-elimination diagnostic, generated pruned allowlists |
 | Model-split held-out validation | `holdout/` | `run_model_split_validation.py`, `run_model_split_random.py`, Bonete launcher, `results/` |
 
 Shared candidate-set definitions stay in `candidate_allowlists/` because both
@@ -32,6 +33,11 @@ probe cells counted as exact.
 Use `brute_force/` for the same all-known-cell construction when the algorithmic
 question is whether the greedy probe set matches the exhaustive optimum over a
 finite candidate universe.
+
+Use `pruning/` when the question is whether a benchmark can be safely removed
+from a candidate universe before expensive exhaustive search. The greedy path is
+used only to create conditional contexts; the output is a removable/kept
+candidate diagnostic, not a final probe-set recommendation.
 
 Use `holdout/` when the question is model-level validation: split model rows
 70/30, select probes on training rows, and validate fixed prefixes on held-out
