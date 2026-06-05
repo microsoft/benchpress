@@ -37,12 +37,29 @@ ALLOWLIST_OUT=../candidate_allowlists/full_pruned_by_gpqa_greedy_20260605.json \
 ./run.sh
 ```
 
+If an existing all-known greedy result already contains the same greedy
+contexts, reuse it instead of re-evaluating candidates:
+
+```bash
+METRIC=medae \
+FIXED_PROBES=gpqa_diamond \
+PROTECTED_PROBES=gpqa_diamond,mmlu_pro \
+MAX_STEPS=5 \
+SOURCE_GREEDY_RESULT=../all_known/results/greedy_medae_targets_tall_candidates_tall.json.gz \
+OUT=results/greedy_elimination_medae_fixed-gpqa_diamond_from_existing_greedy.json.gz \
+ALLOWLIST_OUT=../candidate_allowlists/full_pruned_by_gpqa_greedy_20260605.json \
+./run.sh
+```
+
 ## Inputs
 
 - Score matrix and observed mask from `benchpress.evaluation_harness`.
 - Predictor: `predict_benchpress_scores`.
 - Optional candidate allowlists from `../candidate_allowlists/`; when omitted,
   all current matrix benchmarks are candidates.
+- Optional source greedy result from `../all_known/results/`. This is the
+  preferred path when the source trajectory starts with the requested fixed
+  probes, because every step already stores raw candidate predictions.
 
 ## Outputs
 
@@ -52,6 +69,9 @@ Results are written under `results/`.
 results/greedy_elimination_<metric>_fixed-<anchors>_candidates-<source>.json.gz
 results/.candidate_cache/<run-id>/step_XXX/<benchmark>.json.gz
 ```
+
+When `SOURCE_GREEDY_RESULT` is set, no candidate cache is written; the result
+copies the relevant source greedy contexts and raw predictions.
 
 The result stores:
 

@@ -38,6 +38,10 @@ if [[ -n "${CANDIDATE_ALLOWLIST:-}" ]]; then
   args+=(--candidate-allowlist "$CANDIDATE_ALLOWLIST")
 fi
 
+if [[ -n "${SOURCE_GREEDY_RESULT:-}" ]]; then
+  args+=(--source-greedy-result "$SOURCE_GREEDY_RESULT")
+fi
+
 if [[ -n "${ALLOWLIST_OUT:-}" ]]; then
   args+=(--allowlist-out "$ALLOWLIST_OUT")
 fi
