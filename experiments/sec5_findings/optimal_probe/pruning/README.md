@@ -1,64 +1,65 @@
-# Greedy-elimination probe pruning
+# Greedy-rank probe pruning
 
 ## Paper mapping
 
 - Section: `\Cref{sec:probe_selection}` / Appendix probe-selection diagnostics.
-- This is a candidate-set pruning diagnostic for the same all-known-cell protocol
-  used by `../all_known/` and `../brute_force/`.
+- This is a candidate-set pruning diagnostic for the same all-known-cell
+  protocol used by `../all_known/` and `../brute_force/`.
 
 ## Purpose
 
-Use greedy search as an elimination tool, not as the final selector. The runner
-derives pruning diagnostics from an existing all-known greedy result that
-already stores every candidate's predictions in each greedy context. It does not
-re-evaluate candidates.
+Use greedy search as an elimination signal, not as the final selector. The
+runner derives candidate ranks from an existing all-known greedy result. For
+each greedy context, lower candidate-set MedAE is a better rank. Candidates are
+aggregated by average normalized rank across source greedy steps, then only the
+top fraction is kept.
+
+The runner does not re-evaluate candidates. The source greedy result is the raw
+prediction artifact; this directory only stores rank-pruning manifests and
+allowlists.
 
 ## How to run
 
-Derive the GPQA-D anchored pruning allowlist from the existing full all-known
-greedy result:
+Derive the top-30% rank-pruned allowlist from the existing full all-known greedy
+result:
 
 ```bash
 METRIC=medae \
-FIXED_PROBES=gpqa_diamond \
-PROTECTED_PROBES=gpqa_diamond,mmlu_pro \
-MAX_STEPS=5 \
+KEEP_FRACTION=0.30 \
 SOURCE_GREEDY_RESULT=../all_known/results/greedy_medae_targets_tall_candidates_tall.json.gz \
-OUT=results/greedy_elimination_medae_fixed-gpqa_diamond_from_existing_greedy.json.gz \
-ALLOWLIST_OUT=../candidate_allowlists/full_pruned_by_gpqa_greedy_20260605.json \
+OUT=results/rank_pruning_medae_top30_from_existing_greedy.json \
+ALLOWLIST_OUT=../candidate_allowlists/full_rank_top30_by_greedy_20260605.json \
 ./run.sh
 ```
+
+By default `MAX_STEPS` is unset, so all source greedy steps are used.
 
 ## Inputs
 
 - Source greedy result from `../all_known/results/`.
-- Score-matrix metadata from `benchpress.evaluation_harness` for benchmark names,
-  categories, and coverage guards.
-- Optional candidate allowlist only when the source result does not record its
-  candidate IDs.
+- Score-matrix metadata from `benchpress.evaluation_harness` for benchmark names
+  and categories.
 
 ## Outputs
 
 Results are written under `results/`.
 
 ```text
-results/greedy_elimination_<metric>_fixed-<anchors>_from_existing_greedy.json.gz
+results/rank_pruning_<metric>_top<pct>_from_existing_greedy.json
 ```
 
 The result stores:
 
-- fixed/protected probes and pruning thresholds;
-- the greedy trajectory;
-- raw per-cell predictions for every evaluated candidate in every context;
-- per-candidate max conditional gain across contexts;
-- keep/remove decisions and guard reasons;
+- source greedy steps and per-context candidate ranks;
+- per-candidate average normalized rank;
+- keep/remove decisions;
 - optional generated allowlist metadata.
 
 ## Last valid result
 
 - Source: `../all_known/results/greedy_medae_targets_tall_candidates_tall.json.gz`
-- Derived result: `results/greedy_elimination_medae_fixed-gpqa_diamond_from_existing_greedy.json.gz`
-- Allowlist: `../candidate_allowlists/full_pruned_by_gpqa_greedy_20260605.json`
-- Setting: fixed `gpqa_diamond`, protected `gpqa_diamond,mmlu_pro`, source
-  greedy steps 2--6.
-- Decision: remove 26 candidates and keep 107.
+- Source greedy trajectory length: 10 steps.
+- Derived result: `results/rank_pruning_medae_top30_from_existing_greedy.json`
+- Allowlist: `../candidate_allowlists/full_rank_top30_by_greedy_20260605.json`
+- Setting: no fixed/protected probes, all 10 source greedy steps, keep top 30%.
+- Decision: keep 40 candidates and remove 93.
