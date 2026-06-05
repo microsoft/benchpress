@@ -10,7 +10,6 @@
     "n_bench": 133,
     "n_observed": 2604,
     "candidate_allowlist_path": null,
-    "candidate_limit": null,
     "candidate_ids": [
       "aa_intelligence_index",
       "aa_lcr",
@@ -162,11 +161,7 @@
     "threshold_mode": "any",
     "max_unique_model_coverage": 0,
     "category_guard_top_n": 1,
-    "workers": 14,
-    "prediction_engine": "predict_benchpress_scores (Logit Bias ALS, rank=2, lambda=0.1)",
-    "source_greedy_result_path": "experiments/sec5_findings/optimal_probe/all_known/results/greedy_medae_targets_tall_candidates_tall.json.gz",
-    "cell_masking": "For model i, keep probe cells visible and mask non-probe cells. Probe target cells are known and stored with pred=true; non-probe target cells are predicted by BenchPress. The evaluation universe is fixed to all observed cells.",
-    "candidate_cache_dir": null
+    "source_greedy_result_path": "experiments/sec5_findings/optimal_probe/all_known/results/greedy_medae_targets_tall_candidates_tall.json.gz"
   },
   "removed_benchmark_ids": [
     "aa_intelligence_index",

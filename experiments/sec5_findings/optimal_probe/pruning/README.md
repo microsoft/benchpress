@@ -9,36 +9,14 @@
 ## Purpose
 
 Use greedy search as an elimination tool, not as the final selector. The runner
-fixes one or more anchor probes, follows the greedy path to create realistic
-contexts, and records every remaining benchmark's conditional gain in each
-context. A benchmark is marked removable only when it never provides meaningful
-gain across those contexts and passes explicit coverage/category/protection
-guards.
+derives pruning diagnostics from an existing all-known greedy result that
+already stores every candidate's predictions in each greedy context. It does not
+re-evaluate candidates.
 
 ## How to run
 
-Smoke-test on a remote CPU environment:
-
-```bash
-cd experiments/sec5_findings/optimal_probe/pruning
-CANDIDATE_LIMIT=10 MAX_STEPS=3 WORKERS=4 ./run.sh
-```
-
-Full conservative scan over the current matrix candidates:
-
-```bash
-cd experiments/sec5_findings/optimal_probe/pruning
-METRIC=medae \
-FIXED_PROBES=gpqa_diamond \
-PROTECTED_PROBES=gpqa_diamond,mmlu_pro \
-MAX_STEPS=5 \
-WORKERS=48 \
-ALLOWLIST_OUT=../candidate_allowlists/full_pruned_by_gpqa_greedy_20260605.json \
-./run.sh
-```
-
-If an existing all-known greedy result already contains the same greedy
-contexts, reuse it instead of re-evaluating candidates:
+Derive the GPQA-D anchored pruning allowlist from the existing full all-known
+greedy result:
 
 ```bash
 METRIC=medae \
@@ -53,25 +31,19 @@ ALLOWLIST_OUT=../candidate_allowlists/full_pruned_by_gpqa_greedy_20260605.json \
 
 ## Inputs
 
-- Score matrix and observed mask from `benchpress.evaluation_harness`.
-- Predictor: `predict_benchpress_scores`.
-- Optional candidate allowlists from `../candidate_allowlists/`; when omitted,
-  all current matrix benchmarks are candidates.
-- Optional source greedy result from `../all_known/results/`. This is the
-  preferred path when the source trajectory starts with the requested fixed
-  probes, because every step already stores raw candidate predictions.
+- Source greedy result from `../all_known/results/`.
+- Score-matrix metadata from `benchpress.evaluation_harness` for benchmark names,
+  categories, and coverage guards.
+- Optional candidate allowlist only when the source result does not record its
+  candidate IDs.
 
 ## Outputs
 
 Results are written under `results/`.
 
 ```text
-results/greedy_elimination_<metric>_fixed-<anchors>_candidates-<source>.json.gz
-results/.candidate_cache/<run-id>/step_XXX/<benchmark>.json.gz
+results/greedy_elimination_<metric>_fixed-<anchors>_from_existing_greedy.json.gz
 ```
-
-When `SOURCE_GREEDY_RESULT` is set, no candidate cache is written; the result
-copies the relevant source greedy contexts and raw predictions.
 
 The result stores:
 
@@ -82,13 +54,11 @@ The result stores:
 - keep/remove decisions and guard reasons;
 - optional generated allowlist metadata.
 
-## Resume / rerun
-
-Done unit is one cached candidate evaluation for one greedy context. Re-running
-with the same output/config validates cache metadata and skips completed
-candidates. If fixed probes, metric, candidate universe, thresholds, or guards
-change, use a different `OUT` or delete the incompatible cache.
-
 ## Last valid result
 
-Not yet run for the full GPQA-D anchored pruning scan.
+- Source: `../all_known/results/greedy_medae_targets_tall_candidates_tall.json.gz`
+- Derived result: `results/greedy_elimination_medae_fixed-gpqa_diamond_from_existing_greedy.json.gz`
+- Allowlist: `../candidate_allowlists/full_pruned_by_gpqa_greedy_20260605.json`
+- Setting: fixed `gpqa_diamond`, protected `gpqa_diamond,mmlu_pro`, source
+  greedy steps 2--6.
+- Decision: remove 26 candidates and keep 107.

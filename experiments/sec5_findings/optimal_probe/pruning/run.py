@@ -1,91 +1,42 @@
 #!/usr/bin/env python3
-"""Greedy-elimination pruning for all-known probe candidates.
+"""Derive greedy-elimination pruning diagnostics from an existing greedy run.
 
-The script uses greedy selection to create realistic contexts, then records the
-conditional gain of every unselected candidate in those contexts. The output is
-a pruning diagnostic: benchmarks are removed only by explicit threshold and
-guard rules, not because greedy did or did not select them.
+The source greedy result must already contain candidate_results for each greedy
+context. This script does not re-evaluate BenchPress predictions.
 """
 
 from __future__ import annotations
 
 import argparse
 import os
-import random
 import sys
-import time
-from concurrent.futures import ProcessPoolExecutor, as_completed
-
-os.environ.setdefault("OMP_NUM_THREADS", "1")
-os.environ.setdefault("MKL_NUM_THREADS", "1")
-os.environ.setdefault("OPENBLAS_NUM_THREADS", "1")
-os.environ.setdefault("NUMEXPR_NUM_THREADS", "1")
-
-import numpy as np
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "..", "..", ".."))
 if REPO_ROOT not in sys.path:
     sys.path.insert(0, REPO_ROOT)
 
-from benchpress.all_methods import predict_benchpress_scores
-from benchpress.evaluation_harness import (
+from benchpress.evaluation_harness import (  # noqa: E402
     BENCH_CATS,
     BENCH_IDS,
     BENCH_NAMES,
     N_BENCH,
     N_MODELS,
     OBSERVED,
-    evaluate_probe_set,
     load_benchmark_allowlist,
-    pack_probe_predictions,
-    probe_candidate_cache_path,
 )
-from benchpress.io_utils import load_json, safe_token, write_json_atomic
-from benchpress.shard_utils import short_text_hash
+from benchpress.io_utils import load_json, safe_token, write_json_atomic  # noqa: E402
+from benchpress.shard_utils import short_text_hash  # noqa: E402
 
 SEED = 42
 EVAL_PROTOCOL = "all_known_probe_greedy_elimination_pruning_v1"
 RESULTS_DIR = os.path.join(SCRIPT_DIR, "results")
-
-np.random.seed(SEED)
-random.seed(SEED)
-
-
-def _init_worker(seed: int) -> None:
-    np.random.seed(seed)
-    random.seed(seed)
 
 
 def _parse_csv_ids(value: str | None) -> list[str]:
     if value is None or not value.strip():
         return []
     return [item.strip() for item in value.split(",") if item.strip()]
-
-
-def _candidate_source_label(path: str | None) -> str:
-    if path is None:
-        return "all"
-    name = os.path.basename(path)
-    for suffix in (".json.gz", ".json"):
-        if name.endswith(suffix):
-            return safe_token(name[: -len(suffix)])
-    return safe_token(name)
-
-
-def _load_candidates(candidate_allowlist: str | None, candidate_limit: int | None):
-    allowlist, allowlist_ids = load_benchmark_allowlist(
-        candidate_allowlist, label="Candidate allowlist"
-    )
-    if allowlist is None:
-        candidate_ids = list(BENCH_IDS)
-    else:
-        candidate_ids = list(allowlist_ids)
-    if candidate_limit is not None:
-        candidate_ids = candidate_ids[: int(candidate_limit)]
-    if not candidate_ids:
-        raise ValueError("Candidate set is empty")
-    return [BENCH_IDS.index(bid) for bid in candidate_ids], candidate_ids
 
 
 def _resolve_ids(value: str | None, label: str) -> list[str]:
@@ -99,122 +50,44 @@ def _resolve_ids(value: str | None, label: str) -> list[str]:
     return ids
 
 
-def _default_out(args, candidate_label: str) -> str:
+def _default_out(args: argparse.Namespace) -> str:
     fixed_ids = _resolve_ids(args.fixed_probes, "fixed probes")
     fixed_part = "none" if not fixed_ids else safe_token("-".join(fixed_ids))
-    limit_part = "" if args.candidate_limit is None else f"_limit{int(args.candidate_limit)}"
     return os.path.join(
         RESULTS_DIR,
-        (
-            f"greedy_elimination_{safe_token(args.metric)}"
-            f"_fixed-{fixed_part}_candidates-{candidate_label}{limit_part}.json.gz"
-        ),
+        f"greedy_elimination_{safe_token(args.metric)}"
+        f"_fixed-{fixed_part}_from_existing_greedy.json.gz",
     )
 
 
-def _cache_root(out_path: str, config: dict) -> str:
-    stem = os.path.basename(out_path)
-    if stem.endswith(".json.gz"):
-        stem = stem[: -len(".json.gz")]
-    else:
-        stem = os.path.splitext(stem)[0]
-    keys = [
-        EVAL_PROTOCOL,
-        config["metric"],
-        "\n".join(config["candidate_ids"]),
-        "\n".join(config["fixed_probe_ids"]),
-        "\n".join(config["protected_probe_ids"]),
-        str(config["max_steps"]),
-        str(config["max_gain_abs"]),
-        str(config["max_gain_rel"]),
-        config["threshold_mode"],
-        str(config["max_unique_model_coverage"]),
-        str(config["category_guard_top_n"]),
-    ]
-    digest = short_text_hash("\n---\n".join(keys), n=12)
-    out_dir = os.path.dirname(os.path.abspath(out_path))
-    if os.path.commonpath([out_dir, os.path.abspath(RESULTS_DIR)]) == os.path.abspath(
-        RESULTS_DIR
+def _candidate_ids_from_source(
+    source_payload: dict, candidate_allowlist: str | None
+) -> list[str]:
+    if candidate_allowlist:
+        _allowlist, allowlist_ids = load_benchmark_allowlist(
+            candidate_allowlist, label="Candidate allowlist"
+        )
+        return list(allowlist_ids)
+
+    config = source_payload.get("config", {})
+    for key in ("candidate_allowlist_ids", "candidate_ids"):
+        candidate_ids = config.get(key)
+        if candidate_ids is not None:
+            return list(candidate_ids)
+
+    bench_ids = config.get("bench_ids")
+    n_candidates = config.get("n_candidates")
+    if bench_ids is not None and (
+        n_candidates is None or int(n_candidates) == len(bench_ids)
     ):
-        cache_parent = os.path.join(RESULTS_DIR, ".candidate_cache")
-    else:
-        cache_parent = os.path.join(out_dir, ".candidate_cache")
-    return os.path.join(cache_parent, f"{safe_token(stem)}__{digest}")
+        return list(bench_ids)
+    if n_candidates is None or int(n_candidates) == len(BENCH_IDS):
+        return list(BENCH_IDS)
 
-
-def _eval_probe_set(probe_indices: list[int], metric: str):
-    predictions, metrics, score = evaluate_probe_set(
-        probe_indices,
-        predict_benchpress_scores,
-        metric=metric,
+    raise ValueError(
+        "Cannot infer candidate IDs from source greedy result. Pass "
+        "--candidate-allowlist matching the source result."
     )
-    return {
-        "probe_set": [BENCH_IDS[j] for j in probe_indices],
-        "probe_names": [BENCH_NAMES.get(BENCH_IDS[j], BENCH_IDS[j]) for j in probe_indices],
-        "score": float(score) if np.isfinite(score) else None,
-        "medape": float(metrics["medape"]) if np.isfinite(metrics["medape"]) else None,
-        "medae": float(metrics["medae"]) if np.isfinite(metrics["medae"]) else None,
-        "n": int(metrics["n"]),
-        "predictions": pack_probe_predictions(predictions),
-    }
-
-
-def _eval_candidate(job):
-    selected, cand_j, metric = job
-    t0 = time.time()
-    record = _eval_probe_set(selected + [cand_j], metric)
-    record.update(
-        {
-            "benchmark_id": BENCH_IDS[cand_j],
-            "benchmark_name": BENCH_NAMES.get(BENCH_IDS[cand_j], BENCH_IDS[cand_j]),
-            "benchmark_category": str(BENCH_CATS[cand_j]),
-            "elapsed_s": time.time() - t0,
-        }
-    )
-    return cand_j, record
-
-
-def _cache_payload_config(config: dict) -> dict:
-    keys = [
-        "eval_protocol",
-        "metric",
-        "n_models",
-        "n_bench",
-        "n_observed",
-        "candidate_hash",
-        "fixed_probe_hash",
-        "protected_probe_hash",
-        "max_steps",
-        "max_gain_abs",
-        "max_gain_rel",
-        "threshold_mode",
-        "max_unique_model_coverage",
-        "category_guard_top_n",
-    ]
-    return {key: config[key] for key in keys}
-
-
-def _load_candidate_cache(path: str, config: dict, expected_bid: str, selected_ids: list[str]):
-    if not os.path.exists(path):
-        return None
-    payload = load_json(path)
-    if payload.get("config") != _cache_payload_config(config):
-        raise RuntimeError(
-            f"Candidate cache config mismatch in {path}. Use a different --out "
-            "or delete the incompatible cache."
-        )
-    if payload.get("selected_probe_ids") != selected_ids:
-        raise RuntimeError(
-            f"Candidate cache context mismatch in {path}: expected {selected_ids}, "
-            f"found {payload.get('selected_probe_ids')}"
-        )
-    record = payload.get("record", {})
-    if record.get("benchmark_id") != expected_bid:
-        raise RuntimeError(
-            f"Candidate cache benchmark mismatch in {path}: expected {expected_bid}, "
-            f"found {record.get('benchmark_id')}"
-        )
-    return record
 
 
 def _gain_abs(baseline_score: float | None, candidate_score: float | None) -> float | None:
@@ -259,10 +132,11 @@ def _summarize_candidates(
     threshold_mode: str,
     max_unique_model_coverage: int,
     category_guard_top_n: int,
-):
+) -> dict:
     fixed_set = set(fixed_ids)
     protected_set = set(protected_ids)
     selected_ids = {step["added_benchmark"] for step in trajectory}
+    fixed_indices = [BENCH_IDS.index(fid) for fid in fixed_ids]
     by_candidate = {
         bid: {
             "benchmark_id": bid,
@@ -272,7 +146,7 @@ def _summarize_candidates(
             "fixed_probe": bid in fixed_set,
             "protected_probe": bid in protected_set,
             "unique_model_coverage_vs_fixed": _unique_model_coverage(
-                BENCH_IDS.index(bid), [BENCH_IDS.index(fid) for fid in fixed_ids]
+                BENCH_IDS.index(bid), fixed_indices
             ),
             "context_records": [],
         }
@@ -281,6 +155,8 @@ def _summarize_candidates(
 
     for step in trajectory:
         for bid, record in step["candidate_results"].items():
+            if bid not in by_candidate:
+                continue
             by_candidate[bid]["context_records"].append(
                 {
                     "step": step["step"],
@@ -375,28 +251,6 @@ def _write_allowlist(path: str, payload: dict) -> None:
     write_json_atomic(path, allowlist_payload, indent=2, trailing_newline=True)
 
 
-def _candidate_ids_from_source(source_payload: dict) -> list[str]:
-    config = source_payload.get("config", {})
-    allowlist_ids = config.get("candidate_allowlist_ids")
-    if allowlist_ids is not None:
-        return list(allowlist_ids)
-    candidate_ids = config.get("candidate_ids")
-    if candidate_ids is not None:
-        return list(candidate_ids)
-    bench_ids = config.get("bench_ids")
-    n_candidates = config.get("n_candidates")
-    if bench_ids is not None and (
-        n_candidates is None or int(n_candidates) == len(bench_ids)
-    ):
-        return list(bench_ids)
-    if n_candidates is None or int(n_candidates) == len(BENCH_IDS):
-        return list(BENCH_IDS)
-    raise ValueError(
-        "Cannot infer candidate IDs from source greedy result. Pass "
-        "--candidate-allowlist matching the source result."
-    )
-
-
 def _source_baseline_record(source_steps: list[dict], source_step_index: int) -> dict:
     if source_step_index <= 0:
         raise ValueError(
@@ -411,24 +265,19 @@ def _source_baseline_record(source_steps: list[dict], source_step_index: int) ->
     return record
 
 
-def _run_from_source_greedy(
+def _derive_trajectory(
     source_payload: dict,
-    config: dict,
     fixed_ids: list[str],
-    protected_ids: list[str],
-    candidate_ids: list[str],
-    out_path: str,
-    allowlist_out: str | None,
-) -> None:
+    max_steps: int,
+    metric: str,
+) -> list[dict]:
     source_config = source_payload.get("config", {})
     source_metric = source_config.get("metric")
-    if source_metric != config["metric"]:
-        raise ValueError(
-            f"Source greedy metric is {source_metric!r}, expected {config['metric']!r}"
-        )
+    if source_metric != metric:
+        raise ValueError(f"Source greedy metric is {source_metric!r}, expected {metric!r}")
 
     source_steps = list(source_payload.get("trajectory", []))
-    required_steps = len(fixed_ids) + config["max_steps"]
+    required_steps = len(fixed_ids) + max_steps
     if len(source_steps) < required_steps:
         raise ValueError(
             f"Source greedy result has {len(source_steps)} steps, but "
@@ -441,15 +290,16 @@ def _run_from_source_greedy(
         )
 
     trajectory = []
-    for local_step in range(1, config["max_steps"] + 1):
+    for local_step in range(1, max_steps + 1):
         source_step_index = len(fixed_ids) + local_step - 1
         source_step = source_steps[source_step_index]
         baseline = _source_baseline_record(source_steps, source_step_index)
         baseline_score = baseline["score"]
-        selected_before = list(source_step["probe_set"][:-1])
 
         candidate_results = {}
         for bid, source_record in source_step.get("candidate_results", {}).items():
+            if bid not in BENCH_IDS:
+                raise ValueError(f"Unknown benchmark in source result: {bid}")
             record = dict(source_record)
             gain_abs = _gain_abs(baseline_score, record["score"])
             record["gain_abs"] = gain_abs
@@ -467,7 +317,7 @@ def _run_from_source_greedy(
             {
                 "step": local_step,
                 "source_greedy_step": source_step["step"],
-                "selected_before": selected_before,
+                "selected_before": list(source_step["probe_set"][:-1]),
                 "baseline": baseline,
                 "added_benchmark": source_step["added_benchmark"],
                 "added_benchmark_name": source_step["added_benchmark_name"],
@@ -480,7 +330,75 @@ def _run_from_source_greedy(
                 "candidate_results": candidate_results,
             }
         )
+    return trajectory
 
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--source-greedy-result", required=True)
+    parser.add_argument("--max-steps", type=int, default=5)
+    parser.add_argument("--metric", choices=["medape", "medae"], default="medae")
+    parser.add_argument("--fixed-probes", default="gpqa_diamond")
+    parser.add_argument("--protected-probes", default="gpqa_diamond,mmlu_pro")
+    parser.add_argument("--candidate-allowlist", default=None)
+    parser.add_argument("--max-gain-abs", type=float, default=0.05)
+    parser.add_argument("--max-gain-rel", type=float, default=0.01)
+    parser.add_argument("--threshold-mode", choices=["any", "all"], default="any")
+    parser.add_argument("--max-unique-model-coverage", type=int, default=0)
+    parser.add_argument("--category-guard-top-n", type=int, default=1)
+    parser.add_argument("--out", default=None)
+    parser.add_argument("--allowlist-out", default=None)
+    args = parser.parse_args()
+
+    source_greedy_result = os.path.abspath(args.source_greedy_result)
+    source_payload = load_json(source_greedy_result)
+    candidate_ids = _candidate_ids_from_source(source_payload, args.candidate_allowlist)
+    unknown_candidates = [bid for bid in candidate_ids if bid not in BENCH_IDS]
+    if unknown_candidates:
+        raise ValueError(f"Unknown candidates: {unknown_candidates}")
+
+    fixed_ids = _resolve_ids(args.fixed_probes, "fixed probes")
+    protected_ids = _resolve_ids(args.protected_probes, "protected probes")
+    missing_fixed = [bid for bid in fixed_ids if bid not in candidate_ids]
+    if missing_fixed:
+        raise ValueError(f"Fixed probes must be in candidate set: {missing_fixed}")
+
+    out_path = os.path.abspath(args.out) if args.out else _default_out(args)
+    os.makedirs(os.path.dirname(out_path), exist_ok=True)
+
+    config = {
+        "eval_protocol": EVAL_PROTOCOL,
+        "metric": args.metric,
+        "seed": SEED,
+        "n_models": N_MODELS,
+        "n_bench": N_BENCH,
+        "n_observed": int(OBSERVED.sum()),
+        "candidate_allowlist_path": (
+            os.path.relpath(args.candidate_allowlist, REPO_ROOT)
+            if args.candidate_allowlist
+            else None
+        ),
+        "candidate_ids": candidate_ids,
+        "candidate_hash": short_text_hash("\n".join(candidate_ids), n=12),
+        "fixed_probe_ids": fixed_ids,
+        "fixed_probe_hash": short_text_hash("\n".join(fixed_ids), n=12),
+        "protected_probe_ids": protected_ids,
+        "protected_probe_hash": short_text_hash("\n".join(protected_ids), n=12),
+        "max_steps": int(args.max_steps),
+        "max_gain_abs": float(args.max_gain_abs),
+        "max_gain_rel": float(args.max_gain_rel),
+        "threshold_mode": args.threshold_mode,
+        "max_unique_model_coverage": int(args.max_unique_model_coverage),
+        "category_guard_top_n": int(args.category_guard_top_n),
+        "source_greedy_result_path": os.path.relpath(source_greedy_result, REPO_ROOT),
+    }
+
+    trajectory = _derive_trajectory(
+        source_payload,
+        fixed_ids,
+        int(args.max_steps),
+        args.metric,
+    )
     summary = _summarize_candidates(
         candidate_ids,
         fixed_ids,
@@ -498,283 +416,18 @@ def _run_from_source_greedy(
         "summary": summary,
         "result_path": out_path,
         "source_greedy_result": config["source_greedy_result_path"],
-        "elapsed_s": 0.0,
     }
     write_json_atomic(out_path, output, indent=2)
-    if allowlist_out:
-        if not os.path.isabs(allowlist_out):
-            allowlist_out = os.path.abspath(allowlist_out)
+
+    if args.allowlist_out:
+        allowlist_out = os.path.abspath(args.allowlist_out)
         _write_allowlist(allowlist_out, output)
         output["allowlist_out"] = os.path.relpath(allowlist_out, REPO_ROOT)
         write_json_atomic(out_path, output, indent=2)
         print(f"Allowlist saved -> {allowlist_out}")
+
     print(f"Saved -> {out_path}")
     print(f"Removed {len(summary['removable_ids'])}: {summary['removable_ids']}")
-
-
-def main() -> None:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--max-steps", type=int, default=5)
-    parser.add_argument("--workers", type=int, default=max(1, (os.cpu_count() or 2) - 1))
-    parser.add_argument("--metric", choices=["medape", "medae"], default="medae")
-    parser.add_argument("--fixed-probes", default="gpqa_diamond")
-    parser.add_argument("--protected-probes", default="gpqa_diamond,mmlu_pro")
-    parser.add_argument("--candidate-allowlist", default=None)
-    parser.add_argument("--candidate-limit", type=int, default=None)
-    parser.add_argument("--max-gain-abs", type=float, default=0.05)
-    parser.add_argument("--max-gain-rel", type=float, default=0.01)
-    parser.add_argument("--threshold-mode", choices=["any", "all"], default="any")
-    parser.add_argument("--max-unique-model-coverage", type=int, default=0)
-    parser.add_argument("--category-guard-top-n", type=int, default=1)
-    parser.add_argument(
-        "--source-greedy-result",
-        default=None,
-        help=(
-            "Reuse an existing all_known greedy result instead of re-evaluating "
-            "candidate contexts. The source trajectory must start with the fixed "
-            "probe prefix."
-        ),
-    )
-    parser.add_argument("--out", default=None)
-    parser.add_argument("--allowlist-out", default=None)
-    args = parser.parse_args()
-
-    source_greedy_result = (
-        os.path.abspath(args.source_greedy_result) if args.source_greedy_result else None
-    )
-    source_payload = load_json(source_greedy_result) if source_greedy_result else None
-    if source_payload is not None and args.candidate_limit is not None:
-        raise ValueError("--candidate-limit is incompatible with --source-greedy-result")
-    if source_payload is not None and args.candidate_allowlist is None:
-        candidate_ids = _candidate_ids_from_source(source_payload)
-        candidate_indices = [BENCH_IDS.index(bid) for bid in candidate_ids]
-    else:
-        candidate_indices, candidate_ids = _load_candidates(
-            args.candidate_allowlist, args.candidate_limit
-        )
-    fixed_ids = _resolve_ids(args.fixed_probes, "fixed probes")
-    protected_ids = _resolve_ids(args.protected_probes, "protected probes")
-    if args.candidate_limit is not None:
-        for bid in fixed_ids + protected_ids:
-            if bid not in candidate_ids:
-                candidate_ids.append(bid)
-        candidate_indices = [BENCH_IDS.index(bid) for bid in candidate_ids]
-    missing_fixed = [bid for bid in fixed_ids if bid not in candidate_ids]
-    if missing_fixed:
-        raise ValueError(f"Fixed probes must be in candidate set: {missing_fixed}")
-
-    fixed_indices = [BENCH_IDS.index(bid) for bid in fixed_ids]
-    selected = list(fixed_indices)
-    remaining = [j for j in candidate_indices if j not in set(selected)]
-    candidate_label = _candidate_source_label(args.candidate_allowlist)
-    if args.out:
-        out_path = os.path.abspath(args.out)
-    else:
-        out_path = _default_out(args, candidate_label)
-    os.makedirs(os.path.dirname(out_path), exist_ok=True)
-
-    config = {
-        "eval_protocol": EVAL_PROTOCOL,
-        "metric": args.metric,
-        "seed": SEED,
-        "n_models": N_MODELS,
-        "n_bench": N_BENCH,
-        "n_observed": int(OBSERVED.sum()),
-        "candidate_allowlist_path": (
-            os.path.relpath(args.candidate_allowlist, REPO_ROOT)
-            if args.candidate_allowlist
-            else None
-        ),
-        "candidate_limit": args.candidate_limit,
-        "candidate_ids": candidate_ids,
-        "candidate_hash": short_text_hash("\n".join(candidate_ids), n=12),
-        "fixed_probe_ids": fixed_ids,
-        "fixed_probe_hash": short_text_hash("\n".join(fixed_ids), n=12),
-        "protected_probe_ids": protected_ids,
-        "protected_probe_hash": short_text_hash("\n".join(protected_ids), n=12),
-        "max_steps": int(args.max_steps),
-        "max_gain_abs": float(args.max_gain_abs),
-        "max_gain_rel": float(args.max_gain_rel),
-        "threshold_mode": args.threshold_mode,
-        "max_unique_model_coverage": int(args.max_unique_model_coverage),
-        "category_guard_top_n": int(args.category_guard_top_n),
-        "workers": int(args.workers),
-        "prediction_engine": "predict_benchpress_scores (Logit Bias ALS, rank=2, lambda=0.1)",
-        "source_greedy_result_path": (
-            os.path.relpath(source_greedy_result, REPO_ROOT) if source_greedy_result else None
-        ),
-        "cell_masking": (
-            "For model i, keep probe cells visible and mask non-probe cells. "
-            "Probe target cells are known and stored with pred=true; non-probe "
-            "target cells are predicted by BenchPress. The evaluation universe "
-            "is fixed to all observed cells."
-        ),
-    }
-    cache_root = _cache_root(out_path, config)
-    config["candidate_cache_dir"] = (
-        None if source_payload is not None else os.path.relpath(cache_root, SCRIPT_DIR)
-    )
-
-    if source_payload is not None:
-        _run_from_source_greedy(
-            source_payload,
-            config,
-            fixed_ids,
-            protected_ids,
-            candidate_ids,
-            out_path,
-            args.allowlist_out,
-        )
-        return
-
-    trajectory = []
-    if os.path.exists(out_path):
-        prev = load_json(out_path)
-        prev_config = prev.get("config", {})
-        expected = {k: config[k] for k in _cache_payload_config(config)}
-        found = {k: prev_config.get(k) for k in expected}
-        if found != expected:
-            raise SystemExit(
-                f"Refusing to resume {out_path}: existing config {found} does "
-                f"not match requested config {expected}."
-            )
-        trajectory = prev.get("trajectory", [])
-        selected = [BENCH_IDS.index(bid) for bid in fixed_ids]
-        for step in trajectory:
-            selected.append(BENCH_IDS.index(step["added_benchmark"]))
-        remaining = [j for j in candidate_indices if j not in set(selected)]
-        print(f"Resuming {out_path}: {len(trajectory)} completed greedy steps")
-
-    print(f"Matrix: {N_MODELS}x{N_BENCH}, observed={int(OBSERVED.sum())}")
-    print(f"Metric: {args.metric}")
-    print(f"Fixed probes: {fixed_ids}")
-    print(f"Protected probes: {protected_ids}")
-    print(f"Candidates: {len(candidate_ids)}")
-    print(f"Workers: {args.workers}")
-
-    t_all = time.time()
-    with ProcessPoolExecutor(
-        max_workers=args.workers,
-        initializer=_init_worker,
-        initargs=(SEED,),
-    ) as pool:
-        while len(trajectory) < args.max_steps and remaining:
-            step = len(trajectory) + 1
-            selected_ids = [BENCH_IDS[j] for j in selected]
-            print(f"\n--- Context {step}/{args.max_steps}: {selected_ids} ---")
-            step_t0 = time.time()
-            baseline = _eval_probe_set(selected, args.metric)
-            baseline_score = baseline["score"]
-
-            candidate_results = {}
-            futures = {}
-            for cand_j in remaining:
-                bid = BENCH_IDS[cand_j]
-                cache_path = probe_candidate_cache_path(cache_root, step, bid)
-                cached = _load_candidate_cache(cache_path, config, bid, selected_ids)
-                if cached is not None:
-                    candidate_results[bid] = cached
-                    continue
-                futures[pool.submit(_eval_candidate, (selected, cand_j, args.metric))] = cand_j
-
-            for future in as_completed(futures):
-                cand_j, record = future.result()
-                bid = BENCH_IDS[cand_j]
-                gain_abs = _gain_abs(baseline_score, record["score"])
-                gain_rel = _gain_rel(gain_abs, baseline_score)
-                record["gain_abs"] = gain_abs
-                record["gain_rel"] = gain_rel
-                write_json_atomic(
-                    probe_candidate_cache_path(cache_root, step, bid),
-                    {
-                        "config": _cache_payload_config(config),
-                        "step": step,
-                        "selected_probe_ids": selected_ids,
-                        "baseline_score": baseline_score,
-                        "record": record,
-                    },
-                )
-                candidate_results[bid] = record
-
-            for bid, record in list(candidate_results.items()):
-                if "gain_abs" not in record:
-                    gain_abs = _gain_abs(baseline_score, record["score"])
-                    record["gain_abs"] = gain_abs
-                    record["gain_rel"] = _gain_rel(gain_abs, baseline_score)
-                    candidate_results[bid] = record
-
-            if len(candidate_results) != len(remaining):
-                raise RuntimeError(
-                    f"Step {step} has {len(candidate_results)} candidate results, "
-                    f"expected {len(remaining)}"
-                )
-
-            best_j = min(
-                remaining,
-                key=lambda j: (
-                    float("inf")
-                    if candidate_results[BENCH_IDS[j]]["score"] is None
-                    else candidate_results[BENCH_IDS[j]]["score"]
-                ),
-            )
-            best_record = candidate_results[BENCH_IDS[best_j]]
-            selected.append(best_j)
-            remaining.remove(best_j)
-            step_record = {
-                "step": step,
-                "selected_before": selected_ids,
-                "baseline": baseline,
-                "added_benchmark": BENCH_IDS[best_j],
-                "added_benchmark_name": BENCH_NAMES.get(BENCH_IDS[best_j], BENCH_IDS[best_j]),
-                "score": best_record["score"],
-                "medape": best_record["medape"],
-                "medae": best_record["medae"],
-                "gain_abs": best_record["gain_abs"],
-                "gain_rel": best_record["gain_rel"],
-                "probe_set": [BENCH_IDS[j] for j in selected],
-                "elapsed_s": time.time() - step_t0,
-                "candidate_results": candidate_results,
-            }
-            trajectory.append(step_record)
-            summary = _summarize_candidates(
-                candidate_ids,
-                fixed_ids,
-                protected_ids,
-                trajectory,
-                args.max_gain_abs,
-                args.max_gain_rel,
-                args.threshold_mode,
-                args.max_unique_model_coverage,
-                args.category_guard_top_n,
-            )
-            output = {
-                "config": config,
-                "trajectory": trajectory,
-                "summary": summary,
-                "result_path": out_path,
-                "elapsed_s": time.time() - t_all,
-            }
-            write_json_atomic(out_path, output, indent=2)
-            print(
-                f"  Added {BENCH_IDS[best_j]:30s} "
-                f"score={best_record['score']:.4f} "
-                f"gain={best_record['gain_abs']:.4f} "
-                f"removable_so_far={len(summary['removable_ids'])} "
-                f"[{time.time() - step_t0:.1f}s]"
-            )
-
-    final = load_json(out_path)
-    if args.allowlist_out:
-        allowlist_out = args.allowlist_out
-        if not os.path.isabs(allowlist_out):
-            allowlist_out = os.path.abspath(os.path.join(SCRIPT_DIR, allowlist_out))
-        _write_allowlist(allowlist_out, final)
-        final["allowlist_out"] = os.path.relpath(allowlist_out, REPO_ROOT)
-        write_json_atomic(out_path, final, indent=2)
-        print(f"Allowlist saved -> {allowlist_out}")
-
-    print(f"\nSaved -> {out_path}")
-    print(f"Total time: {time.time() - t_all:.1f}s")
 
 
 if __name__ == "__main__":
