@@ -132,11 +132,14 @@ def _cache_root(out_path: str, config: dict) -> str:
         str(config["category_guard_top_n"]),
     ]
     digest = short_text_hash("\n---\n".join(keys), n=12)
-    return os.path.join(
-        RESULTS_DIR,
-        ".candidate_cache",
-        f"{safe_token(stem)}__{digest}",
-    )
+    out_dir = os.path.dirname(os.path.abspath(out_path))
+    if os.path.commonpath([out_dir, os.path.abspath(RESULTS_DIR)]) == os.path.abspath(
+        RESULTS_DIR
+    ):
+        cache_parent = os.path.join(RESULTS_DIR, ".candidate_cache")
+    else:
+        cache_parent = os.path.join(out_dir, ".candidate_cache")
+    return os.path.join(cache_parent, f"{safe_token(stem)}__{digest}")
 
 
 def _eval_probe_set(probe_indices: list[int], metric: str):
