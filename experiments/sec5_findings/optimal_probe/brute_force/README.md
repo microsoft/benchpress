@@ -47,6 +47,20 @@ python submit_bonete.py \
 Submit one wave at a time by changing `--waves 0` to `--waves 1`, ..., or use
 `--waves 0-9` only when intentionally launching the full 80-job sweep.
 
+Full greedy-rank top-30 choose-5 run, split into 20 CPU waves:
+
+```bash
+python submit_bonete.py \
+  --candidate-allowlist ../candidate_allowlists/full_rank_top30_count_by_greedy_20260605.json \
+  --k 5 --metric medae \
+  --num-waves 20 --num-shards 1 \
+  --waves 0-19 \
+  --workers 24 --cpus 24 --memory 96 \
+  --setup benchpress-cpu \
+  --branch main \
+  --out-dir /data/benchpress/runs/benchpress/probe_bruteforce_results/exhaustive_medae_k5_candidates-full_rank_top30_count_by_greedy_20260605
+```
+
 Merge after all shards finish:
 
 ```bash
@@ -63,6 +77,9 @@ Merge after all shards finish:
 - Default low-cost candidate set:
   `../candidate_allowlists/user_cheap_20260505.json` (25 current-matrix
   benchmarks, so `C(25, 5) = 53,130` subsets).
+- Greedy-rank top-30 diagnostic candidate set:
+  `../candidate_allowlists/full_rank_top30_count_by_greedy_20260605.json`
+  (30 full-matrix benchmarks, so `C(30, 5) = 142,506` subsets).
 
 ## Outputs
 
@@ -106,10 +123,16 @@ many internal workers rather than one pod per subset.
 
 ## Last valid result
 
-Not yet run for the exhaustive low-cost choose-5 setting. The intended first
-full result is:
-
-- Candidate set: `user_cheap_20260505`
+- Candidate set: `full_rank_top30_count_by_greedy_20260605`
 - `k=5`
 - Metric: `medae`
 - Protocol: `all_known_probe_bruteforce_v1`
+- Local merged summary:
+  `results/top30_bruteforce/merged_summary.json.gz`
+- Remote PVC source:
+  `/data/benchpress/runs/benchpress/probe_bruteforce_results/exhaustive_medae_k5_candidates-full_rank_top30_count_by_greedy_20260605/merged_summary.json.gz`
+- Completeness: `142,506 / 142,506` subsets, `missing_chunks=0`
+- Best probe set: `gpqa_diamond`, `hle`, `mmlu_pro`, `arc_agi_1`,
+  `codeforces_rating`
+- Best score: MedAE `3.9264436813102748`; MedAPE
+  `6.588142223218943`; `n=2604`

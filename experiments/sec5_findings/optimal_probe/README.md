@@ -8,7 +8,7 @@ not share a directory across incompatible evaluation settings.
 | Protocol | Directory | Owns |
 |---|---|---|
 | Current-matrix / all-known-cell construction | `all_known/` | `run.py`, `run_random.py`, `plot.py`, `results/`, `figures/` |
-| Current-matrix / all-known-cell exhaustive optimum | `brute_force/` | `run.py`, `run_bonete.sh`, `submit_bonete.py`, chunked `results/` |
+| Current-matrix / all-known-cell exhaustive optimum | `brute_force/` | `run.py`, `run_bonete.sh`, `submit_bonete.py`, chunked `results/`; latest top-30 diagnostic summary at `brute_force/results/top30_bruteforce/merged_summary.json.gz` |
 | Current-matrix / all-known candidate pruning | `pruning/` | Greedy-rank pruning diagnostic, generated pruned allowlists |
 | Model-split held-out validation | `holdout/` | `run_model_split_validation.py`, `run_model_split_random.py`, Bonete launcher, `results/` |
 
