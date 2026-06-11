@@ -121,12 +121,14 @@ many internal workers rather than one pod per subset.
 - `merge` fails fast unless all expected chunks are present, unless
   `--allow-incomplete` is explicitly provided for diagnostics.
 
-## Last valid result
+## Last valid results
+
+Both results use `k=5`, metric `medae`, and protocol
+`all_known_probe_bruteforce_v1`.
+
+### Greedy-rank top-30 candidates
 
 - Candidate set: `full_rank_top30_count_by_greedy_20260605`
-- `k=5`
-- Metric: `medae`
-- Protocol: `all_known_probe_bruteforce_v1`
 - Local merged summary:
   `results/top30_bruteforce/merged_summary.json.gz`
 - Remote PVC source:
@@ -136,3 +138,16 @@ many internal workers rather than one pod per subset.
   `codeforces_rating`
 - Best score: MedAE `3.9264436813102748`; MedAPE
   `6.588142223218943`; `n=2604`
+
+### Low-cost candidates
+
+- Candidate set: `user_cheap_20260505`
+- Local merged summary:
+  `results/lowcost_bruteforce/merged_summary.json.gz`
+- Remote PVC source:
+  `/data/benchpress/runs/benchpress/probe_bruteforce_results/exhaustive_medae_k5_candidates-user_cheap_20260505/merged_summary.json.gz`
+- Completeness: `53,130 / 53,130` subsets, `missing_combo_indices=0`
+- Best probe set: `tau2_bench_telecom`, `matharena_apex_2025`,
+  `gpqa_diamond`, `aider_polyglot_diff`, `mmlu_pro`
+- Best score: MedAE `4.464725682233784`; MedAPE
+  `7.411531542389898`; `n=2604`
