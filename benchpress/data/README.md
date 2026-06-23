@@ -3,6 +3,15 @@
 Sparse model × benchmark score matrix for BenchPress experiments.
 Schema: `models[]`, `benchmarks[]`, `scores[{model_id, benchmark_id, score, reference_url}]`.
 
+## License
+
+The BenchPress score-matrix dataset files in this directory are released under
+the Community Data License Agreement - Permissive - Version 2.0
+(`CDLA-Permissive-2.0`). See `LICENSE-CDLA-2.0.md`.
+
+The repository's top-level MIT license applies to the BenchPress code and
+documentation, not to this dataset license grant.
+
 `benchmark_cost_evidence.json` is a separate evidence file for public,
 mechanically extractable benchmark cost signals such as prompt/completion token
 tables. It is not part of the score matrix schema; see
