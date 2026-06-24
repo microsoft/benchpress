@@ -12,8 +12,9 @@
     <a href="https://github.com/microsoft/benchpress/releases">
         <img alt="GitHub release" src="https://img.shields.io/github/release/microsoft/benchpress.svg">
     </a>
-    <!-- TODO: replace with arXiv link once posted -->
-    <img alt="arXiv" src="https://img.shields.io/badge/arXiv-coming%20soon-b31b1b.svg">
+    <a href="https://arxiv.org/pdf/2606.24020">
+        <img alt="arXiv" src="https://img.shields.io/badge/arXiv-2606.24020-b31b1b.svg">
+    </a>
     <a href="https://github.com/microsoft/benchpress/blob/main/LICENSE">
         <img alt="License" src="https://img.shields.io/github/license/microsoft/benchpress.svg">
     </a>
@@ -23,7 +24,7 @@
   <a href="https://microsoft.github.io/benchpress/">Project page</a> ·
   <a href="https://github.com/microsoft/benchpress">Code</a> ·
   <a href="https://huggingface.co/datasets/microsoft/benchpress-score-matrix">Dataset</a> ·
-  <span>Paper coming soon</span>
+  <a href="https://arxiv.org/pdf/2606.24020">Paper</a>
 </p>
 
 **Abstract**: A modern model release reports scores on 40+ benchmarks; behind the release, evaluations were run orders of magnitude more often across checkpoints, hyperparameter sweeps, and design choices. We ask whether scores accumulated across public releases can *anticipate* a model's performance on benchmarks it has not yet been run on, and decide which evaluations are most worth running next.
@@ -247,13 +248,14 @@ python experiments/sec4_building_benchpress/method_comparison/plot.py
 
 # Step 5: Cite Us
 
-<!-- TODO: replace with arXiv eprint + journal entry once posted -->
 ```tex
-@misc{zeng2026benchpress,
+@misc{zeng2026dontneedruneval,
   title={You Don't Need to Run Every Eval},
-  author={Zeng, Yuchen and Papailiopoulos, Dimitris},
+  author={Yuchen Zeng and Dimitris Papailiopoulos},
   year={2026},
-  note={Preprint},
-  url={https://microsoft.github.io/benchpress/}
+  eprint={2606.24020},
+  archivePrefix={arXiv},
+  primaryClass={cs.LG},
+  url={https://arxiv.org/abs/2606.24020}
 }
 ```

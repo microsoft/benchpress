@@ -10,6 +10,6 @@ Links:
 - Paper code: https://github.com/microsoft/benchpress
 - Site source: https://github.com/microsoft/benchpress/tree/main/website
 - Dataset: https://huggingface.co/datasets/microsoft/benchpress-score-matrix
-- Paper: coming soon
+- Paper: https://arxiv.org/pdf/2606.24020
 
 Source matrix: 84 models x 133 benchmarks. Point predictions use Logit Bias ALS (rank 2, lambda=0.1). Trust probabilities and intervals use the Section 4.4 hybrid uncertainty model with conformal calibration. Trust probability estimates how likely the prediction is to be within 10 score points of the true benchmark result.
