@@ -39,8 +39,7 @@ Finally, we stress-test deployment: **five probe benchmarks predict the rest of 
 
 # News  🚀
 
-<!-- TODO: replace with actual release date + arXiv announcement -->
-* [TBD] BenchPress paper and code released.
+* [2026-06-23] [BenchPress paper](https://arxiv.org/pdf/2606.24020) and code released.
 
 # Contents
 
