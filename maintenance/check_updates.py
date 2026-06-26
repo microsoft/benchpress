@@ -97,9 +97,9 @@ def website_artifact_status(path: Path, raw_path: Path) -> dict[str, Any]:
         base["newest_source"] = f"semantic check failed: {exc}"
         return base
 
-    if site_models == matrix_models and site_benchmarks == matrix_benchmarks:
+    if set(site_models) == set(matrix_models) and set(site_benchmarks) == set(matrix_benchmarks):
         base["state"] = "ok"
-        base["newest_source"] = "semantic match"
+        base["newest_source"] = "semantic ID match"
     else:
         base["state"] = "stale"
         base["newest_source"] = (
