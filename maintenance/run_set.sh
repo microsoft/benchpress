@@ -22,6 +22,8 @@ RUN_GREEDY="${RUN_GREEDY:-0}"
 RUN_RANDOM="${RUN_RANDOM:-0}"
 RUN_PLOTS="${RUN_PLOTS:-0}"
 RUN_WEBSITE="${RUN_WEBSITE:-0}"
+RUN_HF_EXPORT="${RUN_HF_EXPORT:-0}"
+RUN_DOCS_CHECK="${RUN_DOCS_CHECK:-1}"
 
 run() {
   echo "+ $*"
@@ -55,6 +57,10 @@ fi
 run python -m json.tool benchpress/data/llm_benchmark_data.json /tmp/benchpress_matrix_json_check.json
 run_report python maintenance/check_updates.py
 
+if [[ "$RUN_DOCS_CHECK" == "1" ]]; then
+  run python maintenance/check_docs.py
+fi
+
 if [[ "$RUN_MATRIX" == "1" ]]; then
   run python -m benchpress.build_benchmark_matrix --excel benchpress/data/llm_benchmark_matrix.xlsx
 fi
@@ -82,6 +88,10 @@ fi
 if [[ "$RUN_WEBSITE" == "1" ]]; then
   run python website/scripts/add_prediction_intervals.py
   run python -m json.tool website/data.json /tmp/benchpress_website_data_check.json
+fi
+
+if [[ "$RUN_HF_EXPORT" == "1" ]]; then
+  run python maintenance/export_hf_dataset.py
 fi
 
 run_report python maintenance/check_updates.py

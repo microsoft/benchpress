@@ -1,6 +1,7 @@
 {
   "raw_matrix": "benchpress/data/llm_benchmark_data.json",
   "matrix_export": "benchpress/data/llm_benchmark_matrix.xlsx",
+  "hf_export_dir": "maintenance/exports/hf_dataset",
   "website_data": "website/data.json",
   "website_interval_script": "website/scripts/add_prediction_intervals.py",
   "default_prediction_dir": "benchpress/evaluation/default_predictions/benchpress_default",

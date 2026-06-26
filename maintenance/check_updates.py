@@ -137,12 +137,18 @@ def matrix_summary(raw_path: Path) -> tuple[list[str], list[str]]:
     else:
         lines.append("```text\n" + output + "\n```")
         actions.append("Fix matrix build/import errors before running downstream refresh steps.")
+
+    ok, output = run_probe([sys.executable, "maintenance/check_docs.py"])
+    lines.extend(["", "### README count check", "", "```text\n" + output + "\n```"])
+    if not ok:
+        actions.append("Update README counts or investigate matrix-count drift.")
     return lines, actions
 
 
 def write_report(config: dict[str, Any], report_path: Path) -> tuple[list[str], bool]:
     raw_path = ROOT / config["raw_matrix"]
     matrix_export = ROOT / config["matrix_export"]
+    hf_export_dir = ROOT / config.get("hf_export_dir", "maintenance/exports/hf_dataset")
     website_data = ROOT / config["website_data"]
     interval_script = ROOT / config["website_interval_script"]
     default_prediction_dir = ROOT / config["default_prediction_dir"]
@@ -163,6 +169,7 @@ def write_report(config: dict[str, Any], report_path: Path) -> tuple[list[str], 
 
     tracked = [
         artifact_status(matrix_export, [raw_path]),
+        artifact_status(hf_export_dir / "metadata.json", [raw_path]),
         website_artifact_status(website_data, raw_path),
     ]
     metadata_path = default_prediction_dir / "metadata.json"
