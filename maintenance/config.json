@@ -1,0 +1,51 @@
+{
+  "raw_matrix": "benchpress/data/llm_benchmark_data.json",
+  "matrix_export": "benchpress/data/llm_benchmark_matrix.xlsx",
+  "website_data": "website/data.json",
+  "website_interval_script": "website/scripts/add_prediction_intervals.py",
+  "default_prediction_dir": "benchpress/evaluation/default_predictions/benchpress_default",
+  "probe_sets": [
+    {
+      "name": "scorecard_medape_all",
+      "command": "OUT=greedy_medape_targets_tall_candidates_tall.json.gz MAX_STEPS=10 WORKERS=${WORKERS:-48} ./run.sh",
+      "cwd": "experiments/sec5_findings/optimal_probe",
+      "output": "experiments/sec5_findings/optimal_probe/results/greedy_medape_targets_tall_candidates_tall.json.gz"
+    },
+    {
+      "name": "scorecard_medape_usercheap",
+      "command": "CANDIDATE_ALLOWLIST=candidate_allowlists/user_cheap_20260505.json OUT=greedy_medape_targets_tall_candidates_usercheap.json.gz MAX_STEPS=10 WORKERS=${WORKERS:-48} ./run.sh",
+      "cwd": "experiments/sec5_findings/optimal_probe",
+      "output": "experiments/sec5_findings/optimal_probe/results/greedy_medape_targets_tall_candidates_usercheap.json.gz"
+    },
+    {
+      "name": "scorecard_random",
+      "command": "python run_random.py --k-max 30 --n-seeds 10 --workers ${RANDOM_WORKERS:-24}",
+      "cwd": "experiments/sec5_findings/optimal_probe",
+      "output": "experiments/sec5_findings/optimal_probe/results/random_medape_hero_all_known.json.gz"
+    },
+    {
+      "name": "ranking_margin5_all",
+      "command": "OUT=greedy_pairwise_margin5_top10_targets_all_candidates_all.json.gz MAX_STEPS=10 WORKERS=${WORKERS:-48} ./run.sh",
+      "cwd": "experiments/sec5_findings/ranking_preservation/greedy_probe_set",
+      "output": "experiments/sec5_findings/ranking_preservation/greedy_probe_set/results/greedy_pairwise_margin5_top10_targets_all_candidates_all.json.gz"
+    },
+    {
+      "name": "ranking_margin5_usercheap",
+      "command": "CANDIDATE_ALLOWLIST=../../optimal_probe/candidate_allowlists/user_cheap_20260505.json OUT=greedy_pairwise_margin5_top10_targets_usercheap_candidates_usercheap.json.gz MAX_STEPS=10 WORKERS=${WORKERS:-48} ./run.sh",
+      "cwd": "experiments/sec5_findings/ranking_preservation/greedy_probe_set",
+      "output": "experiments/sec5_findings/ranking_preservation/greedy_probe_set/results/greedy_pairwise_margin5_top10_targets_usercheap_candidates_usercheap.json.gz"
+    }
+  ],
+  "plots": [
+    {
+      "name": "probe_medape_compare",
+      "command": "python plot.py --compare --random-in random_medape_hero_all_known.json.gz --cheap-in greedy_medape_targets_tall_candidates_usercheap.json.gz --out bp_probe_evaluation_cost_unaware",
+      "cwd": "experiments/sec5_findings/optimal_probe"
+    },
+    {
+      "name": "hero_figure",
+      "command": "python plot.py",
+      "cwd": "experiments/sec1_intro/hero_figure"
+    }
+  ]
+}

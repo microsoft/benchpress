@@ -66,6 +66,6 @@ Re-running the same `OUT=...` resumes from the completed trajectory and candidat
 
 ## Last valid result
 
-Cost-unaware run on branch `yz`, commit `3d6ac50`, using 48 workers. The selected top-10 prefix ends with `alpacaeval_2` and reaches margin-5 pairwise ranking accuracy `0.888543823326432` over `27245` comparable pairs.
+Cost-unaware legacy run at commit `3d6ac50`, using 48 workers. The selected top-10 prefix ends with `alpacaeval_2` and reaches margin-5 pairwise ranking accuracy `0.888543823326432` over `27245` comparable pairs.
 
-Cost-aware candidate-constrained run on branch `yz`, commit `2ccb061`, using 48 workers. The selected top-10 prefix is `gpqa_diamond`, `mmlu_pro`, `aime_2025`, `bullshit_pushback`, `hmmt_feb_2026`, `math_500`, `alpacaeval_2`, `hmmt_feb_2025`, `aider_polyglot_whole`, `arena_hard`, and reaches margin-5 pairwise ranking accuracy `0.8619555353901995` over `27245` comparable pairs.
+Cost-aware candidate-constrained legacy run at commit `2ccb061`, using 48 workers. The selected top-10 prefix is `gpqa_diamond`, `mmlu_pro`, `aime_2025`, `bullshit_pushback`, `hmmt_feb_2026`, `math_500`, `alpacaeval_2`, `hmmt_feb_2025`, `aider_polyglot_whole`, `arena_hard`, and reaches margin-5 pairwise ranking accuracy `0.8619555353901995` over `27245` comparable pairs.

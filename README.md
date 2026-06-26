@@ -53,7 +53,8 @@ Finally, we stress-test deployment: **five probe benchmarks predict the rest of 
   - [Repository Structure](#repository-structure)
   - [Artifact Policy](#artifact-policy)
   - [Run a Single Experiment](#run-a-single-experiment)
-- [Step 5: Cite Us](#step-5-cite-us)
+- [Step 5: Maintain the Living Matrix](#step-5-maintain-the-living-matrix)
+- [Step 6: Cite Us](#step-6-cite-us)
 
 # Step 1: Set Up Environment
 
@@ -246,7 +247,27 @@ python experiments/sec4_building_benchpress/method_comparison/run.py --merge
 python experiments/sec4_building_benchpress/method_comparison/plot.py
 ```
 
-# Step 5: Cite Us
+# Step 5: Maintain the Living Matrix
+
+BenchPress is maintained as a living score matrix. After adding citation-backed
+models, benchmarks, or scores to `benchpress/data/llm_benchmark_data.json`, use
+the maintenance wrappers to inspect and refresh downstream artifacts:
+
+```bash
+python maintenance/check_updates.py
+maintenance/run_set.sh   # dry-run preview by default
+```
+
+To execute the matrix refresh and selected downstream steps, set the relevant
+flags, for example:
+
+```bash
+DRY_RUN=0 RUN_MATRIX=1 RUN_GREEDY=1 RUN_PLOTS=1 RUN_WEBSITE=1 maintenance/run_set.sh
+```
+
+See `maintenance/README.md` for the full checklist.
+
+# Step 6: Cite Us
 
 ```tex
 @misc{zeng2026dontneedruneval,
