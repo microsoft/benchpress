@@ -90,7 +90,7 @@ BenchPress uses a citation-backed evaluation matrix:
 
 - **189 frontier LLMs** from 28 providers (OpenAI, Anthropic, Google, Meta, DeepSeek, Alibaba, Mistral, xAI, Moonshot AI, Zhipu AI, Microsoft, ByteDance, Amazon, MiniMax, NVIDIA, Cohere, Allen AI, IBM, Liquid AI, LG AI Research, Hugging Face, OpenBMB, TII, Sarvam AI, Shanghai AI Lab, Open Thoughts, Meituan, Mistral AI) — **before filtering**
 - **316 benchmarks** across 59 categories — **before filtering**
-- **4,905 observed scores**, each citation-backed
+- **4,903 observed scores**, each citation-backed
 - Paper-canonical filter (keep models with $\geq 15$ observed scores and benchmarks with $\geq 8$ observed models), with duplicate/setting-variant exclusions: **84 models × 133 benchmarks**, 2,604 observed (23.3% fill rate)
 - **Smart clip**: only percentage-scale benchmarks are clipped to [0, 100]; Elo/rating benchmarks (Codeforces, Chatbot Arena, GDP-Val) are left unclipped
 

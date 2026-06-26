@@ -78,6 +78,37 @@ def artifact_status(path: Path, sources: list[Path]) -> dict[str, Any]:
     }
 
 
+def website_artifact_status(path: Path, raw_path: Path) -> dict[str, Any]:
+    base = artifact_status(path, [])
+    if not path.exists() or not raw_path.exists():
+        return base
+
+    try:
+        site = load_json(path)
+        from benchpress.build_benchmark_matrix import load_score_matrix
+
+        df = load_score_matrix(json_path=raw_path)
+        site_models = [m.get("id") for m in site.get("models", [])]
+        site_benchmarks = [b.get("id") for b in site.get("benchmarks", [])]
+        matrix_models = list(df.index)
+        matrix_benchmarks = list(df.columns)
+    except Exception as exc:
+        base["state"] = "check_failed"
+        base["newest_source"] = f"semantic check failed: {exc}"
+        return base
+
+    if site_models == matrix_models and site_benchmarks == matrix_benchmarks:
+        base["state"] = "ok"
+        base["newest_source"] = "semantic match"
+    else:
+        base["state"] = "stale"
+        base["newest_source"] = (
+            f"semantic mismatch: site {len(site_models)}x{len(site_benchmarks)}, "
+            f"matrix {len(matrix_models)}x{len(matrix_benchmarks)}"
+        )
+    return base
+
+
 def matrix_summary(raw_path: Path) -> tuple[list[str], list[str]]:
     lines: list[str] = []
     actions: list[str] = []
@@ -132,7 +163,7 @@ def write_report(config: dict[str, Any], report_path: Path) -> tuple[list[str], 
 
     tracked = [
         artifact_status(matrix_export, [raw_path]),
-        artifact_status(website_data, [raw_path]),
+        website_artifact_status(website_data, raw_path),
     ]
     metadata_path = default_prediction_dir / "metadata.json"
     predictions_path = default_prediction_dir / "predictions.npz"
