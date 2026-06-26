@@ -100,23 +100,30 @@ BenchPress uses a citation-backed evaluation matrix:
   <em>Observed (blue) vs. missing (white) cells in the paper-canonical 84 × 133 score matrix.</em>
 </p>
 
-The paper-canonical dataset is published at:
+The public dataset is published at:
 
 - **Hugging Face**: <https://huggingface.co/datasets/microsoft/benchpress-score-matrix>
 - **Local cache after download**: `benchpress/data/llm_benchmark_data.json`
 
 BenchPress is a living dataset: new model releases, benchmark updates, and corrected citations can be added as the evaluation landscape changes. We welcome pull requests that add citation-backed scores, new models, new benchmarks, or provenance fixes.
 
-After running `python -m benchpress.download_data`, local matrix files live in `benchpress/data/`:
+After running `python -m benchpress.download_data`, the package creates a local
+JSON cache under `benchpress/data/`:
 
 ```
 benchpress/data/
 ├── llm_benchmark_data.json        # Machine-readable scores
-├── benchmark_cost_evidence.json   # Raw cost-evidence extracts, when available
-└── *.md                           # Data schema and provenance notes, when available
+└── _hf_cache/                      # Downloaded CSV mirror, when JSON is rebuilt from tables
 ```
 
-The downloader is artifact-first. If the full JSON export is available on Hugging Face, it downloads that exact artifact. If only the public table mirror is available, it reconstructs the paper score matrix from the mirror and prints the limitation explicitly; that fallback preserves the paper matrix but may not include every rich provenance field such as cost evidence and candidate-level score traces.
+The Hugging Face release is the public table export. It includes `scores_all`
+(the pre-filter public score table), `scores_paper` (the paper-canonical
+84-model x 133-benchmark matrix), plus model and benchmark metadata. The
+downloader rebuilds `llm_benchmark_data.json` from this public mirror when a
+full JSON artifact is not present. That rebuilt JSON is sufficient for package
+use and paper-matrix reproduction, but it is not the complete internal audit
+artifact: rich fields such as `candidates[]` and raw cost-evidence traces may be
+absent.
 
 `llm_benchmark_data.json` is the canonical source for code. It contains:
 

@@ -1,9 +1,9 @@
 """Download the public BenchPress score-matrix artifacts from Hugging Face.
 
 The release repository intentionally does not track generated
-``benchpress/data/`` artifacts. This module restores the canonical JSON and
-supporting evidence files used by the package from the public Hugging Face
-dataset release.
+``benchpress/data/`` artifacts. This module restores the local JSON cache used
+by the package. If Hugging Face does not contain a full JSON artifact, the cache
+is rebuilt from the public CSV mirror and may omit richer internal audit fields.
 """
 
 from __future__ import annotations
