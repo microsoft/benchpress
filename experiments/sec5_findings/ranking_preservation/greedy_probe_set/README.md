@@ -8,7 +8,7 @@ current-matrix construction and held-out validation do not share paths.
 | Protocol | Directory | Owns |
 |---|---|---|
 | Current-matrix / all-known-cell construction | `all_known/` | `run.py`, `results/` |
-| Model-split held-out validation | `holdout/` | `run_model_split_validation.py`, Bonete launcher, sync helper, `results/` |
+| Model-split held-out validation | `holdout/` | `run_model_split_validation.py`, `results/` |
 
 ## Paper mapping
 

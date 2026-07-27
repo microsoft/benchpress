@@ -18,7 +18,7 @@ optimal under the same candidate universe and metric.
 
 ## How to run
 
-Smoke-test one small shard on Bonete or another remote CPU environment:
+Smoke-test one small shard on any CPU machine:
 
 ```bash
 cd experiments/sec5_findings/optimal_probe/brute_force
@@ -31,34 +31,35 @@ cd experiments/sec5_findings/optimal_probe/brute_force
   --max-subsets 4
 ```
 
-Full low-cost choose-5 run, split into 10 waves and 8 shards per wave:
+Full low-cost choose-5 run, split into 10 waves and 8 shards per wave. Each
+`(wave-index, shard-index)` pair is an independent CPU job; submit them with
+whatever scheduler is available:
 
 ```bash
-python submit_bonete.py \
-  --candidate-allowlist ../candidate_allowlists/user_cheap_20260505.json \
-  --k 5 --metric medae \
-  --num-waves 10 --num-shards 8 \
-  --waves 0 \
-  --workers 128 --cpus 128 --memory 256 \
-  --setup benchpress-cpu \
-  --branch main
+for wave in $(seq 0 9); do
+  for shard in $(seq 0 7); do
+    ./run.sh run-shard \
+      --candidate-allowlist ../candidate_allowlists/user_cheap_20260505.json \
+      --k 5 --metric medae \
+      --num-waves 10 --wave-index "$wave" \
+      --num-shards 8 --shard-index "$shard" \
+      --workers 128
+  done
+done
 ```
 
-Submit one wave at a time by changing `--waves 0` to `--waves 1`, ..., or use
-`--waves 0-9` only when intentionally launching the full 80-job sweep.
-
-Full greedy-rank top-30 choose-5 run, split into 20 CPU waves:
+Full greedy-rank top-30 choose-5 run, split into 20 waves with one shard each:
 
 ```bash
-python submit_bonete.py \
-  --candidate-allowlist ../candidate_allowlists/full_rank_top30_count_by_greedy_20260605.json \
-  --k 5 --metric medae \
-  --num-waves 20 --num-shards 1 \
-  --waves 0-19 \
-  --workers 24 --cpus 24 --memory 96 \
-  --setup benchpress-cpu \
-  --branch main \
-  --out-dir /data/benchpress/runs/benchpress/probe_bruteforce_results/exhaustive_medae_k5_candidates-full_rank_top30_count_by_greedy_20260605
+for wave in $(seq 0 19); do
+  ./run.sh run-shard \
+    --candidate-allowlist ../candidate_allowlists/full_rank_top30_count_by_greedy_20260605.json \
+    --k 5 --metric medae \
+    --num-waves 20 --wave-index "$wave" \
+    --num-shards 1 --shard-index 0 \
+    --workers 24 \
+    --out-dir results/exhaustive_medae_k5_candidates-full_rank_top30_count_by_greedy_20260605
+done
 ```
 
 Merge after all shards finish:
@@ -83,8 +84,8 @@ Merge after all shards finish:
 
 ## Outputs
 
-Local runs default to `results/<run_id>/`. Bonete submissions default to the
-shared PVC directory `/data/benchpress/runs/benchpress/probe_bruteforce_results/<run_id>/`
+Runs default to `results/<run_id>/`; pass `--out-dir` to write shards to a
+shared filesystem instead
 so separately scheduled shards can be merged.
 
 ```text
@@ -132,7 +133,7 @@ Both results use `k=5`, metric `medae`, and protocol
 - Local merged summary:
   `results/top30_bruteforce/merged_summary.json.gz`
 - Remote PVC source:
-  `/data/benchpress/runs/benchpress/probe_bruteforce_results/exhaustive_medae_k5_candidates-full_rank_top30_count_by_greedy_20260605/merged_summary.json.gz`
+  `results/exhaustive_medae_k5_candidates-full_rank_top30_count_by_greedy_20260605/merged_summary.json.gz`
 - Completeness: `142,506 / 142,506` subsets, `missing_chunks=0`
 - Best probe set: `gpqa_diamond`, `hle`, `mmlu_pro`, `arc_agi_1`,
   `codeforces_rating`
@@ -145,7 +146,7 @@ Both results use `k=5`, metric `medae`, and protocol
 - Local merged summary:
   `results/lowcost_bruteforce/merged_summary.json.gz`
 - Remote PVC source:
-  `/data/benchpress/runs/benchpress/probe_bruteforce_results/exhaustive_medae_k5_candidates-user_cheap_20260505/merged_summary.json.gz`
+  `results/exhaustive_medae_k5_candidates-user_cheap_20260505/merged_summary.json.gz`
 - Completeness: `53,130 / 53,130` subsets, `missing_combo_indices=0`
 - Best probe set: `tau2_bench_telecom`, `matharena_apex_2025`,
   `gpqa_diamond`, `aider_polyglot_diff`, `mmlu_pro`
