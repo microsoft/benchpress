@@ -115,7 +115,9 @@ JSON cache under `benchpress/data/`:
 
 ```
 benchpress/data/
-├── llm_benchmark_data.json        # Machine-readable scores
+├── llm_benchmark_data.json         # Machine-readable scores
+├── benchmark_cost_evidence.json    # Raw cost-evidence extracts, when available
+├── *.md                            # Data schema and provenance notes
 └── _hf_cache/                      # Downloaded CSV mirror, when JSON is rebuilt from tables
 ```
 
@@ -225,6 +227,7 @@ benchpress/
 │   ├── sec3_low_rank/                    #   §3 — Low-rank structure (matrix viz, SVD)
 │   ├── sec4_building_benchpress/         #   §4 — Building BenchPress (recipe ablations)
 │   ├── sec5_findings/                    #   §5 — Findings (predictability, ranking, robustness)
+│   ├── sec6_trust/                       #   §6 — Trust (confidence calibration, hypotheses)
 │   └── appendix_*/                       #   Appendix experiments
 ├── predict.py                            # CLI prediction tool
 └── pyproject.toml

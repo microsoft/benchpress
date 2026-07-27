@@ -19,7 +19,7 @@ import numpy as np
 
 SITE_DIR = Path(__file__).resolve().parents[1]
 BENCHPRESS_DIR = SITE_DIR.parent / "github"
-CONF_DIR = BENCHPRESS_DIR / "experiments/sec4_building_benchpress/confidence_calibration"
+CONF_DIR = BENCHPRESS_DIR / "experiments/sec6_trust/confidence_calibration"
 DATA_PATH = SITE_DIR / "data.json"
 SCORES_PATH = CONF_DIR / "confidence_scores.npz"
 RESULTS_PATH = CONF_DIR / "results.json"
@@ -190,7 +190,7 @@ def main() -> None:
         "heldout_coverage": round(float(method["conformal_90_interval"]["coverage"]), 4),
         "heldout_median_width": round(float(method["conformal_90_interval"]["median_width"]), 3),
         "conformal_scale_median": round(conformal_scale, 4),
-        "risk_source": "github/experiments/sec4_building_benchpress/confidence_calibration/confidence_scores.npz",
+        "risk_source": "github/experiments/sec6_trust/confidence_calibration/confidence_scores.npz",
         "risk_field": risk_field,
         "trust_probability": "Calibrated P(abs(predicted - actual) <= 10 score points | hybrid uncertainty risk)",
         "trust_calibration": trust_metadata,

@@ -17,6 +17,7 @@ experiments/sec4_building_benchpress/llm_completer/*/predictions/
 # Downloaded/generated public data artifacts.
 benchpress/data/_hf_cache/
 benchpress/data/llm_benchmark_data.json
+benchpress/data/benchmark_cost_evidence.json
 benchpress/data/llm_benchmark_matrix.xlsx
 benchpress/data/metadata.json
 

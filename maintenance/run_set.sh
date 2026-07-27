@@ -70,18 +70,18 @@ if [[ "$RUN_DEFAULT_PREDICTIONS" == "1" ]]; then
 fi
 
 if [[ "$RUN_GREEDY" == "1" ]]; then
-  run_shell "cd experiments/sec5_findings/optimal_probe && OUT=greedy_medape_targets_tall_candidates_tall.json.gz MAX_STEPS=10 WORKERS=$WORKERS ./run.sh"
-  run_shell "cd experiments/sec5_findings/optimal_probe && CANDIDATE_ALLOWLIST=candidate_allowlists/user_cheap_20260505.json OUT=greedy_medape_targets_tall_candidates_usercheap.json.gz MAX_STEPS=10 WORKERS=$WORKERS ./run.sh"
-  run_shell "cd experiments/sec5_findings/ranking_preservation/greedy_probe_set && OUT=greedy_pairwise_margin5_top10_targets_all_candidates_all.json.gz MAX_STEPS=10 WORKERS=$WORKERS ./run.sh"
-  run_shell "cd experiments/sec5_findings/ranking_preservation/greedy_probe_set && CANDIDATE_ALLOWLIST=../../optimal_probe/candidate_allowlists/user_cheap_20260505.json OUT=greedy_pairwise_margin5_top10_targets_usercheap_candidates_usercheap.json.gz MAX_STEPS=10 WORKERS=$WORKERS ./run.sh"
+  run_shell "cd experiments/sec5_findings/optimal_probe/all_known && OUT=greedy_medape_targets_tall_candidates_tall.json.gz MAX_STEPS=10 WORKERS=$WORKERS ./run.sh"
+  run_shell "cd experiments/sec5_findings/optimal_probe/all_known && CANDIDATE_ALLOWLIST=../candidate_allowlists/user_cheap_20260505.json OUT=greedy_medape_targets_tall_candidates_usercheap.json.gz MAX_STEPS=10 WORKERS=$WORKERS ./run.sh"
+  run_shell "cd experiments/sec5_findings/ranking_preservation/greedy_probe_set/all_known && OUT=greedy_pairwise_margin5_top10_targets_all_candidates_all.json.gz MAX_STEPS=10 WORKERS=$WORKERS ./run.sh"
+  run_shell "cd experiments/sec5_findings/ranking_preservation/greedy_probe_set/all_known && CANDIDATE_ALLOWLIST=../../../optimal_probe/candidate_allowlists/user_cheap_20260505.json OUT=greedy_pairwise_margin5_top10_targets_usercheap_candidates_usercheap.json.gz MAX_STEPS=10 WORKERS=$WORKERS ./run.sh"
 fi
 
 if [[ "$RUN_RANDOM" == "1" ]]; then
-  run_shell "cd experiments/sec5_findings/optimal_probe && python run_random.py --k-max 30 --n-seeds 10 --workers $RANDOM_WORKERS"
+  run_shell "cd experiments/sec5_findings/optimal_probe/all_known && python run_random.py --k-max 30 --n-seeds 10 --workers $RANDOM_WORKERS"
 fi
 
 if [[ "$RUN_PLOTS" == "1" ]]; then
-  run_shell "cd experiments/sec5_findings/optimal_probe && python plot.py --compare --random-in random_medape_hero_all_known.json.gz --cheap-in greedy_medape_targets_tall_candidates_usercheap.json.gz --out bp_probe_evaluation_cost_unaware"
+  run_shell "cd experiments/sec5_findings/optimal_probe/all_known && python plot.py --compare --random-in random_medape_hero_all_known.json.gz --cheap-in greedy_medape_targets_tall_candidates_usercheap.json.gz --out bp_probe_evaluation_cost_unaware"
   run_shell "cd experiments/sec1_intro/hero_figure && python plot.py"
 fi
 
