@@ -2,8 +2,9 @@
 
 The release repository intentionally does not track generated
 ``benchpress/data/`` artifacts. This module restores the local JSON cache used
-by the package. If Hugging Face does not contain a full JSON artifact, the cache
-is rebuilt from the public CSV mirror and may omit richer internal audit fields.
+by the package. Hugging Face currently publishes only the CSV mirror, whose
+schema has no columns for candidates, cost, or audit provenance; a rebuild from
+it is therefore lossy and never overwrites an existing matrix.
 """
 
 from __future__ import annotations
@@ -11,6 +12,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import sys
 from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.request import urlretrieve
@@ -161,10 +163,24 @@ def download_data(data_dir: Path = PACKAGE_DATA_DIR, *, force: bool = False) -> 
             _download_optional(f"{HF_BASE_URL}/{rel_path}", data_dir / Path(rel_path).name, force=force)
         return matrix_path
 
+    if matrix_path.exists():
+        print(
+            f"Keeping the existing {matrix_path.name}. Hugging Face does not carry "
+            f"the full JSON artifact, and the CSV mirror cannot express candidates, "
+            f"cost, or audit provenance, so rebuilding would silently drop them.",
+            file=sys.stderr,
+        )
+        return matrix_path
+
     cache_dir = data_dir / "_hf_cache"
     for rel_path in CSV_FALLBACK_FILES.values():
         _download(f"{HF_BASE_URL}/{rel_path}", cache_dir / rel_path, force=force)
     _build_json_from_csv(cache_dir, matrix_path)
+    print(
+        f"Built {matrix_path.name} from the CSV mirror. Candidates, cost, and audit "
+        f"fields are absent because the CSV schema has no columns for them.",
+        file=sys.stderr,
+    )
     return matrix_path
 
 
@@ -184,7 +200,7 @@ def main() -> None:
     )
     args = parser.parse_args()
     path = download_data(args.data_dir, force=args.force)
-    print(f"Wrote {path}")
+    print(f"Matrix available at {path}")
 
 
 if __name__ == "__main__":
