@@ -1,0 +1,281 @@
+{
+  "description": "observational scaling laws on the paper score matrix",
+  "n_folds": 30,
+  "block_size": 8,
+  "n_components": 3,
+  "min_train_models": 5,
+  "impute_component_grid": [
+    1,
+    2,
+    3,
+    5
+  ],
+  "benchpress_predictor": "logit Bias ALS, rank 2, lambda 0.1",
+  "smoke": false,
+  "applicability": {
+    "n_models": 84,
+    "n_benchmarks": 133,
+    "observed_cells": 2604,
+    "fill_rate": 0.2331,
+    "densest_benchmarks": [
+      {
+        "id": "gpqa_diamond",
+        "name": "GPQA Diamond",
+        "n_models": 82
+      },
+      {
+        "id": "gpqa_main",
+        "name": "GPQA Main (full set)",
+        "n_models": 71
+      },
+      {
+        "id": "livecodebench",
+        "name": "LiveCodeBench",
+        "n_models": 61
+      },
+      {
+        "id": "mmlu_pro",
+        "name": "MMLU-Pro",
+        "n_models": 58
+      },
+      {
+        "id": "swe_bench_verified",
+        "name": "SWE-bench Verified",
+        "n_models": 54
+      },
+      {
+        "id": "ifeval",
+        "name": "IFEval",
+        "n_models": 50
+      },
+      {
+        "id": "aime_2025",
+        "name": "AIME 2025",
+        "n_models": 47
+      },
+      {
+        "id": "hle",
+        "name": "HLE (Humanity's Last Exam)",
+        "n_models": 46
+      }
+    ],
+    "models_with_complete_block": [
+      {
+        "block_size": 3,
+        "n_models_with_complete_block": 50,
+        "frac_models": 0.5952
+      },
+      {
+        "block_size": 5,
+        "n_models_with_complete_block": 32,
+        "frac_models": 0.381
+      },
+      {
+        "block_size": 8,
+        "n_models_with_complete_block": 11,
+        "frac_models": 0.131
+      },
+      {
+        "block_size": 10,
+        "n_models_with_complete_block": 7,
+        "frac_models": 0.0833
+      },
+      {
+        "block_size": 12,
+        "n_models_with_complete_block": 6,
+        "frac_models": 0.0714
+      },
+      {
+        "block_size": 15,
+        "n_models_with_complete_block": 2,
+        "frac_models": 0.0238
+      },
+      {
+        "block_size": 20,
+        "n_models_with_complete_block": 0,
+        "frac_models": 0.0
+      }
+    ],
+    "benchmarks_with_enough_models": [
+      {
+        "min_observed_models": 8,
+        "n_benchmarks": 133,
+        "frac_benchmarks": 1.0
+      },
+      {
+        "min_observed_models": 10,
+        "n_benchmarks": 110,
+        "frac_benchmarks": 0.8271
+      },
+      {
+        "min_observed_models": 15,
+        "n_benchmarks": 72,
+        "frac_benchmarks": 0.5414
+      },
+      {
+        "min_observed_models": 20,
+        "n_benchmarks": 47,
+        "frac_benchmarks": 0.3534
+      },
+      {
+        "min_observed_models": 30,
+        "n_benchmarks": 23,
+        "frac_benchmarks": 0.1729
+      },
+      {
+        "min_observed_models": 47,
+        "n_benchmarks": 7,
+        "frac_benchmarks": 0.0526
+      }
+    ]
+  },
+  "column_fit_outcomes": {
+    "osl": {
+      "ok": 3767,
+      "fewer_train_models_than_free_parameters": 182
+    },
+    "osl_no_impute": {
+      "too_few_models_with_complete_block": 3949
+    },
+    "osl_full": {
+      "ok": 3760,
+      "fewer_train_models_than_free_parameters": 182,
+      "fit_failed": 7
+    }
+  },
+  "accuracy": {
+    "common_support": {
+      "methods": [
+        "osl",
+        "osl_full",
+        "osl_impute_r1",
+        "osl_impute_r2",
+        "osl_impute_r3",
+        "osl_impute_r5",
+        "benchpress"
+      ],
+      "n_cells": 25062,
+      "frac_cells": 0.9624
+    },
+    "osl": {
+      "coverage": 0.9634,
+      "n_predicted": 25088,
+      "n_cells": 26040,
+      "own_coverage_cells": {
+        "n": 25088,
+        "medape": 9.896192897983942,
+        "medae": 5.92025080588634
+      },
+      "common_cells": {
+        "n": 25062,
+        "medape": 9.887937214257152,
+        "medae": 5.91938942153714
+      }
+    },
+    "osl_no_impute": {
+      "coverage": 0.0,
+      "n_predicted": 0,
+      "n_cells": 26040,
+      "own_coverage_cells": {
+        "n": 0,
+        "medape": NaN,
+        "medae": NaN
+      },
+      "common_cells": {
+        "n": 0,
+        "medape": NaN,
+        "medae": NaN
+      }
+    },
+    "osl_full": {
+      "coverage": 0.9624,
+      "n_predicted": 25062,
+      "n_cells": 26040,
+      "own_coverage_cells": {
+        "n": 25062,
+        "medape": 21.60533105976461,
+        "medae": 11.990693613449814
+      },
+      "common_cells": {
+        "n": 25062,
+        "medape": 21.60533105976461,
+        "medae": 11.990693613449814
+      }
+    },
+    "osl_impute_r1": {
+      "coverage": 1.0,
+      "n_predicted": 26040,
+      "n_cells": 26040,
+      "own_coverage_cells": {
+        "n": 26040,
+        "medape": 8.499915878834823,
+        "medae": 5.343462798406037
+      },
+      "common_cells": {
+        "n": 25062,
+        "medape": 8.43857361905086,
+        "medae": 5.326326445071664
+      }
+    },
+    "osl_impute_r2": {
+      "coverage": 1.0,
+      "n_predicted": 26040,
+      "n_cells": 26040,
+      "own_coverage_cells": {
+        "n": 26040,
+        "medape": 8.646353112102172,
+        "medae": 5.281497493413509
+      },
+      "common_cells": {
+        "n": 25062,
+        "medape": 8.561194298390271,
+        "medae": 5.253528355427038
+      }
+    },
+    "osl_impute_r3": {
+      "coverage": 1.0,
+      "n_predicted": 26040,
+      "n_cells": 26040,
+      "own_coverage_cells": {
+        "n": 26040,
+        "medape": 9.08406740213558,
+        "medae": 5.59717228869528
+      },
+      "common_cells": {
+        "n": 25062,
+        "medape": 8.958716278518446,
+        "medae": 5.557751749935175
+      }
+    },
+    "osl_impute_r5": {
+      "coverage": 1.0,
+      "n_predicted": 26040,
+      "n_cells": 26040,
+      "own_coverage_cells": {
+        "n": 26040,
+        "medape": 10.546742017896923,
+        "medae": 6.47543904560651
+      },
+      "common_cells": {
+        "n": 25062,
+        "medape": 10.466250466655794,
+        "medae": 6.451641937777218
+      }
+    },
+    "benchpress": {
+      "coverage": 1.0,
+      "n_predicted": 26040,
+      "n_cells": 26040,
+      "own_coverage_cells": {
+        "n": 26040,
+        "medape": 7.840974558499855,
+        "medae": 4.58723905765974
+      },
+      "common_cells": {
+        "n": 25062,
+        "medape": 7.7316880180304635,
+        "medae": 4.560868426525641
+      }
+    }
+  }
+}
