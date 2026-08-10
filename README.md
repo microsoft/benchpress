@@ -44,7 +44,9 @@ Finally, we stress-test deployment: **five probe benchmarks predict the rest of 
 # Contents
 
 - [Step 1: Set Up Environment](#step-1-set-up-environment)
-- [Step 2: Download the Data](#step-2-download-the-data)
+- [Step 2: Get a Score Matrix](#step-2-get-a-score-matrix)
+  - [Option A: Use the BenchPress Matrix](#option-a-use-the-benchpress-matrix)
+  - [Option B: Bring Your Own Score Matrix](#option-b-bring-your-own-score-matrix)
 - [Step 3: Predict Scores](#step-3-predict-scores)
   - [Predict for an Existing Model](#predict-for-an-existing-model)
   - [Add Your Own Model](#add-your-own-model)
@@ -83,9 +85,13 @@ To set up the environment for using BenchPress, please follow the steps below.
    TBA
    </details>
 
-# Step 2: Download the Data
+# Step 2: Get a Score Matrix
 
-BenchPress uses a citation-backed evaluation matrix:
+BenchPress predicts on *a* score matrix: a table of `models x benchmarks` (missing cells left empty) with a metric spec for each benchmark column. You can use our curated matrix (Option A) or bring your own (Option B); both feed the same predictor in Step 3.
+
+## Option A: Use the BenchPress Matrix
+
+BenchPress ships a citation-backed evaluation matrix:
 
 - **189 frontier LLMs** from 28 providers (OpenAI, Anthropic, Google, Meta, DeepSeek, Alibaba, Mistral, xAI, Moonshot AI, Zhipu AI, Microsoft, ByteDance, Amazon, MiniMax, NVIDIA, Cohere, Allen AI, IBM, Liquid AI, LG AI Research, Hugging Face, OpenBMB, TII, Sarvam AI, Shanghai AI Lab, Open Thoughts, Meituan, Mistral AI) — **raw audit pool**
 - **316 benchmarks** across 59 categories — **raw audit pool**
@@ -161,6 +167,46 @@ Or load the public Hugging Face mirror:
 from datasets import load_dataset
 
 ds = load_dataset("microsoft/benchpress-score-matrix", "scores_paper")
+```
+
+## Option B: Bring Your Own Score Matrix
+
+BenchPress predicts on any score matrix, not only ours. Provide a table of `models x benchmarks` (empty cells for unobserved scores) plus a metric spec for each benchmark column, and BenchPress completes the missing cells with the same rank-2 predictor used for the paper matrix.
+
+Load a matrix from CSV (rows are models, columns are benchmarks, empty means unobserved):
+
+```python
+from benchpress.score_matrix import ScoreMatrix
+from benchpress.methods.predictors import predict_logit_bias_als_scores
+
+sm = ScoreMatrix.from_csv("my_scores.csv")   # percentage columns inferred from range
+M_hat = predict_logit_bias_als_scores(sm.values)
+```
+
+or from the CLI:
+
+```bash
+python predict.py --matrix my_scores.csv --model my-model
+```
+
+**Metric spec.** Percentage-scale columns (values in `[0, 100]`) are detected automatically. Elo, rating, or other non-percentage columns must be declared so BenchPress skips the logit transform and smart-clip for them, via a sidecar `my_scores.meta.json`:
+
+```json
+{
+  "chatbot_arena_elo": {"type": "elo", "range": [800, 1600]},
+  "my_rating_bench":   {"type": "rating", "range": [0, 3000]}
+}
+```
+
+Columns without an entry default to percentage scale. `ScoreMatrix` validates that every column has a resolved metric type and that the observed cells are dense enough to fit the rank-2 plus bias model before prediction runs.
+
+**Interoperate with Every Eval Ever (EEE).** <!-- TODO: add EEE project/schema link once public --> EEE is a shared schema and community datastore for evaluation result records. BenchPress treats it as an import/export format at the boundary only: EEE records are converted to a `ScoreMatrix` for prediction, and the curated BenchPress matrix can be exported to EEE for others to consume. EEE records never enter the canonical `llm_benchmark_data.json` directly; anything imported from EEE stays a user-supplied custom matrix.
+
+```python
+from benchpress.score_matrix import ScoreMatrix
+
+sm = ScoreMatrix.from_eee("eee_dump.jsonl")     # EEE eval records -> custom score matrix
+sm.to_eee("benchpress_scores.eee.jsonl")        # score matrix -> EEE records
 ```
 
 # Step 3: Predict Scores
