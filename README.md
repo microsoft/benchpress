@@ -173,6 +173,26 @@ ds = load_dataset("microsoft/benchpress-score-matrix", "scores_paper")
 
 BenchPress predicts on any score matrix, not only ours. Provide a table of `models x benchmarks` (empty cells for unobserved scores) plus a metric spec for each benchmark column, and BenchPress completes the missing cells with the same rank-2 predictor used for the paper matrix.
 
+**Input format.** A custom matrix is a CSV whose first column holds model ids and whose remaining headers are benchmark ids. Each cell is a numeric score in that benchmark's native scale; an empty cell means the model was never run on that benchmark. Model ids and benchmark ids must each be unique.
+
+```csv
+model,gpqa_diamond,aime_2025,chatbot_arena_elo
+my-model-a,72.0,55.0,1310
+my-model-b,68.5,,1288
+my-model-c,,61.2,
+```
+
+**Normalized form.** `ScoreMatrix.from_csv` parses this into the single internal form every downstream step consumes, identical in shape to the BenchPress matrix so both flow through the same predictor:
+
+| Field | Meaning |
+|---|---|
+| `model_ids` | list of row labels, in file order |
+| `benchmark_ids` | list of column labels, in file order |
+| `values` | float array of shape `(n_models, n_benchmarks)`; empty cells become `NaN` |
+| `metric[bench_id]` | resolved `{type, range, higher_is_better}` per column (see below) |
+
+Everything after this point (transforms, prediction, smart-clip, export) reads only `values` plus `metric`, so a custom matrix and the BenchPress matrix are interchangeable.
+
 Load a matrix from CSV (rows are models, columns are benchmarks, empty means unobserved):
 
 ```python
@@ -198,7 +218,7 @@ python predict.py --matrix my_scores.csv --model my-model
 }
 ```
 
-Columns without an entry default to percentage scale. `ScoreMatrix` validates that every column has a resolved metric type and that the observed cells are dense enough to fit the rank-2 plus bias model before prediction runs.
+Any column absent from the sidecar resolves to the default `{"type": "pct", "range": [0, 100], "higher_is_better": true}`. `ScoreMatrix` validates that every column resolves to a metric type, that scores fall inside their declared range, and that the observed cells are dense enough to fit the rank-2 plus bias model before prediction runs.
 
 **Interoperate with Every Eval Ever (EEE).** <!-- TODO: add EEE project/schema link once public --> EEE is a shared schema and community datastore for evaluation result records. BenchPress treats it as an import/export format at the boundary only: EEE records are converted to a `ScoreMatrix` for prediction, and the curated BenchPress matrix can be exported to EEE for others to consume. EEE records never enter the canonical `llm_benchmark_data.json` directly; anything imported from EEE stays a user-supplied custom matrix.
 
