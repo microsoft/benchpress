@@ -22,7 +22,7 @@ The same script contains the OSL reimplementation: `pca_impute` fills the capabi
 
 ## Outputs
 
-- `obs_scaling_baseline.json`: pooled MedAE/MedAPE for OSL (densest-8 block and full-matrix impute) and BenchPress on the canonical folds.
+- `obs_scaling_baseline.json`: per-fold median MedAE/MedAPE (median over the 10 seeds x 3 folds, matching the main-body method comparison) for OSL (densest-8 block and full-matrix impute) and BenchPress on the canonical folds.
 
 ## Run
 
@@ -41,12 +41,16 @@ The runner writes a single JSON; rerunning overwrites it. Reuse the checked-in J
 
 ## Last valid result
 
-Metrics are from `benchpress.evaluation_harness.compute_prediction_error` on each method's finite predictions over the canonical held-out folds; lower is better:
+Per-fold median MedAE/MedAPE over the 10 seeds x 3 folds (`aggregation='per_group_median'`), on each method's finite predictions; lower is better:
 
 | Method | MedAPE (%) | MedAE |
 |---|---|---|
-| OSL, densest-8 block (i) | 9.90 | 5.92 |
-| OSL, full-matrix impute (ii) | 21.61 | 11.99 |
-| BenchPress | 7.84 | 4.59 |
+| OSL, densest-8 block (i) | 9.85 | 5.94 |
+| OSL, full-matrix impute (ii) | 21.87 | 12.17 |
+| BenchPress | 7.77 | 4.63 |
 
-Matrix 84 x 133, 2,604 observed cells; env GCR CPU. Matches `tab:osl_comparison` in `overleaf/arxiv/appendix.tex`.
+Matrix 84 x 133, 2,604 observed cells; env GCR CPU. The BenchPress row (4.63 / 7.77%) reproduces the paper's default predictor exactly (`tab:full_grid`), so the appendix table is consistent with the main text. Matches `tab:osl_comparison` in `overleaf/arxiv/appendix.tex`.
+
+## Reproduction note
+
+Reproducing the paper matrix requires all three of: (1) the `main`-branch matrix-construction code, which applies the `audit_status` filter that yields the 84 x 133 / 2,604-cell matrix (an out-of-date build filters differently and gives the wrong shape); (2) the full rich `benchpress/data/llm_benchmark_data.json` (the `download_data` CSV mirror drops audit/cost fields and shifts the numbers); (3) the cached folds file `folds_s10_f3_bs42_ms1.json` (regenerating folds from scratch changes the held-out cells). With all three in place the run gives `benchpress` n=26,040 and MedAE 4.63.
