@@ -442,29 +442,36 @@ def _ranking_pool_accuracy(actual, predicted, heldout, margin):
 #  HOLDOUT STRATEGIES
 # ══════════════════════════════════════════════════════════════════════════════
 
-def holdout_per_model(min_scores=1, n_folds=3, seed=42):
+def holdout_per_model(min_scores=1, n_folds=3, seed=42, M=None):
     """Strategy B: K-fold CV within each model's scores.
-    
+
     For each model with ≥min_scores observed, split its scores into n_folds disjoint subsets.
     Each fold uses one subset as test. Folds are disjoint within each model.
+
+    ``M`` defaults to the built-in paper matrix ``M_FULL``; pass another matrix
+    to generate the same per-model holdout for an externally curated matrix.
     """
+    if M is None:
+        M = M_FULL
+    observed = ~np.isnan(M)
+    n_models = M.shape[0]
     rng = np.random.RandomState(seed)
-    
+
     # Pre-compute per-model fold assignments
     model_fold_assignments = []  # model_fold_assignments[i] = shuffled list of benchmark indices
-    for i in range(N_MODELS):
-        obs_j = list(np.where(OBSERVED[i])[0])
+    for i in range(n_models):
+        obs_j = list(np.where(observed[i])[0])
         if len(obs_j) >= min_scores:
             rng.shuffle(obs_j)
             model_fold_assignments.append(obs_j)
         else:
             model_fold_assignments.append([])
-    
+
     folds = []
     for k in range(n_folds):
-        M_train = M_FULL.copy()
+        M_train = M.copy()
         test_set = []
-        for i in range(N_MODELS):
+        for i in range(n_models):
             obs_j = model_fold_assignments[i]
             if len(obs_j) == 0:
                 continue
