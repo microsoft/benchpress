@@ -153,11 +153,28 @@ def evaluate(M_full, folds, label):
     }
 
 
+PCT_TYPES = {"pct", "percent", "percentage"}
+
+
 def load_matrix(path):
+    """Load a curated matrix and keep only percentage-scale benchmark columns.
+
+    Curated matrices mix scales (percent, dollars, Elo, token counts, ...), so a
+    raw MedAE across all columns is dominated by the large-scale ones and the
+    logit transform does not apply. We restrict to the percentage-scale columns
+    (metric type in [0, 100]), matching how our own matrix reports point-scale
+    error, so BenchPress and the baselines are compared in comparable units.
+    """
     if os.path.isdir(path):
         path = os.path.join(path, "scores.csv")
     sm = ScoreMatrix.from_file(path)
-    return np.asarray(sm.values, dtype=float), list(sm.model_ids), list(sm.benchmark_ids)
+    M = np.asarray(sm.values, dtype=float)
+    benches = list(sm.benchmark_ids)
+    pct = np.array([str(sm.metric.get(b, {}).get("type", "")).lower() in PCT_TYPES
+                    for b in benches])
+    M = M[:, pct]
+    benches = [b for b, ok in zip(benches, pct) if ok]
+    return M, list(sm.model_ids), benches
 
 
 def main():
