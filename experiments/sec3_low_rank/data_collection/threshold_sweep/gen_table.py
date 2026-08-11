@@ -46,7 +46,7 @@ def main() -> None:
     out.append(r"$T_M$ & $T_B$ & \#Models & \#Bench. & \#Obs. & Fill \\")
     out.append(r"\midrule")
     out.append(
-        rf"\multicolumn{{2}}{{c}}{{(unfiltered)}} & {raw_info.n_models} & {raw_info.n_benchmarks} & "
+        rf"\multicolumn{{2}}{{c}}{{Raw audit pool}} & {raw_info.n_models} & {raw_info.n_benchmarks} & "
         f"{raw_info.n_observations:,} & {100*raw_info.fill_rate:.1f}\\% \\\\".replace(",", "{,}")
     )
     out.append(r"\midrule")

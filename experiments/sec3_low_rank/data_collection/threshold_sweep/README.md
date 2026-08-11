@@ -11,7 +11,7 @@
   - `github/experiments/sec3_low_rank/data_collection/threshold_sweep/error_results.json`
 
 ## Purpose
-The main-text table shows how the iterated minimum-observation filter trades matrix size for density. The appendix table reports prediction error under the full threshold grid, demonstrating that the adopted `(15, 8)` setting is a coverage-density choice rather than the minimum-error configuration.
+The main-text table shows how the iterated minimum-observation filter trades matrix size for density. Its first row is the raw audit pool before canonicalization. The appendix table reports prediction error under the full threshold grid; its no-density-filter row is evaluated after canonicalization. Together, they show that the adopted `(15, 8)` setting is a coverage-density choice rather than the minimum-error configuration.
 
 ## How to run
 ```bash
