@@ -1,0 +1,271 @@
+{
+  "protocol": {
+    "transform": "logit",
+    "method": "Bias ALS",
+    "hp": {
+      "rank": 2,
+      "lam": 0.1
+    },
+    "n_seeds": 10,
+    "n_folds": 3,
+    "base_seed": 42,
+    "min_scores": 1,
+    "aggregation": "per_group_median over folds",
+    "adopted": {
+      "t_m": 15,
+      "t_b": 8,
+      "n_adopted_cells": 2604
+    }
+  },
+  "configs": [
+    {
+      "t_m": 0,
+      "t_b": 0,
+      "label": "unfiltered",
+      "n_models": 181,
+      "n_benchmarks": 304,
+      "n_observations": 4177,
+      "fill_rate": 0.07591232916545508,
+      "native": {
+        "n": 41770,
+        "medae_median": 4.91800471347571,
+        "medape_median": 8.438784064234193
+      },
+      "fixed_target": {
+        "n": 26040,
+        "medae_median": 4.686634162459193,
+        "medape_median": 7.812661840655043
+      }
+    },
+    {
+      "t_m": 10,
+      "t_b": 8,
+      "label": "tm10_tb8",
+      "n_models": 130,
+      "n_benchmarks": 141,
+      "n_observations": 3201,
+      "fill_rate": 0.1746317512274959,
+      "native": {
+        "n": 32010,
+        "medae_median": 4.6376044420598035,
+        "medape_median": 7.672790184357701
+      },
+      "fixed_target": {
+        "n": 26040,
+        "medae_median": 4.484763005474024,
+        "medape_median": 7.492451535223454
+      }
+    },
+    {
+      "t_m": 10,
+      "t_b": 12,
+      "label": "tm10_tb12",
+      "n_models": 124,
+      "n_benchmarks": 104,
+      "n_observations": 2795,
+      "fill_rate": 0.21673387096774194,
+      "native": {
+        "n": 27950,
+        "medae_median": 4.521214065876942,
+        "medape_median": 7.52427806399514
+      },
+      "fixed_target": {
+        "n": 23150,
+        "medae_median": 4.216136655210249,
+        "medape_median": 6.994015981895624
+      }
+    },
+    {
+      "t_m": 10,
+      "t_b": 16,
+      "label": "tm10_tb16",
+      "n_models": 112,
+      "n_benchmarks": 70,
+      "n_observations": 2246,
+      "fill_rate": 0.2864795918367347,
+      "native": {
+        "n": 22460,
+        "medae_median": 4.789765432373985,
+        "medape_median": 7.786949242819478
+      },
+      "fixed_target": {
+        "n": 19230,
+        "medae_median": 4.538853892225063,
+        "medape_median": 7.380992383825916
+      }
+    },
+    {
+      "t_m": 15,
+      "t_b": 8,
+      "label": "tm15_tb8",
+      "n_models": 84,
+      "n_benchmarks": 133,
+      "n_observations": 2604,
+      "fill_rate": 0.23308270676691728,
+      "native": {
+        "n": 26040,
+        "medae_median": 4.628924721355029,
+        "medape_median": 7.774965504940833
+      },
+      "fixed_target": {
+        "n": 26040,
+        "medae_median": 4.628924721355029,
+        "medape_median": 7.774965504940833
+      }
+    },
+    {
+      "t_m": 15,
+      "t_b": 12,
+      "label": "tm15_tb12",
+      "n_models": 61,
+      "n_benchmarks": 81,
+      "n_observations": 1811,
+      "fill_rate": 0.3665249949402955,
+      "native": {
+        "n": 18110,
+        "medae_median": 3.9183183942259596,
+        "medape_median": 6.590048621928634
+      },
+      "fixed_target": {
+        "n": 18110,
+        "medae_median": 3.9183183942259596,
+        "medape_median": 6.590048621928634
+      }
+    },
+    {
+      "t_m": 15,
+      "t_b": 16,
+      "label": "tm15_tb16",
+      "n_models": 53,
+      "n_benchmarks": 53,
+      "n_observations": 1337,
+      "fill_rate": 0.47597009611961555,
+      "native": {
+        "n": 13370,
+        "medae_median": 3.8266950685829393,
+        "medape_median": 6.231703915109048
+      },
+      "fixed_target": {
+        "n": 13370,
+        "medae_median": 3.8266950685829393,
+        "medape_median": 6.231703915109048
+      }
+    },
+    {
+      "t_m": 20,
+      "t_b": 8,
+      "label": "tm20_tb8",
+      "n_models": 49,
+      "n_benchmarks": 110,
+      "n_observations": 1885,
+      "fill_rate": 0.349721706864564,
+      "native": {
+        "n": 18850,
+        "medae_median": 4.054335170782734,
+        "medape_median": 7.156864939251596
+      },
+      "fixed_target": {
+        "n": 18850,
+        "medae_median": 4.054335170782734,
+        "medape_median": 7.156864939251596
+      }
+    },
+    {
+      "t_m": 20,
+      "t_b": 12,
+      "label": "tm20_tb12",
+      "n_models": 41,
+      "n_benchmarks": 69,
+      "n_observations": 1353,
+      "fill_rate": 0.4782608695652174,
+      "native": {
+        "n": 13530,
+        "medae_median": 3.910876992008202,
+        "medape_median": 6.678397075307201
+      },
+      "fixed_target": {
+        "n": 13530,
+        "medae_median": 3.910876992008202,
+        "medape_median": 6.678397075307201
+      }
+    }
+  ],
+  "unfiltered_stratified": {
+    "by_model_obs": [
+      {
+        "n": 120,
+        "medae_median": 9.569290272001837,
+        "medape_median": 12.04836589842903,
+        "bucket": "1-2"
+      },
+      {
+        "n": 150,
+        "medae_median": 6.456393601388763,
+        "medape_median": 9.591907161671484,
+        "bucket": "3-4"
+      },
+      {
+        "n": 440,
+        "medae_median": 4.654393948778072,
+        "medape_median": 6.901769388213509,
+        "bucket": "5-7"
+      },
+      {
+        "n": 7060,
+        "medae_median": 5.549458878951089,
+        "medape_median": 10.15987442320108,
+        "bucket": "8-14"
+      },
+      {
+        "n": 8380,
+        "medae_median": 5.049715752129581,
+        "medape_median": 8.485723368216748,
+        "bucket": "15-24"
+      },
+      {
+        "n": 25620,
+        "medae_median": 4.671045122460619,
+        "medape_median": 8.015308013411918,
+        "bucket": "25-inf"
+      }
+    ],
+    "by_bench_obs": [
+      {
+        "n": 690,
+        "medae_median": 9.161960819327724,
+        "medape_median": 14.022400566820236,
+        "bucket": "1-2"
+      },
+      {
+        "n": 1890,
+        "medae_median": 6.991151284215307,
+        "medape_median": 12.202944722754747,
+        "bucket": "3-4"
+      },
+      {
+        "n": 4040,
+        "medae_median": 4.580262244293095,
+        "medape_median": 8.54106120056145,
+        "bucket": "5-7"
+      },
+      {
+        "n": 6720,
+        "medae_median": 4.722909620440373,
+        "medape_median": 9.061923276340814,
+        "bucket": "8-14"
+      },
+      {
+        "n": 7380,
+        "medae_median": 4.474498365662804,
+        "medape_median": 6.770933074272235,
+        "bucket": "15-24"
+      },
+      {
+        "n": 21050,
+        "medae_median": 4.967738094718836,
+        "medape_median": 8.6270621934368,
+        "bucket": "25-inf"
+      }
+    ]
+  }
+}
