@@ -64,3 +64,14 @@ The script resumes per method/rank. A cached entry is only reused if it contains
 - **Matrix**: 84×133 (2,604 observed, 23.3% fill).
 - **Key result**: rank 2 minimizes held-out error in both raw and logit score spaces.
 - **Rerun**: latest rerun produced at the current commit on a remote CPU machine.
+
+## Held-out-model robustness (app:rank_geometry)
+
+`holdout_models.py` reruns the same Soft-Impute rank sweep under a stricter split
+(reviewer rdwq): the newest 20% of models (by release date) are removed from the
+training matrix as a block, and each is predicted from the older models plus two
+thirds of its own scores, with 95% cluster-bootstrap intervals over the held-out
+models. It reuses the shared harness (`load_folds`, `compute_prediction_error`,
+`complete_soft_impute`). Result in `rank_sweep_holdout_models.json`; figure via
+`plot_holdout_models.py` -> `bp_rank_ucurve_holdout_models.pdf` (Fig. app:rank_geometry).
+Logit-space minimum stays at rank 2; raw-space ranks 1-3 overlap within CIs.

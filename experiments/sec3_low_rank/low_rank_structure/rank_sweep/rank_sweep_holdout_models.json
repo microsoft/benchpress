@@ -1,0 +1,873 @@
+{
+  "config": {
+    "ranks": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "cell_fold_seeds": 10,
+    "cell_fold_limit": null,
+    "model_seeds": 10,
+    "n_folds": 3,
+    "base_seed": 42,
+    "holdout_frac": 0.2,
+    "n_boot": 2000,
+    "ci": 0.95,
+    "matrix_shape": [
+      84,
+      133
+    ],
+    "methods": [
+      "identity_svd",
+      "logit_svd"
+    ]
+  },
+  "protocols": {
+    "cell": {
+      "description": "canonical per-model folds, all models in training",
+      "n_units": 30,
+      "n_records": 520800,
+      "summary": {
+        "identity_svd": {
+          "best_rank": 2,
+          "n_clusters": 84,
+          "rows": [
+            {
+              "rank": 1,
+              "medape": 12.0516,
+              "medape_ci": [
+                10.8342,
+                13.5253
+              ],
+              "medae": 7.7095,
+              "medae_ci": [
+                7.0883,
+                8.5093
+              ],
+              "medape_delta_vs_best": -3.0002,
+              "medape_delta_ci": [
+                -3.8956,
+                -2.2835
+              ],
+              "delta_excludes_zero": true
+            },
+            {
+              "rank": 2,
+              "medape": 9.0514,
+              "medape_ci": [
+                8.2827,
+                9.8864
+              ],
+              "medae": 5.6559,
+              "medae_ci": [
+                5.2959,
+                6.0219
+              ],
+              "medape_delta_vs_best": 0.0,
+              "medape_delta_ci": [
+                0.0,
+                0.0
+              ],
+              "delta_excludes_zero": false
+            },
+            {
+              "rank": 3,
+              "medape": 9.5188,
+              "medape_ci": [
+                8.73,
+                10.4451
+              ],
+              "medae": 5.9953,
+              "medae_ci": [
+                5.6331,
+                6.3804
+              ],
+              "medape_delta_vs_best": -0.4674,
+              "medape_delta_ci": [
+                -0.6832,
+                -0.2531
+              ],
+              "delta_excludes_zero": true
+            },
+            {
+              "rank": 4,
+              "medape": 9.921,
+              "medape_ci": [
+                9.083,
+                10.829
+              ],
+              "medae": 6.2337,
+              "medae_ci": [
+                5.8456,
+                6.6166
+              ],
+              "medape_delta_vs_best": -0.8696,
+              "medape_delta_ci": [
+                -1.1276,
+                -0.6084
+              ],
+              "delta_excludes_zero": true
+            },
+            {
+              "rank": 5,
+              "medape": 10.4369,
+              "medape_ci": [
+                9.5647,
+                11.3895
+              ],
+              "medae": 6.5195,
+              "medae_ci": [
+                6.0684,
+                6.919
+              ],
+              "medape_delta_vs_best": -1.3855,
+              "medape_delta_ci": [
+                -1.7014,
+                -1.055
+              ],
+              "delta_excludes_zero": true
+            },
+            {
+              "rank": 6,
+              "medape": 10.6776,
+              "medape_ci": [
+                9.7887,
+                11.7355
+              ],
+              "medae": 6.7113,
+              "medae_ci": [
+                6.2603,
+                7.1247
+              ],
+              "medape_delta_vs_best": -1.6262,
+              "medape_delta_ci": [
+                -2.0182,
+                -1.2837
+              ],
+              "delta_excludes_zero": true
+            },
+            {
+              "rank": 7,
+              "medape": 11.212,
+              "medape_ci": [
+                10.3019,
+                12.222
+              ],
+              "medae": 6.9834,
+              "medae_ci": [
+                6.5581,
+                7.4008
+              ],
+              "medape_delta_vs_best": -2.1607,
+              "medape_delta_ci": [
+                -2.5887,
+                -1.7555
+              ],
+              "delta_excludes_zero": true
+            },
+            {
+              "rank": 8,
+              "medape": 11.5192,
+              "medape_ci": [
+                10.6108,
+                12.4497
+              ],
+              "medae": 7.1792,
+              "medae_ci": [
+                6.7324,
+                7.5754
+              ],
+              "medape_delta_vs_best": -2.4679,
+              "medape_delta_ci": [
+                -2.9071,
+                -2.035
+              ],
+              "delta_excludes_zero": true
+            },
+            {
+              "rank": 9,
+              "medape": 11.9034,
+              "medape_ci": [
+                10.9541,
+                12.8814
+              ],
+              "medae": 7.3927,
+              "medae_ci": [
+                6.9604,
+                7.8251
+              ],
+              "medape_delta_vs_best": -2.8521,
+              "medape_delta_ci": [
+                -3.2937,
+                -2.3981
+              ],
+              "delta_excludes_zero": true
+            },
+            {
+              "rank": 10,
+              "medape": 12.2644,
+              "medape_ci": [
+                11.3978,
+                13.3359
+              ],
+              "medae": 7.6999,
+              "medae_ci": [
+                7.2283,
+                8.1486
+              ],
+              "medape_delta_vs_best": -3.213,
+              "medape_delta_ci": [
+                -3.7053,
+                -2.7672
+              ],
+              "delta_excludes_zero": true
+            }
+          ]
+        },
+        "logit_svd": {
+          "best_rank": 2,
+          "n_clusters": 84,
+          "rows": [
+            {
+              "rank": 1,
+              "medape": 10.9652,
+              "medape_ci": [
+                9.6695,
+                12.4544
+              ],
+              "medae": 6.654,
+              "medae_ci": [
+                6.0831,
+                7.3068
+              ],
+              "medape_delta_vs_best": -2.3722,
+              "medape_delta_ci": [
+                -3.144,
+                -1.7201
+              ],
+              "delta_excludes_zero": true
+            },
+            {
+              "rank": 2,
+              "medape": 8.5929,
+              "medape_ci": [
+                7.6915,
+                9.5325
+              ],
+              "medae": 5.0777,
+              "medae_ci": [
+                4.7195,
+                5.4825
+              ],
+              "medape_delta_vs_best": 0.0,
+              "medape_delta_ci": [
+                0.0,
+                0.0
+              ],
+              "delta_excludes_zero": false
+            },
+            {
+              "rank": 3,
+              "medape": 9.1853,
+              "medape_ci": [
+                8.2385,
+                10.2411
+              ],
+              "medae": 5.388,
+              "medae_ci": [
+                5.0106,
+                5.7809
+              ],
+              "medape_delta_vs_best": -0.5923,
+              "medape_delta_ci": [
+                -0.8822,
+                -0.3429
+              ],
+              "delta_excludes_zero": true
+            },
+            {
+              "rank": 4,
+              "medape": 9.4882,
+              "medape_ci": [
+                8.5917,
+                10.5565
+              ],
+              "medae": 5.5746,
+              "medae_ci": [
+                5.1918,
+                5.9955
+              ],
+              "medape_delta_vs_best": -0.8953,
+              "medape_delta_ci": [
+                -1.2465,
+                -0.5929
+              ],
+              "delta_excludes_zero": true
+            },
+            {
+              "rank": 5,
+              "medape": 10.026,
+              "medape_ci": [
+                9.0074,
+                11.1126
+              ],
+              "medae": 5.8054,
+              "medae_ci": [
+                5.3808,
+                6.2094
+              ],
+              "medape_delta_vs_best": -1.4331,
+              "medape_delta_ci": [
+                -1.8562,
+                -1.0563
+              ],
+              "delta_excludes_zero": true
+            },
+            {
+              "rank": 6,
+              "medape": 10.3499,
+              "medape_ci": [
+                9.3698,
+                11.4311
+              ],
+              "medae": 5.9966,
+              "medae_ci": [
+                5.602,
+                6.4567
+              ],
+              "medape_delta_vs_best": -1.7569,
+              "medape_delta_ci": [
+                -2.1888,
+                -1.306
+              ],
+              "delta_excludes_zero": true
+            },
+            {
+              "rank": 7,
+              "medape": 10.823,
+              "medape_ci": [
+                9.8855,
+                11.9969
+              ],
+              "medae": 6.2849,
+              "medae_ci": [
+                5.8772,
+                6.691
+              ],
+              "medape_delta_vs_best": -2.2301,
+              "medape_delta_ci": [
+                -2.7466,
+                -1.8068
+              ],
+              "delta_excludes_zero": true
+            },
+            {
+              "rank": 8,
+              "medape": 11.2922,
+              "medape_ci": [
+                10.3492,
+                12.3839
+              ],
+              "medae": 6.6175,
+              "medae_ci": [
+                6.2011,
+                7.0562
+              ],
+              "medape_delta_vs_best": -2.6993,
+              "medape_delta_ci": [
+                -3.2265,
+                -2.2323
+              ],
+              "delta_excludes_zero": true
+            },
+            {
+              "rank": 9,
+              "medape": 11.6106,
+              "medape_ci": [
+                10.6666,
+                12.7133
+              ],
+              "medae": 6.7932,
+              "medae_ci": [
+                6.3738,
+                7.1773
+              ],
+              "medape_delta_vs_best": -3.0177,
+              "medape_delta_ci": [
+                -3.6095,
+                -2.51
+              ],
+              "delta_excludes_zero": true
+            },
+            {
+              "rank": 10,
+              "medape": 11.8592,
+              "medape_ci": [
+                10.8214,
+                13.0267
+              ],
+              "medae": 6.9402,
+              "medae_ci": [
+                6.4891,
+                7.4058
+              ],
+              "medape_delta_vs_best": -3.2663,
+              "medape_delta_ci": [
+                -3.8673,
+                -2.756
+              ],
+              "delta_excludes_zero": true
+            }
+          ]
+        }
+      }
+    },
+    "model": {
+      "description": "newest 20% of models held out as a block; each target predicted alone",
+      "n_units": 510,
+      "n_held_out_models": 17,
+      "n_train_models": 67,
+      "held_out_models": [
+        "GPT-5.2",
+        "Kimi K2.5",
+        "Qwen3.5-397B-A17B",
+        "Claude Opus 4.6",
+        "Doubao Seed 2.0 Pro",
+        "Claude Sonnet 4.6",
+        "Gemini 3.1 Pro",
+        "GPT-5.4",
+        "GLM-5",
+        "Qwen3.6-Plus",
+        "Muse Spark",
+        "GLM-5.1",
+        "Claude Opus 4.7",
+        "DeepSeek-V4-Flash",
+        "DeepSeek-V4-Pro",
+        "GPT-5.5",
+        "Kimi K2.6"
+      ],
+      "held_out_release_dates": {
+        "gpt-5.2": "2025-12-11",
+        "kimi-k2.5": "2026-01-01",
+        "qwen3.5-397b": "2026-02-01",
+        "claude-opus-4.6": "2026-02-05",
+        "doubao-seed-2.0-pro": "2026-02-14",
+        "claude-sonnet-4.6": "2026-02-17",
+        "gemini-3.1-pro": "2026-02-19",
+        "gpt-5.4": "2026-03-01",
+        "glm-5": "2026-03-15",
+        "qwen3.6-plus": "2026-03-31",
+        "muse-spark": "2026-04-01",
+        "glm-5.1": "2026-04-07",
+        "claude-opus-4.7": "2026-04-22",
+        "deepseek-v4-flash": "2026-04-22",
+        "deepseek-v4-pro": "2026-04-22",
+        "gpt-5.5": "2026-04-22",
+        "kimi-k2.6": "2026-04-22"
+      },
+      "test_cells_dropped_no_train_column": 0,
+      "n_records": 121000,
+      "summary": {
+        "identity_svd": {
+          "best_rank": 3,
+          "n_clusters": 17,
+          "rows": [
+            {
+              "rank": 1,
+              "medape": 9.7312,
+              "medape_ci": [
+                7.9461,
+                11.6497
+              ],
+              "medae": 6.6045,
+              "medae_ci": [
+                5.5712,
+                8.2832
+              ],
+              "medape_delta_vs_best": -0.6507,
+              "medape_delta_ci": [
+                -1.2169,
+                -0.0761
+              ],
+              "delta_excludes_zero": true
+            },
+            {
+              "rank": 2,
+              "medape": 9.583,
+              "medape_ci": [
+                8.0859,
+                11.3091
+              ],
+              "medae": 6.7252,
+              "medae_ci": [
+                5.3672,
+                8.4008
+              ],
+              "medape_delta_vs_best": -0.5024,
+              "medape_delta_ci": [
+                -1.0326,
+                0.1278
+              ],
+              "delta_excludes_zero": false
+            },
+            {
+              "rank": 3,
+              "medape": 9.0806,
+              "medape_ci": [
+                7.4543,
+                10.9374
+              ],
+              "medae": 6.1804,
+              "medae_ci": [
+                5.0201,
+                7.8848
+              ],
+              "medape_delta_vs_best": 0.0,
+              "medape_delta_ci": [
+                0.0,
+                0.0
+              ],
+              "delta_excludes_zero": false
+            },
+            {
+              "rank": 4,
+              "medape": 9.3563,
+              "medape_ci": [
+                7.5529,
+                12.2216
+              ],
+              "medae": 6.552,
+              "medae_ci": [
+                5.0887,
+                8.6794
+              ],
+              "medape_delta_vs_best": -0.2757,
+              "medape_delta_ci": [
+                -1.5288,
+                0.2916
+              ],
+              "delta_excludes_zero": false
+            },
+            {
+              "rank": 5,
+              "medape": 9.5086,
+              "medape_ci": [
+                8.1093,
+                11.7562
+              ],
+              "medae": 6.6787,
+              "medae_ci": [
+                5.4126,
+                8.4762
+              ],
+              "medape_delta_vs_best": -0.428,
+              "medape_delta_ci": [
+                -1.5313,
+                0.5087
+              ],
+              "delta_excludes_zero": false
+            },
+            {
+              "rank": 6,
+              "medape": 10.0192,
+              "medape_ci": [
+                8.3643,
+                12.2107
+              ],
+              "medae": 6.8654,
+              "medae_ci": [
+                5.5685,
+                8.8327
+              ],
+              "medape_delta_vs_best": -0.9386,
+              "medape_delta_ci": [
+                -2.0023,
+                0.1181
+              ],
+              "delta_excludes_zero": false
+            },
+            {
+              "rank": 7,
+              "medape": 10.3974,
+              "medape_ci": [
+                8.773,
+                12.8368
+              ],
+              "medae": 7.3189,
+              "medae_ci": [
+                5.97,
+                9.2638
+              ],
+              "medape_delta_vs_best": -1.3169,
+              "medape_delta_ci": [
+                -2.5273,
+                -0.1823
+              ],
+              "delta_excludes_zero": true
+            },
+            {
+              "rank": 8,
+              "medape": 10.6835,
+              "medape_ci": [
+                8.8394,
+                13.3045
+              ],
+              "medae": 7.5215,
+              "medae_ci": [
+                6.1458,
+                9.5001
+              ],
+              "medape_delta_vs_best": -1.6029,
+              "medape_delta_ci": [
+                -2.9095,
+                -0.5
+              ],
+              "delta_excludes_zero": true
+            },
+            {
+              "rank": 9,
+              "medape": 11.0756,
+              "medape_ci": [
+                9.0806,
+                13.597
+              ],
+              "medae": 7.9,
+              "medae_ci": [
+                6.3383,
+                9.6647
+              ],
+              "medape_delta_vs_best": -1.995,
+              "medape_delta_ci": [
+                -3.3872,
+                -0.8912
+              ],
+              "delta_excludes_zero": true
+            },
+            {
+              "rank": 10,
+              "medape": 12.3602,
+              "medape_ci": [
+                10.3778,
+                15.0305
+              ],
+              "medae": 8.7278,
+              "medae_ci": [
+                7.3453,
+                10.8031
+              ],
+              "medape_delta_vs_best": -3.2796,
+              "medape_delta_ci": [
+                -4.5836,
+                -2.1747
+              ],
+              "delta_excludes_zero": true
+            }
+          ]
+        },
+        "logit_svd": {
+          "best_rank": 2,
+          "n_clusters": 17,
+          "rows": [
+            {
+              "rank": 1,
+              "medape": 7.7142,
+              "medape_ci": [
+                6.6438,
+                9.9929
+              ],
+              "medae": 5.6349,
+              "medae_ci": [
+                4.7335,
+                6.7148
+              ],
+              "medape_delta_vs_best": -0.2262,
+              "medape_delta_ci": [
+                -0.8727,
+                0.2228
+              ],
+              "delta_excludes_zero": false
+            },
+            {
+              "rank": 2,
+              "medape": 7.488,
+              "medape_ci": [
+                6.3887,
+                9.2731
+              ],
+              "medae": 5.3326,
+              "medae_ci": [
+                4.2159,
+                6.6442
+              ],
+              "medape_delta_vs_best": 0.0,
+              "medape_delta_ci": [
+                0.0,
+                0.0
+              ],
+              "delta_excludes_zero": false
+            },
+            {
+              "rank": 3,
+              "medape": 7.5812,
+              "medape_ci": [
+                6.0735,
+                9.5033
+              ],
+              "medae": 5.0494,
+              "medae_ci": [
+                4.1361,
+                6.5561
+              ],
+              "medape_delta_vs_best": -0.0932,
+              "medape_delta_ci": [
+                -0.7697,
+                0.6465
+              ],
+              "delta_excludes_zero": false
+            },
+            {
+              "rank": 4,
+              "medape": 7.6289,
+              "medape_ci": [
+                6.1705,
+                9.7853
+              ],
+              "medae": 5.2991,
+              "medae_ci": [
+                4.4028,
+                6.6719
+              ],
+              "medape_delta_vs_best": -0.1409,
+              "medape_delta_ci": [
+                -1.1543,
+                0.728
+              ],
+              "delta_excludes_zero": false
+            },
+            {
+              "rank": 5,
+              "medape": 7.7803,
+              "medape_ci": [
+                6.309,
+                10.0087
+              ],
+              "medae": 5.3491,
+              "medae_ci": [
+                4.4471,
+                6.8979
+              ],
+              "medape_delta_vs_best": -0.2923,
+              "medape_delta_ci": [
+                -1.4789,
+                0.884
+              ],
+              "delta_excludes_zero": false
+            },
+            {
+              "rank": 6,
+              "medape": 7.9036,
+              "medape_ci": [
+                6.5846,
+                9.8278
+              ],
+              "medae": 5.4121,
+              "medae_ci": [
+                4.4864,
+                6.9299
+              ],
+              "medape_delta_vs_best": -0.4156,
+              "medape_delta_ci": [
+                -1.4029,
+                0.4786
+              ],
+              "delta_excludes_zero": false
+            },
+            {
+              "rank": 7,
+              "medape": 8.8317,
+              "medape_ci": [
+                7.5259,
+                10.6307
+              ],
+              "medae": 6.0363,
+              "medae_ci": [
+                5.1248,
+                7.4434
+              ],
+              "medape_delta_vs_best": -1.3437,
+              "medape_delta_ci": [
+                -2.2687,
+                -0.2602
+              ],
+              "delta_excludes_zero": true
+            },
+            {
+              "rank": 8,
+              "medape": 9.3986,
+              "medape_ci": [
+                8.1376,
+                11.5635
+              ],
+              "medae": 6.5372,
+              "medae_ci": [
+                5.5411,
+                8.0573
+              ],
+              "medape_delta_vs_best": -1.9106,
+              "medape_delta_ci": [
+                -3.0185,
+                -1.015
+              ],
+              "delta_excludes_zero": true
+            },
+            {
+              "rank": 9,
+              "medape": 10.1266,
+              "medape_ci": [
+                8.8943,
+                12.1924
+              ],
+              "medae": 7.0391,
+              "medae_ci": [
+                6.0635,
+                8.3761
+              ],
+              "medape_delta_vs_best": -2.6386,
+              "medape_delta_ci": [
+                -3.8263,
+                -1.5631
+              ],
+              "delta_excludes_zero": true
+            },
+            {
+              "rank": 10,
+              "medape": 11.2247,
+              "medape_ci": [
+                9.4482,
+                13.7305
+              ],
+              "medae": 7.7698,
+              "medae_ci": [
+                6.5388,
+                9.6815
+              ],
+              "medape_delta_vs_best": -3.7367,
+              "medape_delta_ci": [
+                -5.3403,
+                -2.4342
+              ],
+              "delta_excludes_zero": true
+            }
+          ]
+        }
+      }
+    }
+  }
+}
