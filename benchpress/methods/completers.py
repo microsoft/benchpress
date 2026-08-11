@@ -560,12 +560,15 @@ def complete_pmf(M_train, rank=5, max_iter=300, lr=0.001, reg=0.1, normalize=Tru
 # ══════════════════════════════════════════════════════════════════════════════
 
 def complete_mlp(M_train, hidden=32, epochs=500, lr=1e-3, n_seeds=3):
-    """2-layer MLP autoencoder for matrix completion. Average over n_seeds for stability."""
-    try:
-        import torch
-        import torch.nn as nn
-    except ImportError:
-        return np.full_like(M_train, np.nan)
+    """2-layer MLP autoencoder for matrix completion. Average over n_seeds for stability.
+
+    Requires the optional ``mlp`` dependency group (``pip install -e .[mlp]``).
+    The import is deliberately unguarded: returning an all-NaN matrix when torch
+    is absent makes a missing dependency indistinguishable from a method that
+    genuinely predicts nothing, and those NaN rows silently reach result tables.
+    """
+    import torch
+    import torch.nn as nn
 
     obs = ~np.isnan(M_train)
     n_models, n_bench = M_train.shape

@@ -15,6 +15,7 @@ dependencies = [
 
 [project.optional-dependencies]
 hf = ["datasets>=2.0", "huggingface_hub>=0.20", "pyarrow>=10.0"]
+mlp = ["torch>=2.0"]
 
 [tool.setuptools.packages.find]
 where = ["."]

@@ -68,7 +68,7 @@ Expected prediction shard count is 329. This is larger than the 84 transform-met
 
 - `benchpress.evaluation_harness.M_FULL`
 - `benchpress/evaluation/folds/folds_s10_f3_bs42_ms1.json`, loaded through `load_folds()`
-- Completion method implementations in `benchpress/methods/completers.py`; `benchpress/all_methods.py` remains a compatibility re-export for older scripts
+- Completion method implementations in `benchpress/methods/completers.py`; `benchpress/all_methods.py` remains a compatibility re-export for older scripts. The MLP method needs the optional `mlp` dependency group: install the environment with `pip install -e .[mlp]`, otherwise its 21 shards raise `ImportError` instead of contributing rows
 - Transform pipeline in `benchpress/methods/transforms.py`
 
 ## Outputs
