@@ -3,7 +3,7 @@
 ## Paper mapping
 
 - Appendix: `app:method_comparison`.
-- Table: `tab:full_grid`.
+- Tables: `tab:full_grid` (`gen_full_table.py`), `tab:model_selection` (`gen_selection_table.py`).
 
 ## Purpose
 
@@ -12,10 +12,12 @@ This directory generates the full transform-by-method leaderboard table for Appe
 ## Inputs
 
 - `../../sec4_building_benchpress/method_comparison/results.json`: metric summary from the 7-transform by 12-method grid.
+- `../../sec4_building_benchpress/method_comparison/manifest.json`: per-configuration metrics, used as the full-coverage ranking population.
+- `../../sec4_building_benchpress/method_comparison/results_nested.json`: per-pair leaderboard with hyperparameters selected on nested validation cells.
 
 ## Outputs
 
-- stdout: LaTeX `longtable` for `tab:full_grid`.
+- stdout: LaTeX `longtable` for `tab:full_grid`, or the `tabular` for `tab:model_selection`.
 
 ## Run
 

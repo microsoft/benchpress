@@ -28,6 +28,30 @@ python experiments/sec4_building_benchpress/method_comparison/gen_table.py > /tm
 python experiments/sec4_building_benchpress/method_comparison/plot.py
 ```
 
+## Nested hyperparameter selection
+
+`results.json` picks each pair's hyperparameter by the lowest MedAPE on the outer
+test cells, so selection and reporting share cells. The nested pass re-selects on
+inner validation cells carved out of each outer fold's *training* cells
+(`holdout_inner_per_model`), leaving the outer test cells untouched, and reports
+the selected configuration on those same outer test cells.
+
+The outer sweep is not rerun: `--inner-shard-index` only adds validation scores,
+and `--merge-nested` reads them together with the existing `predictions/*.npz`.
+
+```bash
+# Score one shard on the inner validation folds (resumable, same 0..328 indices)
+python experiments/sec4_building_benchpress/method_comparison/run.py --inner-shard-index 0
+
+# Re-select hyperparameters on inner validation → results_nested.json
+python experiments/sec4_building_benchpress/method_comparison/run.py --merge-nested
+```
+
+Consumed by `experiments/appendix_c_sec4_methods/method_comparison/` for the
+Appendix C.2 model-selection table. Because the selected hyperparameter may
+differ across outer folds, each row reports the most frequently selected one
+plus `modal_hp_share` and `n_distinct_hp_selected`.
+
 ## Parallel execution
 
 Unit of work: one `(transform, method, hyperparameter)` shard. Each shard is fully independent and resumable.
@@ -54,6 +78,8 @@ Expected prediction shard count is 329. This is larger than the 84 transform-met
 - `results.json`: derived MedAPE-best-HP summary used by `plot.py` and appendix table generation
 - `figures/bp_transform_method_grid*.{pdf,png}`
 - Top-15 LaTeX table printed by `gen_table.py`
+- `inner_scores/*.npz`: one file per shard, one row per `(outer fold, inner fold)` with the configuration's inner-validation MedAPE, MedAE, coverage, and cell count. Prediction matrices are not persisted here because nested selection consumes only these scores; the reported test error still comes from `predictions/*.npz`
+- `results_nested.json`: per-pair leaderboard whose hyperparameters were selected on inner validation
 
 Paper-facing score-error metrics use per-fold MedAPE/MedAE followed by the median over the 10 seeds x 3 folds. `predictions/*.npz` remains the source of truth, so changing this aggregation only requires rerunning `run.py --merge`; predictor shards do not need to be rerun.
 

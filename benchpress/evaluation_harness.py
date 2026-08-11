@@ -488,6 +488,29 @@ def holdout_per_model(min_scores=1, n_folds=3, seed=42, M=None):
     return folds
 
 
+def holdout_inner_per_model(outer_test_cells, seed, n_inner_folds=2,
+                            n_partition_folds=3, min_scores=1):
+    """Inner validation cell sets carved out of one outer fold's training cells.
+
+    Nested cross-validation needs a validation split that no outer test cell can
+    enter. A fresh per-model partition is drawn on the full matrix with ``seed``,
+    then every cell belonging to ``outer_test_cells`` is dropped, so each returned
+    set is a subset of that outer fold's training cells. The caller hides one such
+    set from the outer training matrix to obtain the inner training matrix; taking
+    ``n_inner_folds`` of ``n_partition_folds`` keeps the inner train/validation
+    proportion close to the outer one.
+
+    Returns:
+        list of ``n_inner_folds`` lists of (model_idx, benchmark_idx) cells.
+    """
+    outer_test = {(int(i), int(j)) for i, j in outer_test_cells}
+    partition = holdout_per_model(
+        min_scores=min_scores, n_folds=n_partition_folds, seed=seed)
+    return [[(int(i), int(j)) for i, j in cells
+             if (int(i), int(j)) not in outer_test]
+            for _, cells in partition[:n_inner_folds]]
+
+
 def holdout_half_per_model(rng, min_obs=4):
     """Hide half of each model's observed scores.
 
