@@ -874,7 +874,8 @@ def rank2_r2(M, axis):
 #  SCORE PREDICTOR (transform + z-score + completion wrapper)
 # ══════════════════════════════════════════════════════════════════════════════
 
-def make_score_predictor(completion_fn, transform_name, **completion_kwargs):
+def make_score_predictor(completion_fn, transform_name, *, metric=None,
+                         benchmark_ids=None, **completion_kwargs):
     """Wrap a completion method with the transform + z-score pipeline.
 
     Args:
@@ -889,10 +890,20 @@ def make_score_predictor(completion_fn, transform_name, **completion_kwargs):
     to_fn, from_fn, pct_only = TRANSFORMS[transform_name]
 
     def predict_fn(M_train):
-        M_z, obs, is_pct, col_mu, col_std = apply_transform(M_train, to_fn, pct_only)
+        matrix_metric = metric if metric is not None else getattr(M_train, 'metric', None)
+        matrix_benchmark_ids = (
+            benchmark_ids if benchmark_ids is not None
+            else getattr(M_train, 'benchmark_ids', None)
+        )
+        M_z, obs, is_pct, col_mu, col_std = apply_transform(
+            M_train, to_fn, pct_only,
+            metric=matrix_metric,
+            benchmark_ids=matrix_benchmark_ids,
+        )
         M_pred_z = completion_fn(M_z, **completion_kwargs)
         return invert_transform(M_pred_z, M_train, to_fn, from_fn, pct_only, obs, is_pct,
-                                col_mu, col_std)
+                                col_mu, col_std, metric=matrix_metric,
+                                benchmark_ids=matrix_benchmark_ids)
     return predict_fn
 
 FOLDS_DIR = os.path.join(os.path.dirname(__file__), 'evaluation', 'folds')

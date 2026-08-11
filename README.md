@@ -46,7 +46,8 @@ Finally, we stress-test deployment: **five probe benchmarks predict the rest of 
 - [Step 1: Set Up Environment](#step-1-set-up-environment)
 - [Step 2: Get a Score Matrix](#step-2-get-a-score-matrix)
   - [Option A: Use the BenchPress Matrix](#option-a-use-the-benchpress-matrix)
-  - [Option B: Bring Your Own Score Matrix](#option-b-bring-your-own-score-matrix)
+  - [Option B: Import a Supported External Score Matrix](#option-b-import-a-supported-external-score-matrix)
+  - [Option C: Bring Your Own CSV Score Matrix](#option-c-bring-your-own-csv-score-matrix)
 - [Step 3: Predict Scores](#step-3-predict-scores)
   - [Predict for an Existing Model](#predict-for-an-existing-model)
   - [Add Your Own Model](#add-your-own-model)
@@ -87,7 +88,7 @@ To set up the environment for using BenchPress, please follow the steps below.
 
 # Step 2: Get a Score Matrix
 
-BenchPress predicts on *a* score matrix: a table of `models x benchmarks` (missing cells left empty) with a metric spec for each benchmark column. You can use our curated matrix (Option A) or bring your own (Option B); both feed the same predictor in Step 3.
+BenchPress predicts on *a* score matrix: a table of `models x benchmarks` (missing cells left empty) with a metric spec for each benchmark column. You can use our curated matrix (Option A), import a supported external score source into the BenchPress CSV matrix format (Option B), or write the CSV matrix yourself (Option C). All three feed the same predictor in Step 3.
 
 ## Option A: Use the BenchPress Matrix
 
@@ -169,64 +170,123 @@ from datasets import load_dataset
 ds = load_dataset("microsoft/benchpress-score-matrix", "scores_paper")
 ```
 
-## Option B: Bring Your Own Score Matrix
+## Option B: Import a Supported External Score Matrix
 
-BenchPress predicts on any score matrix, not only ours. Provide a table of `models x benchmarks` (empty cells for unobserved scores) plus a metric spec for each benchmark column, and BenchPress completes the missing cells with the same rank-2 predictor used for the paper matrix.
+Use this path when scores already exist in a supported external source. Each importer downloads that source's public data and writes a normal BenchPress matrix folder:
 
-**Input format.** A custom matrix is a CSV whose first column holds model ids and whose remaining headers are benchmark ids. Each cell is a numeric score in that benchmark's native scale; an empty cell means the model was never run on that benchmark. Model ids and benchmark ids must each be unique.
-
-```csv
-model,gpqa_diamond,aime_2025,chatbot_arena_elo
-my-model-a,72.0,55.0,1310
-my-model-b,68.5,,1288
-my-model-c,,61.2,
+```
+<source>_matrix/
+├── scores.csv             # model x benchmark table
+├── scores.meta.json       # metric type/range metadata
+└── raw/                   # downloaded source files
 ```
 
-**Normalized form.** `ScoreMatrix.from_csv` parses this into the single internal form every downstream step consumes, identical in shape to the BenchPress matrix so both flow through the same predictor:
+After that, prediction is always the same: pass the generated `scores.csv` to `predict.py`.
 
-| Field | Meaning |
-|---|---|
-| `model_ids` | list of row labels, in file order |
-| `benchmark_ids` | list of column labels, in file order |
-| `values` | float array of shape `(n_models, n_benchmarks)`; empty cells become `NaN` |
-| `metric[bench_id]` | resolved `{type, range, higher_is_better}` per column (see below) |
+Supported imports:
 
-Everything after this point (transforms, prediction, smart-clip, export) reads only `values` plus `metric`, so a custom matrix and the BenchPress matrix are interchangeable.
+- **EEE** ([Every Eval Ever](https://github.com/evaleval/every_eval_ever)): a shared schema and datastore for AI evaluation results.
 
-Load a matrix from CSV (rows are models, columns are benchmarks, empty means unobserved):
+  ```bash
+  python -m benchpress.data.eee.curate_matrix --output ~/Downloads/eee_matrix
+  python predict.py --matrix ~/Downloads/eee_matrix/scores.csv --list-models
+  python predict.py --matrix ~/Downloads/eee_matrix/scores.csv --list-benchmarks
+  python predict.py --matrix ~/Downloads/eee_matrix/scores.csv --model <model-id>
+  ```
 
-```python
-from benchpress.score_matrix import ScoreMatrix
-from benchpress.methods.predictors import predict_logit_bias_als_scores
+- **HELM** ([Holistic Evaluation of Language Models](https://crfm.stanford.edu/helm/)): Stanford CRFM's benchmark suite and evaluation result format. By default, BenchPress imports HELM's top-level overview score groups only, so scenario drilldowns and ablation tables do not get mixed into the matrix. Add `--include-drilldowns` only if you explicitly want those detailed tables too.
 
-sm = ScoreMatrix.from_csv("my_scores.csv")   # percentage columns inferred from range
-M_hat = predict_logit_bias_als_scores(sm.values)
+  ```bash
+  python -m benchpress.data.helm.curate_matrix --output ~/Downloads/helm_matrix
+  python predict.py --matrix ~/Downloads/helm_matrix/scores.csv --model <model-id>
+  ```
+
+If a source requires authentication, log in with that source's standard CLI before running the downloader. For Hugging Face-hosted sources, run `huggingface-cli login` first.
+
+## Option C: Bring Your Own CSV Score Matrix
+
+Use this path when you want to write the matrix yourself. In this mode, `--matrix` is always the path to `scores.csv`.
+
+Create a folder anywhere (named whatever you like) with one required file and one optional file:
+
+```
+my_matrix/                 # a folder you create anywhere
+├── scores.csv             # required: your score table
+└── scores.meta.json       # optional: scale info, must sit next to scores.csv
 ```
 
-or from the CLI:
+- `scores.csv` is the score table. Rows are your models, columns are benchmarks, and each cell is a score. An empty cell means the model was never run on that benchmark, and BenchPress predicts it. The first header cell must be the word `model`; the other headers and the model names are names you choose, and none may repeat.
+
+  ```csv
+  model,gpqa_diamond,aime_2025,chatbot_arena_elo
+  my-model-a,72.0,55.0,1310
+  my-model-b,68.5,,1288
+  my-model-c,,61.2,
+  ```
+
+- `scores.meta.json` is only needed when a column is not scored 0 to 100 (for example, Chatbot Arena Elo is around 1300). List each such column so BenchPress does not treat it as a percentage. Columns you do not list are assumed to be 0 to 100.
+
+  ```json
+  { "chatbot_arena_elo": {"type": "elo", "range": [800, 1600]} }
+  ```
+
+Then predict the empty cells. Run this from the `benchpress` repo (where `predict.py` lives); give `--matrix` the path to your CSV, and `--model` one of your model names:
 
 ```bash
-python predict.py --matrix my_scores.csv --model my-model
+python predict.py --matrix /path/to/my_matrix/scores.csv --model my-model-a
 ```
 
-**Metric spec.** Percentage-scale columns (values in `[0, 100]`) are detected automatically. Elo, rating, or other non-percentage columns must be declared so BenchPress skips the logit transform and smart-clip for them, via a sidecar `my_scores.meta.json`:
+By default, custom-matrix predictions print a terminal-readable report:
 
-```json
-{
-  "chatbot_arena_elo": {"type": "elo", "range": [800, 1600]},
-  "my_rating_bench":   {"type": "rating", "range": [0, 3000]}
-}
+```text
+Prediction results for my-model-a
+Matrix: /path/to/my_matrix/scores.csv
+Showing missing cells only. Use --all to include observed scores.
+
+benchmark  score  status     support       metric
+---------  -----  ---------  ------------  ------------
+aime_2025  54.2   predicted  row 2, col 2  pct [0, 100]
 ```
 
-Any column absent from the sidecar resolves to the default `{"type": "pct", "range": [0, 100], "higher_is_better": true}`. `ScoreMatrix` validates that every column resolves to a metric type, that scores fall inside their declared range, and that the observed cells are dense enough to fit the rank-2 plus bias model before prediction runs.
+Use `--format csv` or `--format json` when you want machine-readable output.
 
-**Interoperate with Every Eval Ever (EEE).** <!-- TODO: add EEE project/schema link once public --> EEE is a shared schema and community datastore for evaluation result records. BenchPress treats it as an import/export format at the boundary only: EEE records are converted to a `ScoreMatrix` for prediction, and the curated BenchPress matrix can be exported to EEE for others to consume. EEE records never enter the canonical `llm_benchmark_data.json` directly; anything imported from EEE stays a user-supplied custom matrix.
+Add `--confidence` when you want BenchPress to check how trustworthy the predictions look on your own matrix:
+
+```bash
+python predict.py --matrix /path/to/my_matrix/scores.csv --model my-model-a --confidence
+```
+
+For a custom matrix, `--confidence` does not use the calibrated confidence model trained on the built-in BenchPress dataset. Instead, it reruns BenchPress in leave-one-observed-cell-out mode on your matrix: each known score is hidden once, predicted from the remaining scores, and compared with the true value. The report then shows test MedAE, test MedAPE, and an empirical 90% interval for each predicted missing score:
+
+```text
+Holdout validation on observed cells:
+  evaluated cells: 7
+  test MedAE: 11.06
+  test MedAPE: 7.89%
+
+benchmark  score  interval_90   status     support       metric
+---------  -----  ------------  ---------  ------------  ------------
+aime_2025  54.2   [43.3, 65.1]  predicted  row 2, col 2  pct [0, 100]
+```
+
+`support` is the amount of evidence available for that prediction: `row 2` means that model has 2 known scores, and `col 2` means that benchmark has scores from 2 models. On very small matrices, the interval is a rough empirical warning signal, not a formal guarantee.
+
+The holdout run is cached next to your matrix file. For `/path/to/my_matrix/scores.csv`, BenchPress writes `/path/to/my_matrix/__benchpress_cache__/holdout_<hash>.json`. The hash includes the loaded scores, model IDs, benchmark IDs, metric metadata, and cache version, so editing `scores.csv` or `scores.meta.json` creates a new cache entry automatically.
+
+Use `--format csv` or `--format json` with `--confidence` when you want the same fields in machine-readable output.
+
+The path can be absolute (as above, so your folder can be anywhere) or relative to the `benchpress` repo. The same works from Python:
 
 ```python
-from benchpress.score_matrix import ScoreMatrix
+from benchpress.data.score_matrix import ScoreMatrix
+from benchpress.methods.predictors import predict_logit_bias_als_scores
 
-sm = ScoreMatrix.from_eee("eee_dump.jsonl")     # EEE eval records -> custom score matrix
-sm.to_eee("benchpress_scores.eee.jsonl")        # score matrix -> EEE records
+sm = ScoreMatrix.from_csv("/path/to/my_matrix/scores.csv")
+M_hat = predict_logit_bias_als_scores(
+    sm.values,
+    metric=sm.metric,
+    benchmark_ids=sm.benchmark_ids,
+)
 ```
 
 # Step 3: Predict Scores

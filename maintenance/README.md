@@ -44,7 +44,14 @@ git-ignored.
 
 ```text
 maintenance/exports/hf_dataset/
+├── README.md
 ├── data/
+│   ├── llm_benchmark_data.json
+│   ├── benchmark_cost_evidence.json
+│   ├── README.md
+│   ├── SCHEMA.md
+│   ├── benchmark_cost_evidence.README.md
+│   ├── LICENSE-CDLA-2.0.md
 │   ├── models.csv
 │   ├── benchmarks.csv
 │   ├── scores_all.csv
@@ -54,7 +61,9 @@ maintenance/exports/hf_dataset/
 ```
 
 If `pyarrow` or `fastparquet` is installed, matching `.parquet` files are
-written automatically. Upload is opt-in:
+written automatically. `metadata.json` records the SHA-256 digest of both
+canonical JSON artifacts. The dataset card is rendered from
+`maintenance/hf_dataset_card.md`. Upload is opt-in:
 
 ```bash
 python maintenance/export_hf_dataset.py --upload
@@ -64,7 +73,9 @@ python maintenance/export_hf_dataset.py --upload
 
 - The raw JSON is not tracked in git. If it is missing, run
   `python -m benchpress.download_data` or place the audited matrix at
-  `benchpress/data/llm_benchmark_data.json`.
+  `benchpress/data/llm_benchmark_data.json`. The exporter publishes that
+  lossless JSON alongside the flat CSV/Parquet derivatives so a fresh clone can
+  restore the exact audited data.
 - Greedy probe selection is CPU-heavy. The wrapper is dry-run by default and only
   runs those steps when `DRY_RUN=0 RUN_GREEDY=1`.
 - Website `data.json` generation is not yet a single canonical script. The

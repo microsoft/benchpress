@@ -4,9 +4,11 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import importlib.util
 import json
 import os
+import shutil
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -19,6 +21,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_JSON = ROOT / "benchpress" / "data" / "llm_benchmark_data.json"
 DEFAULT_OUT_DIR = ROOT / "maintenance" / "exports" / "hf_dataset"
 DEFAULT_REPO_ID = "microsoft/benchpress-score-matrix"
+DATASET_CARD_TEMPLATE = ROOT / "maintenance" / "hf_dataset_card.md"
 PUBLIC_SCHEMA_VERSION = "public-table-export-v1"
 
 
@@ -195,14 +198,20 @@ def parquet_available() -> bool:
     )
 
 
-def write_table(df: pd.DataFrame, csv_path: Path, *, write_parquet: bool) -> list[str]:
+def write_table(
+    df: pd.DataFrame,
+    csv_path: Path,
+    *,
+    write_parquet: bool,
+    export_root: Path,
+) -> list[str]:
     csv_path.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(csv_path, index=False)
-    written = [rel(csv_path)]
+    written = [str(csv_path.relative_to(export_root))]
     if write_parquet:
         parquet_path = csv_path.with_suffix(".parquet")
         df.to_parquet(parquet_path, index=False)
-        written.append(rel(parquet_path))
+        written.append(str(parquet_path.relative_to(export_root)))
     return written
 
 
@@ -248,18 +257,73 @@ def build_export(
     scores_paper_df, matrix_wide_df, info = paper_scores_table(data, json_path)
 
     files: list[str] = []
-    files.extend(write_table(models_df, out_dir / "data" / "models.csv", write_parquet=write_parquet))
-    files.extend(write_table(benchmarks_df, out_dir / "data" / "benchmarks.csv", write_parquet=write_parquet))
-    files.extend(write_table(scores_all_df, out_dir / "data" / "scores_all.csv", write_parquet=write_parquet))
-    files.extend(write_table(scores_paper_df, out_dir / "data" / "scores_paper.csv", write_parquet=write_parquet))
-    files.append(rel(out_dir / "data" / "score_matrix_paper_wide.csv"))
+    files.extend(
+        write_table(
+            models_df,
+            out_dir / "data" / "models.csv",
+            write_parquet=write_parquet,
+            export_root=out_dir,
+        )
+    )
+    files.extend(
+        write_table(
+            benchmarks_df,
+            out_dir / "data" / "benchmarks.csv",
+            write_parquet=write_parquet,
+            export_root=out_dir,
+        )
+    )
+    files.extend(
+        write_table(
+            scores_all_df,
+            out_dir / "data" / "scores_all.csv",
+            write_parquet=write_parquet,
+            export_root=out_dir,
+        )
+    )
+    files.extend(
+        write_table(
+            scores_paper_df,
+            out_dir / "data" / "scores_paper.csv",
+            write_parquet=write_parquet,
+            export_root=out_dir,
+        )
+    )
+    files.append("data/score_matrix_paper_wide.csv")
     matrix_wide_df.to_csv(out_dir / "data" / "score_matrix_paper_wide.csv", index=False)
+
+    source_data_dir = json_path.parent
+    public_sources = {
+        "llm_benchmark_data.json": json_path,
+        "benchmark_cost_evidence.json": source_data_dir / "benchmark_cost_evidence.json",
+        "README.md": source_data_dir / "README.md",
+        "SCHEMA.md": source_data_dir / "SCHEMA.md",
+        "benchmark_cost_evidence.README.md": (
+            source_data_dir / "benchmark_cost_evidence.README.md"
+        ),
+        "LICENSE-CDLA-2.0.md": source_data_dir / "LICENSE-CDLA-2.0.md",
+    }
+    for filename, source_path in public_sources.items():
+        if not source_path.exists():
+            raise FileNotFoundError(f"Missing public dataset file: {rel(source_path)}")
+        destination = out_dir / "data" / filename
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source_path, destination)
+        files.append(str(destination.relative_to(out_dir)))
+
+    canonical_artifacts = {}
+    for filename in ("llm_benchmark_data.json", "benchmark_cost_evidence.json"):
+        path = public_sources[filename]
+        canonical_artifacts[f"data/{filename}"] = {
+            "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+            "bytes": path.stat().st_size,
+        }
 
     metadata = {
         "schema_version": PUBLIC_SCHEMA_VERSION,
         "dataset_id": repo_id,
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
-        "source_json": rel(json_path),
+        "source_json": "data/llm_benchmark_data.json",
         "parquet_written": write_parquet,
         "rows": {
             "models": len(models_df),
@@ -276,17 +340,40 @@ def build_export(
             "b_threshold": info.b_threshold,
             "iterations": info.iterations,
         },
-        "files": files,
+        "canonical_artifacts": canonical_artifacts,
+        "files": files + ["README.md", "metadata.json"],
         "notes": [
-            "scores_all is the public pre-filter score table.",
+            "llm_benchmark_data.json is the authoritative rich score-matrix artifact.",
+            "benchmark_cost_evidence.json is the authoritative raw public cost-evidence artifact.",
+            "scores_all is a flat public pre-filter table derived from the canonical JSON.",
             "scores_paper is the paper-canonical filtered long table.",
             "score_matrix_paper_wide.csv is the paper-canonical model-by-benchmark matrix.",
-            "This public export may omit rich internal audit fields such as candidates[] and raw cost-evidence traces.",
+            "CSV and Parquet files omit nested fields such as candidates and audit provenance; use the canonical JSON for lossless data.",
         ],
     }
     metadata_path = out_dir / "metadata.json"
     metadata_path.write_text(json.dumps(metadata, indent=2) + "\n", encoding="utf-8")
-    files.append(rel(metadata_path))
+
+    if not DATASET_CARD_TEMPLATE.exists():
+        raise FileNotFoundError(f"Missing dataset card template: {rel(DATASET_CARD_TEMPLATE)}")
+    dataset_card = DATASET_CARD_TEMPLATE.read_text(encoding="utf-8")
+    replacements = {
+        "@@N_MODELS@@": str(len(models_df)),
+        "@@N_BENCHMARKS@@": str(len(benchmarks_df)),
+        "@@N_SCORES_ALL@@": str(len(scores_all_df)),
+        "@@PAPER_MODELS@@": str(info.n_models),
+        "@@PAPER_BENCHMARKS@@": str(info.n_benchmarks),
+        "@@PAPER_OBSERVATIONS@@": str(info.n_observations),
+        "@@PAPER_FILL_PERCENT@@": f"{100 * info.fill_rate:.1f}",
+    }
+    for token, value in replacements.items():
+        dataset_card = dataset_card.replace(token, value)
+    unresolved = sorted(
+        part for part in dataset_card.split() if part.startswith("@@") and part.endswith("@@")
+    )
+    if unresolved:
+        raise ValueError(f"Unresolved dataset card tokens: {', '.join(unresolved)}")
+    (out_dir / "README.md").write_text(dataset_card, encoding="utf-8")
     return metadata
 
 

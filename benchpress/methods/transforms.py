@@ -15,13 +15,44 @@ NON_PCT_BENCHMARKS = {
 }
 
 
+def _metric_for_column(j, metric=None, benchmark_ids=None):
+    if metric is None or benchmark_ids is None or j >= len(benchmark_ids):
+        return None
+    return metric.get(benchmark_ids[j])
+
+
+def _metric_type(spec):
+    if not isinstance(spec, dict):
+        return None
+    value = spec.get('type')
+    return str(value).lower() if value is not None else None
+
+
+def _metric_range(spec):
+    if not isinstance(spec, dict):
+        return None
+    score_range = spec.get('range')
+    if not isinstance(score_range, (list, tuple)) or len(score_range) != 2:
+        return None
+    lo, hi = score_range
+    if lo is None or hi is None:
+        return None
+    return float(lo), float(hi)
+
+
 def benchmark_scale(bench_id):
     """Human-readable score scale for a benchmark id."""
     return NON_PCT_BENCHMARKS.get(bench_id, '0-100%')
 
 
-def clamp_score_for_benchmark(score, bench_id):
+def clamp_score_for_benchmark(score, bench_id, metric=None):
     """Clamp scalar predictions to the benchmark's valid score range."""
+    if metric is not None:
+        spec = metric.get(bench_id) if isinstance(metric, dict) else None
+        score_range = _metric_range(spec)
+        if score_range is None:
+            return float(score)
+        return float(np.clip(score, score_range[0], score_range[1]))
     if bench_id == 'chatbot_arena_elo':
         return float(np.clip(score, 800, 1600))
     if bench_id in {'codeforces_rating', 'gdpval_aa_elo'}:
@@ -36,8 +67,11 @@ def clamp_score_for_benchmark(score, bench_id):
 #  LOGIT HELPERS
 # ══════════════════════════════════════════════════════════════════════════════
 
-def _is_pct_bench(j, M):
+def _is_pct_bench(j, M, metric=None, benchmark_ids=None):
     """Heuristic: benchmark j uses a percentage scale [0,100]."""
+    spec = _metric_for_column(j, metric=metric, benchmark_ids=benchmark_ids)
+    if spec is not None:
+        return _metric_type(spec) in {'pct', 'percent', 'percentage'}
     vals = M[~np.isnan(M[:, j]), j]
     if len(vals) == 0:
         return False
@@ -133,15 +167,23 @@ TRANSFORMS = {
 #  TRANSFORM PIPELINE: raw → feature transform → z-score (and inverse)
 # ══════════════════════════════════════════════════════════════════════════════
 
-def apply_transform(M, to_fn, pct_only):
+def apply_transform(M, to_fn, pct_only, metric=None, benchmark_ids=None):
     """Transform observed entries, then per-column z-score standardize.
 
     Pipeline: raw → optional feature transform → z-score.
     Returns (M_z, obs, is_pct, col_mu, col_std).
     """
+    if metric is None:
+        metric = getattr(M, 'metric', None)
+    if benchmark_ids is None:
+        benchmark_ids = getattr(M, 'benchmark_ids', None)
+    M = np.asarray(M, dtype=float)
     obs = ~np.isnan(M)
     n_bench = M.shape[1]
-    is_pct = np.array([_is_pct_bench(j, M) for j in range(n_bench)])
+    is_pct = np.array([
+        _is_pct_bench(j, M, metric=metric, benchmark_ids=benchmark_ids)
+        for j in range(n_bench)
+    ])
     M_t = M.copy()
     for j in range(n_bench):
         if (not pct_only) or is_pct[j]:
@@ -151,12 +193,17 @@ def apply_transform(M, to_fn, pct_only):
     return M_z, obs, is_pct, col_mu, col_std
 
 def invert_transform(M_pred, M_train, to_fn, from_fn, pct_only, obs, is_pct,
-                     col_mu, col_std):
+                     col_mu, col_std, metric=None, benchmark_ids=None):
     """Invert z-score then feature transform on predicted (missing) entries.
 
     Pipeline: z-score⁻¹ → transform⁻¹ → clip [0,100] for pct benchmarks.
     Re-runs to_fn per column to restore stateful transform state (e.g., quantile).
     """
+    if metric is None:
+        metric = getattr(M_train, 'metric', None)
+    if benchmark_ids is None:
+        benchmark_ids = getattr(M_train, 'benchmark_ids', None)
+    M_train = np.asarray(M_train, dtype=float)
     M_out = M_train.copy()
     n_models, n_bench = M_train.shape
     for j in range(n_bench):
@@ -175,8 +222,14 @@ def invert_transform(M_pred, M_train, to_fn, from_fn, pct_only, obs, is_pct,
             val = val * col_std[j] + col_mu[j]
             if should_transform:
                 val = from_fn(val)
-            # Clip percentage benchmarks to [0, 100]
-            if is_pct[j]:
+            score_range = None
+            if metric is not None:
+                score_range = _metric_range(
+                    _metric_for_column(j, metric=metric, benchmark_ids=benchmark_ids)
+                )
+            if score_range is not None:
+                val = np.clip(val, score_range[0], score_range[1])
+            elif is_pct[j]:
                 val = np.clip(val, 0, 100)
             M_out[i, j] = val
     return M_out

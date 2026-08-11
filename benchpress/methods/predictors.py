@@ -7,23 +7,28 @@ from benchpress.evaluation_harness import make_score_predictor
 from benchpress.methods.completers import complete_bias_als
 
 
-def predict_probit_bias_als_scores(M_train, rank=2, lam=0.1):
+def predict_probit_bias_als_scores(M_train, rank=2, lam=0.1, metric=None,
+                                   benchmark_ids=None):
     """Score predictor: Probit transform + Bias ALS completion."""
     predict_fn = make_score_predictor(
-        complete_bias_als, 'probit', rank=rank, lam=lam, normalize=False)
+        complete_bias_als, 'probit', metric=metric, benchmark_ids=benchmark_ids,
+        rank=rank, lam=lam, normalize=False)
     return predict_fn(M_train)
 
 
-def predict_logit_bias_als_scores(M_train, rank=2, lam=0.1):
+def predict_logit_bias_als_scores(M_train, rank=2, lam=0.1, metric=None,
+                                  benchmark_ids=None):
     """Score predictor: Logit transform + Bias ALS completion."""
     predict_fn = make_score_predictor(
-        complete_bias_als, 'logit', rank=rank, lam=lam, normalize=False)
+        complete_bias_als, 'logit', metric=metric, benchmark_ids=benchmark_ids,
+        rank=rank, lam=lam, normalize=False)
     return predict_fn(M_train)
 
 
-def predict_benchpress_scores(M_train):
+def predict_benchpress_scores(M_train, metric=None, benchmark_ids=None):
     """BenchPress default score predictor: Logit Bias ALS with lambda=0.1 and rank=2."""
-    return predict_logit_bias_als_scores(M_train, rank=2, lam=0.1)
+    return predict_logit_bias_als_scores(
+        M_train, rank=2, lam=0.1, metric=metric, benchmark_ids=benchmark_ids)
 
 
 def predict_benchmark_median_scores(M_train):

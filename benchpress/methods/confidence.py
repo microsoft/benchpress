@@ -475,20 +475,35 @@ def default_confidence_artifact_path():
     )
 
 
-def _predict_with_spec(M_train, spec):
+def _predict_with_spec(M_train, spec, metric=None, benchmark_ids=None):
     transform, completer, kwargs = spec
-    return make_score_predictor(completer, transform, **kwargs)(M_train)
+    return make_score_predictor(
+        completer,
+        transform,
+        metric=metric,
+        benchmark_ids=benchmark_ids,
+        **kwargs,
+    )(M_train)
 
 
-def _prediction_stack(M_train, specs):
-    return np.stack([_predict_with_spec(M_train, spec) for spec in specs], axis=0)
+def _prediction_stack(M_train, specs, metric=None, benchmark_ids=None):
+    return np.stack([
+        _predict_with_spec(M_train, spec, metric=metric, benchmark_ids=benchmark_ids)
+        for spec in specs
+    ], axis=0)
 
 
-def default_confidence_features(M_train, target_pred=None, cells=None):
+def default_confidence_features(M_train, target_pred=None, cells=None,
+                                metric=None, benchmark_ids=None):
     """Build the three BenchPress confidence feature sets for deployment cells."""
     M_train = np.asarray(M_train, dtype=float)
     if target_pred is None:
-        target_pred = _predict_with_spec(M_train, DEFAULT_HP_VARIANTS[1])
+        target_pred = _predict_with_spec(
+            M_train,
+            DEFAULT_HP_VARIANTS[1],
+            metric=metric,
+            benchmark_ids=benchmark_ids,
+        )
     if cells is None:
         cell_arr = np.argwhere(~np.isfinite(M_train))
         cells = [(int(i), int(j)) for i, j in cell_arr]
@@ -503,8 +518,18 @@ def default_confidence_features(M_train, target_pred=None, cells=None):
 
     rows = np.asarray([i for i, _ in cells], dtype=int)
     cols = np.asarray([j for _, j in cells], dtype=int)
-    hp_stack = _prediction_stack(M_train, DEFAULT_HP_VARIANTS)[:, rows, cols]
-    strong_stack = _prediction_stack(M_train, DEFAULT_STRONG_METHODS)[:, rows, cols]
+    hp_stack = _prediction_stack(
+        M_train,
+        DEFAULT_HP_VARIANTS,
+        metric=metric,
+        benchmark_ids=benchmark_ids,
+    )[:, rows, cols]
+    strong_stack = _prediction_stack(
+        M_train,
+        DEFAULT_STRONG_METHODS,
+        metric=metric,
+        benchmark_ids=benchmark_ids,
+    )[:, rows, cols]
     target_values = target_pred[rows, cols]
     hp_features = stack_features(hp_stack, target_values)
     strong_features = stack_features(strong_stack, target_values)
@@ -646,7 +671,8 @@ def load_or_train_default_confidence_calibrator(artifact_path=None,
 
 def predict_confidence_intervals(M_train, M_pred=None, artifact=None,
                                  artifact_path=None, method="combined_risk_model",
-                                 train_if_missing=True, cells=None):
+                                 train_if_missing=True, cells=None,
+                                 metric=None, benchmark_ids=None):
     """Predict uncertainty and conformal intervals for missing/deployment cells."""
     if artifact is None:
         artifact = load_or_train_default_confidence_calibrator(
@@ -655,7 +681,12 @@ def predict_confidence_intervals(M_train, M_pred=None, artifact=None,
         raise ValueError(f"Unknown confidence method {method!r}; available: "
                          f"{sorted(artifact['calibrators'])}")
     target_pred, feature_sets, cells = default_confidence_features(
-        M_train, target_pred=M_pred, cells=cells)
+        M_train,
+        target_pred=M_pred,
+        cells=cells,
+        metric=metric,
+        benchmark_ids=benchmark_ids,
+    )
     cal = artifact["calibrators"][method]
     feature_dict = feature_sets[method]
     if not cells:
