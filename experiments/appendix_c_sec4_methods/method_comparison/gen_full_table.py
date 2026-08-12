@@ -44,7 +44,7 @@ def gen_full_table():
 
     L = []
     L.append(r"\begin{longtable}{@{}rlllrrr@{}}")
-    L.append(r"\caption{Full transform $\times$ method grid: all 84 transform--method pairs from \Cref{sec:method_comparison}, sorted by $\mathsf{MedAPE}$. Each row reports the hyperparameter selected on nested validation cells (\Cref{tab:model_selection}), and where that choice varies across outer folds the most frequently selected one, evaluated on the outer test cells as the median over 10 seeds $\times$ 3 folds in standardized space.}\label{tab:full_grid} \\")
+    L.append(r"\caption{Full transform $\times$ method grid: all 84 pairs of feature transform and prediction method from \Cref{sec:method_comparison}, sorted by $\mathsf{MedAPE}$. Each row reports the hyperparameter selected on nested validation cells (\Cref{tab:model_selection}); where that choice varies across outer folds, the one selected most often is shown. Errors are measured on the outer test cells as the median over 10 seeds $\times$ 3 folds in standardized space.}\label{tab:full_grid} \\")
     L.append(r"\toprule")
     L.append(r"\# & Transform & Method & Hyperparameter & MedAPE (\%) $\downarrow$ & MedAE $\downarrow$ & Cov. \\")
     L.append(r"\midrule")
