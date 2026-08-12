@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Plot: bp_transform_method_grid — heatmaps of Section 4 metrics across transform × method combos.
 
-Source: results.json derived from prediction shards by run.py --merge.
+Source: results_nested.json, the per-pair leaderboard whose hyperparameters were
+selected on nested validation cells by run.py --merge-nested.
 """
 import os
 import numpy as np
@@ -20,7 +21,7 @@ METHOD_NAMES = ['Benchmark Mean', 'Model Mean', 'Bench-KNN', 'Model-KNN',
                 'BenchReg', 'ModelReg', 'Soft-Impute', 'Bias ALS',
                 'NMF', 'PMF', 'Nuclear Norm', 'MLP']
 
-RESULTS_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'results.json')
+RESULTS_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'results_nested.json')
 
 # Theme colormap: magenta/violet (good) -> vanilla/cyan (high).
 CMAP_LOWER_BETTER = mcolors.LinearSegmentedColormap.from_list(
@@ -45,17 +46,17 @@ def load_grids(methods=None):
         methods = METHOD_NAMES
     ensure_artifacts(
         RESULTS_PATH,
-        ["{python}", os.path.join(os.path.dirname(os.path.abspath(__file__)), "run.py"), "--merge"],
-        description="Section 4.2 method-comparison results",
+        ["{python}", os.path.join(os.path.dirname(os.path.abspath(__file__)), "run.py"), "--merge-nested"],
+        description="Section 4.2 method comparison under nested selection",
     )
-    results = load_json(RESULTS_PATH)
+    by_pair = {(r['transform'], r['method']): r
+               for r in load_json(RESULTS_PATH)['pair_rows']}
     grids = {}
     for key, label, direction in ALL_METRICS:
         grid = np.zeros((len(methods), len(TRANSFORM_NAMES)))
         for ti, tkey in enumerate(TRANSFORM_KEYS):
             for mi, mname in enumerate(methods):
-                grids_val = results[tkey][mname].get(key, float('nan'))
-                grid[mi, ti] = grids_val
+                grid[mi, ti] = by_pair[(tkey, mname)].get(key, float('nan'))
         grids[key] = (grid, label, direction)
     return grids
 

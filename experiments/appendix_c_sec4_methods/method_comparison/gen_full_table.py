@@ -12,7 +12,7 @@ SEC4_DIR = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
     '..', '..', 'sec4_building_benchpress', 'method_comparison',
 )
-RESULTS_PATH = os.path.normpath(os.path.join(SEC4_DIR, 'results.json'))
+RESULTS_PATH = os.path.normpath(os.path.join(SEC4_DIR, 'results_nested.json'))
 
 TRANSFORM_NAMES = {
     'identity': 'Identity', 'log': 'Log', 'logit': 'Logit', 'asinh': 'Arcsinh',
@@ -29,24 +29,22 @@ METHOD_NAMES = {
 def gen_full_table():
     ensure_artifacts(
         RESULTS_PATH,
-        ["{python}", os.path.join(SEC4_DIR, "run.py"), "--merge"],
-        description="Section 4.2 method-comparison results",
+        ["{python}", os.path.join(SEC4_DIR, "run.py"), "--merge-nested"],
+        description="Section 4.2 method comparison under nested selection",
     )
-    results = load_json(RESULTS_PATH)
-    rows = []
-    for tname, methods in results.items():
-        for mname, r in methods.items():
-            rows.append({
-                'transform': tname, 'method': mname,
-                'medape': r['medape_median'], 'medae': r['medae_median'],
-                'coverage': r.get('coverage', 1.0),
-                'hp': r.get('best_hp', {}),
-            })
+    rows = [
+        {
+            'transform': r['transform'], 'method': r['method'],
+            'medape': r['medape_median'], 'medae': r['medae_median'],
+            'coverage': r['coverage'], 'hp': r['modal_hp'],
+        }
+        for r in load_json(RESULTS_PATH)['pair_rows']
+    ]
     rows.sort(key=lambda x: x['medape'])
 
     L = []
     L.append(r"\begin{longtable}{@{}rlllrrr@{}}")
-    L.append(r"\caption{Full transform $\times$ method grid: all 84 configurations from \Cref{sec:method_comparison}, sorted by $\mathsf{MedAPE}$. Each row reports the best hyperparameter setting for that transform--method pair, evaluated as the median over 10 seeds $\times$ 3 folds in standardized space.}\label{tab:full_grid} \\")
+    L.append(r"\caption{Full transform $\times$ method grid: all 84 transform--method pairs from \Cref{sec:method_comparison}, sorted by $\mathsf{MedAPE}$. Each row reports the hyperparameter selected on nested validation cells (\Cref{tab:model_selection}), and where that choice varies across outer folds the most frequently selected one, evaluated on the outer test cells as the median over 10 seeds $\times$ 3 folds in standardized space.}\label{tab:full_grid} \\")
     L.append(r"\toprule")
     L.append(r"\# & Transform & Method & Hyperparameter & MedAPE (\%) $\downarrow$ & MedAE $\downarrow$ & Cov. \\")
     L.append(r"\midrule")
