@@ -17,7 +17,7 @@ if REPO_ROOT not in sys.path:
     sys.path.insert(0, REPO_ROOT)
 
 from benchpress.plot_helpers.visual_identity import (
-    PROVIDER_COLORS, GRAY, MEMENTO_MAGENTA, CHARCOAL, VANILLA_BLUE,
+    PROVIDER_COLORS, GRAY, MEMENTO_MAGENTA, VANILLA_BLUE,
     apply_single, apply_tall, save_fig,
 )
 from benchpress.io_utils import load_json
@@ -92,17 +92,13 @@ def plot_histogram():
     rows = load_json(os.path.join(SCRIPT_DIR, 'results.json'))['results']
     medapes = np.array([r['medape'] for r in rows], dtype=float)
     medapes = medapes[np.isfinite(medapes)]
-    median = float(np.median(medapes))
-    below = int((medapes < 15).sum())
 
     apply_single()
     fig, ax = plt.subplots(figsize=(5.5, 2.6))
     ax.hist(medapes, bins=np.arange(0, np.ceil(medapes.max()) + 2.5, 2.5),
             color=VANILLA_BLUE, edgecolor='white', linewidth=0.6)
     ax.axvline(15, color=MEMENTO_MAGENTA, ls='--', lw=1.2,
-               label=f'15% threshold ({below} of {len(medapes)} below)')
-    ax.axvline(median, color=CHARCOAL, ls=':', lw=1.2,
-               label=f'median {median:.1f}%')
+               label='15% threshold')
     ax.set_xlabel('Per-model MedAPE (%)', fontsize=9)
     ax.set_ylabel('Number of models', fontsize=9)
     ax.tick_params(labelsize=8)
