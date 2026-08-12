@@ -71,4 +71,26 @@ requires a new empty output directory.
 
 ## Last valid result
 
-No completed matched-context run yet.
+The final GCR run used source commit `f6a8999`, 95 matched cells, 29 models,
+and 17 benchmarks.
+
+- Pooled MedAE was 4.519 with BenchPress context, 3.519 with full EEE
+  context, and 3.707 after removing near-duplicate EEE columns.
+- At the cell level, EEE reduced absolute error by a median 0.886 points and
+  won on 54.7% of targets. This difference was not significant. Giving each
+  benchmark equal weight also showed no reliable overall advantage
+  (`p=0.487`, 17 benchmarks).
+- The EEE intervals were not narrower: median 90% interval width was 37.27
+  versus 34.36 for BenchPress, with similar coverage (86.3% versus 87.4%).
+- Removing near-duplicate EEE columns increased pooled MedAE by 0.188 points.
+  The effect was positive for 14 of 17 benchmarks but was not significant at
+  the benchmark level (`p=0.080`).
+- EEE's recorded target scores differed from the audited BenchPress values by
+  a median 2.163 points; 68.4% were within 5 points.
+
+EEE therefore provides a viable practical living-matrix context, but this
+matched sample does not establish that its additional scores reliably improve
+prediction for every benchmark. It provides no evidence that they narrow
+calibrated uncertainty intervals. The curated matrix can remain a fixed
+research snapshot instead of competing with EEE as a continuously maintained
+artifact.
