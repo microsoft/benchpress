@@ -24,6 +24,7 @@ from benchpress.methods.confidence import (
     structural_support_features_for_cells,
 )
 from benchpress.methods.predictors import predict_benchpress_scores
+from benchpress.stats import paired_wilcoxon, wilcoxon_grouped_median
 
 from common import (
     MIN_BENCHMARKS_PER_MODEL,
@@ -49,7 +50,8 @@ def mapped_fold_cells(fold_cells, target_metadata, condition):
     ]
 
 
-def near_duplicate_columns(M_train, target_columns, protected_columns):
+def near_duplicate_columns(M_train, benchmark_ids, target_columns,
+                           protected_columns):
     """Find training-only near-duplicate columns for the EEE ablation."""
     removed = {}
     protected = set(int(value) for value in protected_columns)
@@ -75,6 +77,7 @@ def near_duplicate_columns(M_train, target_columns, protected_columns):
                     and abs(correlation) > REDUNDANCY_CORRELATION):
                 matches.append({
                     "column_index": int(candidate_j),
+                    "benchmark_id": benchmark_ids[candidate_j],
                     "correlation": correlation,
                     "overlap": overlap,
                 })
@@ -105,7 +108,7 @@ def run_fold(condition, fold_id, fold_cells, target_metadata, eee):
                 for metadata in target_metadata.values()
             ]
             removed = near_duplicate_columns(
-                M_train, target_columns, protected_columns)
+                M_train, benchmark_ids, target_columns, protected_columns)
             drop_columns = sorted({
                 row["column_index"]
                 for matches in removed.values()
@@ -234,19 +237,65 @@ def paired_accuracy(merged):
     }
     eee_delta = errors["eee"] - errors["benchpress"]
     dedup_delta = errors["eee_deduplicated"] - errors["eee"]
+    delta_records = [
+        {
+            "benchmark_id":
+                ordered["benchpress"][key]["benchpress_benchmark_id"],
+            "eee_minus_benchpress_abs_error": float(
+                errors["eee"][idx] - errors["benchpress"][idx]),
+            "deduplicated_minus_full_eee_abs_error": float(
+                errors["eee_deduplicated"][idx] - errors["eee"][idx]),
+        }
+        for idx, key in enumerate(shared_keys)
+    ]
+    per_benchmark_test = wilcoxon_grouped_median(
+        delta_records,
+        [
+            "eee_minus_benchpress_abs_error",
+            "deduplicated_minus_full_eee_abs_error",
+        ],
+        group_key="benchmark_id",
+        delta_key_template="{metric}",
+        min_groups=5,
+        include_sign_counts=True,
+    )
+    by_benchmark = {}
+    for benchmark_id in sorted({
+            row["benchmark_id"] for row in delta_records}):
+        rows = [
+            row for row in delta_records
+            if row["benchmark_id"] == benchmark_id
+        ]
+        by_benchmark[benchmark_id] = {
+            "n": int(len(rows)),
+            "median_eee_minus_benchpress_abs_error": float(np.median([
+                row["eee_minus_benchpress_abs_error"] for row in rows
+            ])),
+            "median_deduplicated_minus_full_eee_abs_error": float(np.median([
+                row["deduplicated_minus_full_eee_abs_error"] for row in rows
+            ])),
+        }
+    _, eee_cell_p = paired_wilcoxon(
+        errors["eee"], errors["benchpress"])
+    _, dedup_cell_p = paired_wilcoxon(
+        errors["eee_deduplicated"], errors["eee"])
     return {
         "eee_minus_benchpress_abs_error": {
             "median": float(np.median(eee_delta)),
             "eee_lower_fraction": float(np.mean(eee_delta < 0)),
             "ties_fraction": float(np.mean(np.isclose(eee_delta, 0))),
+            "cell_level_p_value_diagnostic": float(eee_cell_p),
             "n": int(len(shared_keys)),
         },
         "deduplicated_minus_full_eee_abs_error": {
             "median": float(np.median(dedup_delta)),
             "deduplicated_lower_fraction": float(np.mean(dedup_delta < 0)),
             "ties_fraction": float(np.mean(np.isclose(dedup_delta, 0))),
+            "cell_level_p_value_diagnostic": float(dedup_cell_p),
             "n": int(len(shared_keys)),
         },
+        "per_benchmark_wilcoxon": per_benchmark_test,
+        "by_benchmark": by_benchmark,
     }
 
 
@@ -265,12 +314,17 @@ def summarize(merged, target_metadata):
         eee_intervals[key]["width"] - bp_intervals[key]["width"]
         for key in shared_interval_keys
     ], dtype=float)
+    _, width_p = paired_wilcoxon(
+        [eee_intervals[key]["width"] for key in shared_interval_keys],
+        [bp_intervals[key]["width"] for key in shared_interval_keys],
+    )
 
     unique_targets = list(target_metadata.values())
     actual = np.asarray([row["actual"] for row in unique_targets], dtype=float)
     eee_observed = np.asarray([
         row["eee_observed_score"] for row in unique_targets
     ], dtype=float)
+    score_disagreement = np.abs(eee_observed - actual)
     return {
         "target_set": {
             "matched_cells": int(len(unique_targets)),
@@ -281,8 +335,12 @@ def summarize(merged, target_metadata):
                 row["benchpress_benchmark_id"] for row in unique_targets
             })),
         },
-        "direct_eee_score_alignment_to_benchpress_ground_truth":
-            compute_prediction_error(actual, eee_observed),
+        "direct_eee_score_alignment_to_benchpress_ground_truth": {
+            **compute_prediction_error(actual, eee_observed),
+            "within_1_point_fraction": float(np.mean(score_disagreement <= 1)),
+            "within_5_points_fraction": float(np.mean(score_disagreement <= 5)),
+            "within_10_points_fraction": float(np.mean(score_disagreement <= 10)),
+        },
         "accuracy": accuracy,
         "paired_accuracy": paired_accuracy(merged),
         "confidence_90": {
@@ -291,6 +349,7 @@ def summarize(merged, target_metadata):
             "paired_eee_minus_benchpress_width": {
                 "median": float(np.median(width_differences)),
                 "eee_narrower_fraction": float(np.mean(width_differences < 0)),
+                "cell_level_p_value_diagnostic": float(width_p),
                 "n": int(len(width_differences)),
             },
         },
