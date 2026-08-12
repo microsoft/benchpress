@@ -1,0 +1,266 @@
+{
+  "models": [
+    {
+      "benchpress_id": "gpt-4.1",
+      "eee_id": "openai/gpt-4.1-2025-04-14",
+      "reason": "Exact dated GPT-4.1 release."
+    },
+    {
+      "benchpress_id": "gpt-4.1-mini",
+      "eee_id": "openai/gpt-4.1-mini-2025-04-14",
+      "reason": "Exact dated GPT-4.1 mini release."
+    },
+    {
+      "benchpress_id": "gpt-4.1-nano",
+      "eee_id": "openai/gpt-4.1-nano-2025-04-14",
+      "reason": "Exact dated GPT-4.1 nano release."
+    },
+    {
+      "benchpress_id": "gpt-4o",
+      "eee_id": "openai/gpt-4o-2024-11-20",
+      "reason": "Exact model date in the BenchPress display name."
+    },
+    {
+      "benchpress_id": "gpt-4o-0513",
+      "eee_id": "openai/gpt-4o-2024-05-13",
+      "reason": "Exact model date."
+    },
+    {
+      "benchpress_id": "gpt-4o-mini",
+      "eee_id": "openai/gpt-4o-mini-2024-07-18",
+      "reason": "Canonical GPT-4o mini release."
+    },
+    {
+      "benchpress_id": "gpt-5-mini",
+      "eee_id": "openai/gpt-5-mini-high",
+      "reason": "BenchPress uses high reasoning effort."
+    },
+    {
+      "benchpress_id": "gpt-5-nano",
+      "eee_id": "openai/gpt-5-nano-high",
+      "reason": "BenchPress uses high reasoning effort."
+    },
+    {
+      "benchpress_id": "claude-3.5-sonnet",
+      "eee_id": "anthropic/claude-3-5-sonnet-20241022",
+      "reason": "Exact October 22 Claude 3.5 Sonnet release."
+    },
+    {
+      "benchpress_id": "claude-3.7-sonnet",
+      "eee_id": "anthropic/claude-3-7-sonnet-20250219-thinking",
+      "reason": "Exact release with extended thinking."
+    },
+    {
+      "benchpress_id": "claude-sonnet-4",
+      "eee_id": "anthropic/claude-sonnet-4-20250514-thinking",
+      "reason": "Exact release with thinking for reasoning benchmarks."
+    },
+    {
+      "benchpress_id": "claude-opus-4",
+      "eee_id": "anthropic/claude-opus-4-20250514",
+      "reason": "Exact release; EEE has no filtered aggregate thinking row."
+    },
+    {
+      "benchpress_id": "claude-opus-4.1",
+      "eee_id": "anthropic/claude-opus-4-1-20250805-thinking",
+      "reason": "Exact release with thinking."
+    },
+    {
+      "benchpress_id": "claude-sonnet-4.5",
+      "eee_id": "anthropic/claude-sonnet-4-5-20250929-thinking",
+      "reason": "Exact release with thinking."
+    },
+    {
+      "benchpress_id": "claude-opus-4.5",
+      "eee_id": "anthropic/claude-opus-4-5-20251101-thinking-64k-high-effort",
+      "reason": "Exact release and BenchPress default high-effort 64K thinking setting."
+    },
+    {
+      "benchpress_id": "claude-opus-4.6",
+      "eee_id": "anthropic/claude-opus-4-6-thinking",
+      "reason": "EEE filtered aggregate thinking row; exact max-effort row is too sparse."
+    },
+    {
+      "benchpress_id": "gemini-1.5-flash",
+      "eee_id": "google/gemini-1.5-flash-002",
+      "reason": "Latest stable Gemini 1.5 Flash release."
+    },
+    {
+      "benchpress_id": "gemini-1.5-pro",
+      "eee_id": "google/gemini-1.5-pro-002",
+      "reason": "Latest stable Gemini 1.5 Pro release."
+    },
+    {
+      "benchpress_id": "gemini-2.0-flash",
+      "eee_id": "google/gemini-2.0-flash-001",
+      "reason": "Exact stable Gemini 2.0 Flash release."
+    },
+    {
+      "benchpress_id": "gemini-2.5-flash",
+      "eee_id": "google/gemini-2.5-flash",
+      "reason": "Exact GA model."
+    },
+    {
+      "benchpress_id": "gemini-2.5-pro",
+      "eee_id": "google/gemini-2.5-pro",
+      "reason": "Exact GA model."
+    },
+    {
+      "benchpress_id": "gemini-3-pro",
+      "eee_id": "google/gemini-3-pro-preview-11-2025-high",
+      "reason": "BenchPress uses high thinking effort."
+    },
+    {
+      "benchpress_id": "gemini-3-flash",
+      "eee_id": "google/gemini-3-flash-preview",
+      "reason": "Exact preview family; EEE high-thinking row is too sparse."
+    },
+    {
+      "benchpress_id": "gemini-3.1-pro",
+      "eee_id": "google/gemini-3.1-pro-preview",
+      "reason": "Exact preview family; EEE high-thinking row is too sparse."
+    },
+    {
+      "benchpress_id": "deepseek-r1",
+      "eee_id": "deepseek/deepseek-r1",
+      "reason": "Exact provider and model."
+    },
+    {
+      "benchpress_id": "deepseek-v3",
+      "eee_id": "deepseek/deepseek-v3",
+      "reason": "Exact provider and model."
+    },
+    {
+      "benchpress_id": "qwen3-235b",
+      "eee_id": "qwen/qwen3-235b-a22b-thinking-2507",
+      "reason": "Matching Qwen3 235B-A22B thinking model."
+    },
+    {
+      "benchpress_id": "llama-3.3-70b-instruct",
+      "eee_id": "meta-llama/llama-3.3-70b-instruct",
+      "reason": "Exact instruction-tuned model without a Turbo deployment alias."
+    },
+    {
+      "benchpress_id": "gemma-2-9b",
+      "eee_id": "google/gemma-2-9b-it",
+      "reason": "BenchPress canonical setting is the instruction-tuned column."
+    },
+    {
+      "benchpress_id": "gemma-2-27b",
+      "eee_id": "google/gemma-2-27b-it",
+      "reason": "BenchPress canonical setting is the instruction-tuned column."
+    },
+    {
+      "benchpress_id": "command-a",
+      "eee_id": "cohere/command-a-03-2025",
+      "reason": "Exact dated Command A release."
+    },
+    {
+      "benchpress_id": "minimax-m2.1",
+      "eee_id": "minimax/MiniMax-M2.1",
+      "reason": "Exact model."
+    },
+    {
+      "benchpress_id": "glm-4.6",
+      "eee_id": "zai/glm-4.6",
+      "reason": "Exact model."
+    },
+    {
+      "benchpress_id": "glm-4.7",
+      "eee_id": "zai/glm-4.7",
+      "reason": "Exact model."
+    },
+    {
+      "benchpress_id": "qwen3.6-plus",
+      "eee_id": "qwen/qwen3.6-plus",
+      "reason": "Exact model."
+    }
+  ],
+  "benchmarks": [
+    {
+      "benchpress_id": "aime_2024",
+      "eee_id": "vals-ai/vals_ai.aime.aime_2024/vals_ai.aime.aime_2024.accuracy",
+      "reason": "Exact AIME 2024 accuracy column."
+    },
+    {
+      "benchpress_id": "aime_2025",
+      "eee_id": "vals-ai/vals_ai.aime.aime_2025/vals_ai.aime.aime_2025.accuracy",
+      "reason": "Exact AIME 2025 accuracy column."
+    },
+    {
+      "benchpress_id": "arc_agi_1",
+      "eee_id": "arc-agi/v1_Semi_Private/score",
+      "reason": "Exact semi-private ARC-AGI-1 setting."
+    },
+    {
+      "benchpress_id": "arc_agi_2",
+      "eee_id": "arc-agi/v2_Semi_Private/score",
+      "reason": "Exact semi-private ARC-AGI-2 setting."
+    },
+    {
+      "benchpress_id": "facts_grounding",
+      "eee_id": "facts-grounding/Score/facts_grounding.score_overall",
+      "reason": "Overall FACTS Grounding score."
+    },
+    {
+      "benchpress_id": "gpqa_diamond",
+      "eee_id": "vals-ai/vals_ai.gpqa.diamond_zero_shot_cot/vals_ai.gpqa.diamond_zero_shot_cot.accuracy",
+      "reason": "Exact Diamond subset with zero-shot chain-of-thought and no tools."
+    },
+    {
+      "benchpress_id": "gsm8k",
+      "eee_id": "gsm8k/accuracy",
+      "reason": "Exact GSM8K accuracy column."
+    },
+    {
+      "benchpress_id": "hle",
+      "eee_id": "hle/Humanity's Last Exam (accuracy)/hle.accuracy",
+      "reason": "HLE accuracy, excluding calibration error."
+    },
+    {
+      "benchpress_id": "humaneval",
+      "eee_id": "openai_humaneval/accuracy",
+      "reason": "Exact HumanEval accuracy column."
+    },
+    {
+      "benchpress_id": "ifeval",
+      "eee_id": "IFEval/prompt_strict/accuracy",
+      "reason": "Exact canonical prompt-strict accuracy."
+    },
+    {
+      "benchpress_id": "livecodebench",
+      "eee_id": "artificial-analysis-llms/artificial_analysis.livecodebench",
+      "reason": "LiveCodeBench pass-rate column; version drift is reported through score disagreement."
+    },
+    {
+      "benchpress_id": "math_500",
+      "eee_id": "vals-ai/vals_ai.math500.overall/vals_ai.math500.overall.accuracy",
+      "reason": "Exact MATH-500 overall accuracy."
+    },
+    {
+      "benchpress_id": "mathvista",
+      "eee_id": "MathVista/accuracy",
+      "reason": "Exact MathVista accuracy column."
+    },
+    {
+      "benchpress_id": "mmlu_pro",
+      "eee_id": "mmlu-pro/MMLU-Pro (overall)/mmlu_pro/overall",
+      "reason": "MMLU-Pro overall score, not a subject slice."
+    },
+    {
+      "benchpress_id": "mmmu",
+      "eee_id": "vals-ai/vals_ai.mmmu.overall/vals_ai.mmmu.overall.accuracy",
+      "reason": "MMMU overall accuracy."
+    },
+    {
+      "benchpress_id": "simpleqa",
+      "eee_id": "llm-stats/llm_stats.simpleqa/llm_stats.simpleqa.score",
+      "reason": "SimpleQA score column."
+    },
+    {
+      "benchpress_id": "terminal_bench",
+      "eee_id": "terminal-bench-2.0/accuracy",
+      "reason": "Exact Terminal-Bench 2.0 accuracy."
+    }
+  ]
+}
