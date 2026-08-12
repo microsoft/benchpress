@@ -1,0 +1,211 @@
+{
+  "eligible_benchmarks": [
+    {
+      "bench_id": "aider_polyglot_diff",
+      "bench_index": 2,
+      "bench_name": "Aider Polyglot (diff mode)",
+      "n_observed": 32
+    },
+    {
+      "bench_id": "aime_2024",
+      "bench_index": 4,
+      "bench_name": "AIME 2024",
+      "n_observed": 30
+    },
+    {
+      "bench_id": "aime_2025",
+      "bench_index": 5,
+      "bench_name": "AIME 2025",
+      "n_observed": 47
+    },
+    {
+      "bench_id": "arc_agi_1",
+      "bench_index": 8,
+      "bench_name": "ARC-AGI-1",
+      "n_observed": 37
+    },
+    {
+      "bench_id": "arc_agi_2",
+      "bench_index": 9,
+      "bench_name": "ARC-AGI-2",
+      "n_observed": 41
+    },
+    {
+      "bench_id": "arena_hard",
+      "bench_index": 10,
+      "bench_name": "Arena-Hard Auto",
+      "n_observed": 30
+    },
+    {
+      "bench_id": "browsecomp",
+      "bench_index": 19,
+      "bench_name": "BrowseComp",
+      "n_observed": 30
+    },
+    {
+      "bench_id": "gpqa_diamond",
+      "bench_index": 50,
+      "bench_name": "GPQA Diamond",
+      "n_observed": 82
+    },
+    {
+      "bench_id": "gpqa_main",
+      "bench_index": 51,
+      "bench_name": "GPQA Main (full set)",
+      "n_observed": 71
+    },
+    {
+      "bench_id": "hle",
+      "bench_index": 56,
+      "bench_name": "HLE (Humanity's Last Exam)",
+      "n_observed": 46
+    },
+    {
+      "bench_id": "hle_text",
+      "bench_index": 57,
+      "bench_name": "HLE Text",
+      "n_observed": 39
+    },
+    {
+      "bench_id": "hmmt_feb_2025",
+      "bench_index": 59,
+      "bench_name": "HMMT Feb 2025",
+      "n_observed": 34
+    },
+    {
+      "bench_id": "humaneval",
+      "bench_index": 62,
+      "bench_name": "HumanEval",
+      "n_observed": 31
+    },
+    {
+      "bench_id": "ifeval",
+      "bench_index": 64,
+      "bench_name": "IFEval",
+      "n_observed": 50
+    },
+    {
+      "bench_id": "livecodebench",
+      "bench_index": 69,
+      "bench_name": "LiveCodeBench",
+      "n_observed": 61
+    },
+    {
+      "bench_id": "math",
+      "bench_index": 73,
+      "bench_name": "MATH",
+      "n_observed": 30
+    },
+    {
+      "bench_id": "math_500",
+      "bench_index": 74,
+      "bench_name": "MATH-500",
+      "n_observed": 32
+    },
+    {
+      "bench_id": "mmlu_pro",
+      "bench_index": 82,
+      "bench_name": "MMLU-Pro",
+      "n_observed": 58
+    },
+    {
+      "bench_id": "mmmlu",
+      "bench_index": 83,
+      "bench_name": "MMMLU",
+      "n_observed": 38
+    },
+    {
+      "bench_id": "mmmu",
+      "bench_index": 84,
+      "bench_name": "MMMU",
+      "n_observed": 36
+    },
+    {
+      "bench_id": "simpleqa",
+      "bench_index": 106,
+      "bench_name": "SimpleQA",
+      "n_observed": 35
+    },
+    {
+      "bench_id": "swe_bench_verified",
+      "bench_index": 112,
+      "bench_name": "SWE-bench Verified",
+      "n_observed": 54
+    },
+    {
+      "bench_id": "terminal_bench",
+      "bench_index": 121,
+      "bench_name": "Terminal-Bench 2.0",
+      "n_observed": 38
+    }
+  ],
+  "n_eligible_benchmarks": 23,
+  "setting": {
+    "base_seed": 42,
+    "ci": 0.8,
+    "conditioning_counts": [
+      5,
+      10,
+      15,
+      20
+    ],
+    "eligible_rule": "benchmark columns with at least max(min_observations, test_count + max(conditioning_counts)) observed scores",
+    "fixed_target_rule": "for each benchmark and seed, the same 10 test cells are used for all conditioning counts; conditioning cells are nested prefixes",
+    "interval_method": "leave-one-benchmark-out conformal absolute-error intervals, computed separately for each conditioning count",
+    "matrix_shape": [
+      84,
+      133
+    ],
+    "min_observations": 30,
+    "n_seeds": 10,
+    "prediction_method": "BenchPress = Logit Bias ALS, rank=2, lambda=0.1",
+    "smoke": false,
+    "test_count": 10
+  },
+  "summary": [
+    {
+      "conditioning_scores": 5,
+      "coverage": 0.798695652173913,
+      "medae": 5.833978240908078,
+      "median_interval_width": 32.28450751017047,
+      "n_benchmarks": 23,
+      "n_predictions": 2300,
+      "n_seeds": 10,
+      "p25_interval_width": 31.3179103506923,
+      "p75_interval_width": 32.695434030497225
+    },
+    {
+      "conditioning_scores": 10,
+      "coverage": 0.7982608695652174,
+      "medae": 4.964343594221997,
+      "median_interval_width": 25.317501028682955,
+      "n_benchmarks": 23,
+      "n_predictions": 2300,
+      "n_seeds": 10,
+      "p25_interval_width": 24.800739418476475,
+      "p75_interval_width": 25.691673321742925
+    },
+    {
+      "conditioning_scores": 15,
+      "coverage": 0.8,
+      "medae": 4.927479720540811,
+      "median_interval_width": 23.31819633798606,
+      "n_benchmarks": 23,
+      "n_predictions": 2300,
+      "n_seeds": 10,
+      "p25_interval_width": 23.109926634992632,
+      "p75_interval_width": 24.075352176568188
+    },
+    {
+      "conditioning_scores": 20,
+      "coverage": 0.7982608695652174,
+      "medae": 4.690540404853966,
+      "median_interval_width": 23.03687533928874,
+      "n_benchmarks": 23,
+      "n_predictions": 2300,
+      "n_seeds": 10,
+      "p25_interval_width": 22.59942370054695,
+      "p75_interval_width": 23.85547537123267
+    }
+  ]
+}

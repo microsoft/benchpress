@@ -124,3 +124,16 @@ The canonical result uses the current 84 x 133 matrix, the cached Section 4.2 fo
 ## Reuse boundary for `predict.py`
 
 The §6.2 artifacts are evaluation artifacts: they contain cross-fit held-out uncertainty scores and aggregate paper metrics. They should be reused for paper figures, tables, text, and confidence-method comparisons. A deploy-time `predict.py` calibrator is a separate artifact because it must store a fitted scaler/model plus conformal scale for future missing cells; do not train or regenerate that deploy artifact until the desired deployment protocol is explicitly specified.
+
+## Interval width vs number of observed scores (tab:interval_width_by_observations)
+
+`interval_width_by_observations.py` (reviewer rdwq) isolates how the conformal
+interval narrows as a single benchmark accumulates observations. It restricts to
+the 23 benchmarks with >=30 observed model scores, holds out the same 10 cells per
+benchmark, and reveals k in {5,10,15,20} conditioning scores from that column while
+keeping all other columns observed. It reuses the shared point predictor
+(`predict_benchpress_scores`) and the harness matrix, and forms leave-one-benchmark-out
+split-conformal 80% intervals (plain absolute-error quantile, distinct from the
+learned-risk `conformal_interval` used by `run.py`). Result in
+`interval_width_by_observations.json`; the App E.2 table reports MedAE, empirical
+coverage, and median width. Width falls 32.3 -> 23.0 as k grows; coverage stays ~0.80.
