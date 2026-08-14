@@ -7,17 +7,17 @@
 
 ## Purpose
 
-This directory generates the full transform-by-method leaderboard table for Appendix C.2. It is a read-only derivative of the main §4.2 method comparison run.
+This directory generates the validation-error and outer-test-error leaderboards for Appendix C.2. It is a read-only derivative of the main §4.2 method comparison run.
 
 ## Inputs
 
-- `../../sec4_building_benchpress/method_comparison/results.json`: metric summary from the 7-transform by 12-method grid.
-- `../../sec4_building_benchpress/method_comparison/manifest.json`: per-configuration metrics, used as the full-coverage ranking population.
-- `../../sec4_building_benchpress/method_comparison/results_nested.json`: per-pair leaderboard with hyperparameters selected on nested validation cells.
+- `../../sec4_building_benchpress/method_comparison/manifest.json`: per-configuration outer-test metrics, used to identify the 203 full-coverage configurations.
+- `../../sec4_building_benchpress/method_comparison/inner_scores/*.npz`: per-configuration inner-validation metrics used by `gen_selection_table.py`.
+- `../../sec4_building_benchpress/method_comparison/results_nested.json`: per-pair outer-test leaderboard with hyperparameters selected on nested validation cells, used by `gen_full_table.py`.
 
 ## Outputs
 
-- stdout: LaTeX `longtable` for `tab:full_grid`, or the `tabular` for `tab:model_selection`.
+- stdout: LaTeX `longtable` for `tab:full_grid`, or the Top-15 validation leaderboard for `tab:model_selection`.
 
 ## Run
 
@@ -34,8 +34,8 @@ bash run.sh
 
 ## Resume / rerun
 
-No experiment runs here. Rerun only after `sec4_building_benchpress/method_comparison/results.json` changes.
+No experiment runs here. Regenerate `tab:model_selection` after `inner_scores/*.npz` or `manifest.json` changes; regenerate `tab:full_grid` after `results_nested.json` changes.
 
 ## Last valid result
 
-Current output matches the Appendix C full method grid in `overleaf/arxiv/appendix.tex`, with Logit Bias ALS (`lambda=0.1`, `r=2`) as the selected full-coverage point predictor.
+Current output matches the Appendix C tables in `overleaf/arxiv/appendix.tex`. Logit Bias ALS (`lambda=0.1`, `r=2`) ranks first on both inner-validation metrics among the 203 full-coverage configurations.
