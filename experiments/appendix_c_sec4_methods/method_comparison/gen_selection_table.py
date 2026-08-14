@@ -17,6 +17,7 @@ INNER_SCORES_DIR = os.path.normpath(os.path.join(SEC4_DIR, 'inner_scores'))
 MANIFEST_PATH = os.path.normpath(os.path.join(SEC4_DIR, 'manifest.json'))
 TOP_N = 15
 EXPECTED_SHARDS = 329
+EXPECTED_FULL_COVERAGE = 203
 
 TRANSFORM_NAMES = {
     'identity': 'Identity',
@@ -59,7 +60,7 @@ def highlight_benchpress(row, *cells):
 
 
 def load_validation_rows():
-    """Aggregate the main sweep's configurations on inner-validation cells."""
+    """Aggregate outer-test full-coverage configs on inner-validation cells."""
     paths = sorted(glob.glob(os.path.join(INNER_SCORES_DIR, '*.npz')))
     if len(paths) != EXPECTED_SHARDS:
         raise RuntimeError(
@@ -97,6 +98,8 @@ def load_validation_rows():
                     f'{key} mismatch for {shard_id}: '
                     f"{metadata[key]!r} != {manifest_row[key]!r}")
         seen_ids.add(shard_id)
+        if not np.isclose(float(manifest_row['coverage']), 1.0):
+            continue
 
         medape = metrics[:, columns.index('medape')]
         medae = metrics[:, columns.index('medae')]
@@ -119,6 +122,10 @@ def load_validation_rows():
         raise RuntimeError(
             f'missing validation shards for {len(missing_ids)} main-sweep '
             f'configurations, e.g. {sorted(missing_ids)[:5]}')
+    if len(rows) != EXPECTED_FULL_COVERAGE:
+        raise RuntimeError(
+            f'expected {EXPECTED_FULL_COVERAGE} configurations with 100% '
+            f'outer-test coverage, found {len(rows)}')
     return rows
 
 
