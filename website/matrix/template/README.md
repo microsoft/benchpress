@@ -21,4 +21,4 @@
   at least 8 observed models per benchmark.
 
 Fill in the observed scores, leave unknown cells blank, and upload both files
-at https://microsoft.github.io/benchpress/matrix/.
+at https://microsoft.github.io/benchpress/#picker.

@@ -1,0 +1,104 @@
+.matrix-upload[hidden],
+.matrix-upload-actions [hidden] {
+  display: none;
+}
+
+.matrix-picker {
+  max-width: 980px;
+  margin: 30px auto 0;
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  background: #fff;
+  text-align: left;
+}
+
+.matrix-picker label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--ink);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.matrix-picker select {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  letter-spacing: -0.04em;
+}
+
+.matrix-picker select:focus {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.matrix-picker p,
+.matrix-upload p {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.matrix-picker p.error {
+  color: #b00020;
+}
+
+.matrix-upload {
+  max-width: 980px;
+  margin: 8px auto 0;
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  border: 1px solid var(--line);
+  background: var(--muted-panel);
+  text-align: left;
+}
+
+.matrix-upload strong {
+  color: var(--ink);
+  font-size: 0.84rem;
+}
+
+.matrix-upload-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.matrix-upload-actions .btn {
+  min-height: 40px;
+  padding: 0 14px;
+  font-size: 0.78rem;
+}
+
+.matrix-file-button {
+  position: relative;
+  overflow: hidden;
+}
+
+.matrix-file-button input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+@media (max-width: 760px) {
+  .matrix-upload {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .matrix-upload-actions {
+    justify-content: flex-start;
+  }
+}
