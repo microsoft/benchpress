@@ -1,0 +1,229 @@
+.source-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 18px 0 26px;
+}
+
+.source-card {
+  min-height: 112px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.source-card:hover,
+.source-card.active {
+  border-color: var(--ink);
+  background: var(--black);
+  color: #fff;
+}
+
+.source-card strong,
+.source-card span {
+  display: block;
+}
+
+.source-card strong {
+  margin-bottom: 8px;
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.source-card span {
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.source-card:hover span,
+.source-card.active span {
+  color: #c6c6c6;
+}
+
+.upload-panel,
+.status-card,
+.validation-card,
+.custom-run,
+.matrix-summary,
+.cell-result {
+  margin: 18px 0;
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  background: var(--muted-panel);
+}
+
+.upload-panel {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+
+.upload-panel h3,
+.matrix-summary h3,
+.cell-result h3 {
+  margin-bottom: 7px;
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.upload-panel p,
+.custom-run p,
+.matrix-summary p,
+.cell-result p,
+.download-row span {
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.55;
+}
+
+.upload-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.file-button {
+  position: relative;
+  overflow: hidden;
+}
+
+.file-button input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.status-card {
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.status-card.error {
+  border-color: #b00020;
+  color: #b00020;
+}
+
+.summary-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.summary-stat {
+  padding: 12px;
+  border: 1px solid var(--line);
+  background: #fff;
+}
+
+.summary-stat strong,
+.summary-stat span {
+  display: block;
+}
+
+.summary-stat strong {
+  font-size: 1.15rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.summary-stat span {
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.validation-card ul {
+  margin-left: 18px;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.custom-run .btn-primary {
+  margin-top: 12px;
+}
+
+.custom-run .progress {
+  margin-top: 16px;
+}
+
+.custom-run .progress-bar {
+  width: 18%;
+  animation: matrix-progress 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes matrix-progress {
+  from { width: 18%; }
+  to { width: 86%; }
+}
+
+.picker-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.cell-value {
+  margin: 8px 0;
+  font-size: clamp(2.8rem, 8vw, 5.2rem);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.08em;
+}
+
+.cell-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.cell-meta span {
+  padding: 5px 8px;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.download-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 24px 0;
+}
+
+.download-row .btn-secondary {
+  flex: none;
+}
+
+.download-row .btn-secondary:disabled {
+  border-color: var(--line);
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
+@media (max-width: 700px) {
+  .source-grid,
+  .picker-grid,
+  .summary-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .upload-panel,
+  .download-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .upload-actions {
+    justify-content: flex-start;
+  }
+}

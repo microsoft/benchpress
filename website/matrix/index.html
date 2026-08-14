@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Score Matrix Workspace · BenchPress</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='white'/%3E%3Cg stroke='%23000' stroke-width='3' fill='white'%3E%3Crect x='10' y='10' width='10' height='10'/%3E%3Crect x='27' y='10' width='10' height='10'/%3E%3Crect x='44' y='10' width='10' height='10'/%3E%3Crect x='10' y='27' width='10' height='10'/%3E%3Crect x='27' y='27' width='10' height='10' fill='%23000'/%3E%3Crect x='44' y='27' width='10' height='10'/%3E%3Crect x='10' y='44' width='10' height='10' fill='%23000'/%3E%3Crect x='27' y='44' width='10' height='10'/%3E%3Crect x='44' y='44' width='10' height='10'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="stylesheet" href="../add-model/style.css?v=17">
+<link rel="stylesheet" href="style.css?v=1">
+</head>
+<body class="theme-minimal">
+
+<nav class="nav">
+  <a href="../" class="brand">BenchPress</a>
+  <div class="nav-actions">
+    <a href="https://github.com/microsoft/benchpress" target="_blank" rel="noopener">GitHub</a>
+    <a href="../" class="back-link">← Back</a>
+  </div>
+</nav>
+
+<main class="main">
+<section class="form">
+  <h1 class="title">Score matrix workspace</h1>
+  <p class="subtitle">Use the curated BenchPress snapshot, a supported public matrix, or your own score matrix. Uploaded data stays in your browser.</p>
+
+  <h2 class="section-h">Choose a score matrix</h2>
+  <div class="source-grid" id="source-grid">
+    <button class="source-card active" data-source="benchpress">
+      <strong>BenchPress</strong>
+      <span>Curated paper snapshot · 84 × 133</span>
+    </button>
+    <button class="source-card" data-source="eee">
+      <strong>Every Eval Ever</strong>
+      <span>Filtered public snapshot · 653 × 498</span>
+    </button>
+    <button class="source-card" data-source="helm">
+      <strong>HELM</strong>
+      <span>Filtered public snapshot · 83 × 207</span>
+    </button>
+    <button class="source-card" data-source="upload">
+      <strong>Upload your own</strong>
+      <span>Canonical CSV + optional metric metadata</span>
+    </button>
+  </div>
+
+  <section id="upload-panel" class="upload-panel" hidden>
+    <div>
+      <h3>Upload your matrix</h3>
+      <p>Select `scores.csv` and, when needed, `scores.meta.json`. Blank CSV cells are scores BenchPress will predict.</p>
+    </div>
+    <div class="upload-actions">
+      <label class="btn-secondary file-button">
+        Select files
+        <input id="matrix-files" type="file" accept=".csv,.json" multiple>
+      </label>
+      <a class="btn-secondary" href="benchpress-score-matrix-template.zip" download>Download matrix template (.zip)</a>
+    </div>
+  </section>
+
+  <div id="status" class="status-card" role="status" aria-live="polite">
+    Loading BenchPress matrix…
+  </div>
+
+  <section id="workspace" hidden>
+    <div id="matrix-summary" class="matrix-summary"></div>
+    <div id="validation" class="validation-card" hidden></div>
+
+    <div id="custom-run" class="custom-run" hidden>
+      <p>The matrix is valid. Run BenchPress locally in this browser to fill its missing cells.</p>
+      <button id="run-prediction" class="btn-primary">Run BenchPress</button>
+      <div id="runtime-progress" class="progress" hidden><div class="progress-bar"></div></div>
+    </div>
+
+    <h2 class="section-h">Explore a cell</h2>
+    <div class="picker-grid">
+      <label>Model<select id="model-select"></select></label>
+      <label>Benchmark<select id="benchmark-select"></select></label>
+    </div>
+
+    <div id="cell-result" class="cell-result"></div>
+
+    <div class="download-row">
+      <button id="download-predictions" class="btn-secondary" disabled>Download predictions CSV</button>
+      <span id="download-hint">Predictions include only cells that were blank in the source matrix.</span>
+    </div>
+
+    <details class="full-table-details">
+      <summary>View selected model</summary>
+      <div class="results-toolbar">
+        <input id="filter" type="text" placeholder="Filter benchmarks…">
+      </div>
+      <table class="results-table">
+        <thead><tr><th>Benchmark</th><th>Score</th><th>Status</th><th>Support</th></tr></thead>
+        <tbody id="results-body"></tbody>
+      </table>
+    </details>
+  </section>
+</section>
+</main>
+
+<footer class="footer">
+  Runs entirely in your browser. Uploaded data is not sent to BenchPress or Microsoft.<br>
+  <p>&copy; Microsoft 2026. All rights reserved.</p>
+  <p>BenchPress is a research project accompanying a publication. This site is an informational hub linking to code and data resources only. Materials may be incomplete or out of date and are provided &ldquo;as is&rdquo; without warranties.</p>
+  <p><a href="https://go.microsoft.com/fwlink/?LinkId=521839">Privacy &amp; Cookies</a> · <a href="https://go.microsoft.com/fwlink/?linkid=2259814">Consumer Health Privacy</a> · <a href="https://www.microsoft.com/trademarks">Trademarks</a> · <a href="https://go.microsoft.com/fwlink/?LinkID=206977">Terms of Use</a> · <a href="https://github.com/microsoft/benchpress">Paper code</a></p>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
+<script src="app.js?v=1"></script>
+</body>
+</html>

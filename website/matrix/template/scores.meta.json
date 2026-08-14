@@ -1,0 +1,22 @@
+{
+  "gpqa_diamond": {
+    "type": "pct",
+    "range": [0, 100],
+    "higher_is_better": true
+  },
+  "aime_2025": {
+    "type": "pct",
+    "range": [0, 100],
+    "higher_is_better": true
+  },
+  "chatbot_arena_elo": {
+    "type": "elo",
+    "range": [800, 1600],
+    "higher_is_better": true
+  },
+  "custom_accuracy": {
+    "type": "pct",
+    "range": [0, 100],
+    "higher_is_better": true
+  }
+}
