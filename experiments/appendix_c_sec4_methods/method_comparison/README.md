@@ -11,7 +11,7 @@ This directory generates the validation-error and outer-test-error leaderboards 
 
 ## Inputs
 
-- `../../sec4_building_benchpress/method_comparison/manifest.json`: per-configuration outer-test metrics, used to identify the 203 full-coverage configurations.
+- `../../sec4_building_benchpress/method_comparison/manifest.json`: the canonical 329-configuration sweep used by the main-text leaderboard; `gen_selection_table.py` requires the validation shards to match it exactly.
 - `../../sec4_building_benchpress/method_comparison/inner_scores/*.npz`: per-configuration inner-validation metrics used by `gen_selection_table.py`.
 - `../../sec4_building_benchpress/method_comparison/results_nested.json`: per-pair outer-test leaderboard with hyperparameters selected on nested validation cells, used by `gen_full_table.py`.
 
@@ -38,4 +38,4 @@ No experiment runs here. Regenerate `tab:model_selection` after `inner_scores/*.
 
 ## Last valid result
 
-Current output matches the Appendix C tables in `overleaf/arxiv/appendix.tex`. Logit Bias ALS (`lambda=0.1`, `r=2`) ranks first on both inner-validation metrics among the 203 full-coverage configurations.
+Current output matches the Appendix C tables in `overleaf/arxiv/appendix.tex`. The validation leaderboard uses the same 329 configurations as the main-text leaderboard, with only the scored cells changed from outer test to inner validation.

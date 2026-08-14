@@ -17,7 +17,6 @@ INNER_SCORES_DIR = os.path.normpath(os.path.join(SEC4_DIR, 'inner_scores'))
 MANIFEST_PATH = os.path.normpath(os.path.join(SEC4_DIR, 'manifest.json'))
 TOP_N = 15
 EXPECTED_SHARDS = 329
-EXPECTED_FULL_COVERAGE = 203
 
 TRANSFORM_NAMES = {
     'identity': 'Identity',
@@ -60,7 +59,7 @@ def highlight_benchpress(row, *cells):
 
 
 def load_validation_rows():
-    """Aggregate each configuration's inner-validation metrics."""
+    """Aggregate the main sweep's configurations on inner-validation cells."""
     paths = sorted(glob.glob(os.path.join(INNER_SCORES_DIR, '*.npz')))
     if len(paths) != EXPECTED_SHARDS:
         raise RuntimeError(
@@ -69,15 +68,14 @@ def load_validation_rows():
 
     with open(MANIFEST_PATH) as file:
         completed = json.load(file)['completed']
-    full_coverage_ids = {
-        row['shard_id'] for row in completed if row['coverage'] >= 1.0
-    }
-    if len(full_coverage_ids) != EXPECTED_FULL_COVERAGE:
+    manifest_rows = {row['shard_id']: row for row in completed}
+    if len(manifest_rows) != EXPECTED_SHARDS:
         raise RuntimeError(
-            f'expected {EXPECTED_FULL_COVERAGE} full-coverage configurations '
-            f'in {MANIFEST_PATH}, found {len(full_coverage_ids)}')
+            f'expected {EXPECTED_SHARDS} completed configurations in '
+            f'{MANIFEST_PATH}, found {len(manifest_rows)}')
 
     rows = []
+    seen_ids = set()
     expected_columns = [
         'outer_idx', 'inner_idx', 'medape', 'medae', 'coverage', 'n_cells',
     ]
@@ -88,20 +86,39 @@ def load_validation_rows():
             metadata = json.loads(str(data['metadata_json']))
         if columns != expected_columns:
             raise RuntimeError(f'unexpected columns in {path}: {columns}')
-        if metadata['shard_id'] not in full_coverage_ids:
-            continue
+        shard_id = metadata['shard_id']
+        if shard_id not in manifest_rows:
+            raise RuntimeError(
+                f'{path} is not part of the main 329-configuration sweep')
+        manifest_row = manifest_rows[shard_id]
+        for key in ('transform', 'method', 'hp'):
+            if metadata[key] != manifest_row[key]:
+                raise RuntimeError(
+                    f'{key} mismatch for {shard_id}: '
+                    f"{metadata[key]!r} != {manifest_row[key]!r}")
+        seen_ids.add(shard_id)
 
         medape = metrics[:, columns.index('medape')]
         medae = metrics[:, columns.index('medae')]
         coverage = metrics[:, columns.index('coverage')]
+        n_cells = metrics[:, columns.index('n_cells')]
+        total_cells = float(np.sum(n_cells))
         rows.append({
             'transform': metadata['transform'],
             'method': metadata['method'],
             'hp': metadata['hp'],
             'medape': float(np.nanmedian(medape)),
             'medae': float(np.nanmedian(medae)),
-            'coverage': float(np.nanmean(coverage)),
+            'coverage': (
+                float(np.sum(coverage * n_cells) / total_cells)
+                if total_cells else 0.0
+            ),
         })
+    missing_ids = set(manifest_rows) - seen_ids
+    if missing_ids:
+        raise RuntimeError(
+            f'missing validation shards for {len(missing_ids)} main-sweep '
+            f'configurations, e.g. {sorted(missing_ids)[:5]}')
     return rows
 
 
