@@ -267,6 +267,81 @@ def fit_risk_model(X_train, y_train, config, seed):
     return scaler, model
 
 
+def _pava_increasing(y, w):
+    """Weighted pool-adjacent-violators algorithm for nondecreasing values."""
+    values = []
+    weights = []
+    starts = []
+    ends = []
+    for idx, (val, weight) in enumerate(zip(y, w)):
+        values.append(float(val))
+        weights.append(float(weight))
+        starts.append(idx)
+        ends.append(idx + 1)
+        while len(values) >= 2 and values[-2] > values[-1]:
+            merged_weight = weights[-2] + weights[-1]
+            merged_value = (values[-2] * weights[-2] + values[-1] * weights[-1]) / merged_weight
+            values[-2:] = [merged_value]
+            weights[-2:] = [merged_weight]
+            starts[-2:] = [starts[-2]]
+            ends[-2:] = [ends[-1]]
+
+    out = np.empty_like(y, dtype=float)
+    for val, start, end in zip(values, starts, ends):
+        out[start:end] = val
+    return out
+
+
+def fit_trust_calibrator(uncertainty, actual, predicted, threshold=10.0, n_bins=20):
+    """Calibrate P(abs error <= threshold | uncertainty) from held-out cells."""
+    uncertainty = np.asarray(uncertainty, dtype=float)
+    actual = np.asarray(actual, dtype=float)
+    predicted = np.asarray(predicted, dtype=float)
+    finite = np.isfinite(uncertainty) & np.isfinite(actual) & np.isfinite(predicted)
+    uncertainty = uncertainty[finite]
+    trusted = (np.abs(predicted[finite] - actual[finite]) <= threshold).astype(float)
+    if uncertainty.size == 0:
+        return None
+
+    order = np.argsort(uncertainty)
+    uncertainty = uncertainty[order]
+    trusted = trusted[order]
+    bins = np.array_split(np.arange(uncertainty.size), min(n_bins, uncertainty.size))
+    centers = np.asarray([float(np.median(uncertainty[b])) for b in bins], dtype=float)
+    probs = np.asarray([float(np.mean(trusted[b])) for b in bins], dtype=float)
+    weights = np.asarray([float(len(b)) for b in bins], dtype=float)
+    calibrated = -_pava_increasing(-probs, weights)
+    calibrated = np.clip(calibrated, 0.0, 1.0)
+    return {
+        "threshold": float(threshold),
+        "num_calibration_cells": int(uncertainty.size),
+        "bin_uncertainty_median": centers.tolist(),
+        "bin_empirical_trust_probability": probs.tolist(),
+        "bin_calibrated_trust_probability": calibrated.tolist(),
+    }
+
+
+def trust_probability_from_uncertainty(uncertainty, trust_calibrator):
+    """Predict calibrated trust probability from a persisted trust calibrator."""
+    uncertainty = np.asarray(uncertainty, dtype=float)
+    out = np.full(uncertainty.shape, np.nan, dtype=float)
+    if not trust_calibrator:
+        return out
+    centers = np.asarray(trust_calibrator["bin_uncertainty_median"], dtype=float)
+    probs = np.asarray(trust_calibrator["bin_calibrated_trust_probability"], dtype=float)
+    finite = np.isfinite(uncertainty)
+    if centers.size == 0 or probs.size == 0:
+        return out
+    out[finite] = np.interp(
+        uncertainty[finite],
+        centers,
+        probs,
+        left=probs[0],
+        right=probs[-1],
+    )
+    return out
+
+
 def fit_mlp_predict(X_train, y_train, X_test, hidden_layers, seed):
     """Fit one MLP risk model and predict held-out risk."""
     return fit_risk_model_predict(
@@ -600,6 +675,7 @@ def _fit_final_confidence_model(actual, predicted, fold_id, feature_dict,
         "model": model,
         "conformal_ci": float(ci),
         "conformal_scale": scale,
+        "trust_calibrator": fit_trust_calibrator(unc, actual, predicted),
     }
 
 
@@ -707,6 +783,8 @@ def predict_confidence_intervals(M_train, M_pred=None, artifact=None,
     ])
     uncertainty = np.expm1(cal["model"].predict(cal["scaler"].transform(X)))
     uncertainty = np.maximum(uncertainty, 0.0)
+    trust_probability = trust_probability_from_uncertainty(
+        uncertainty, cal.get("trust_calibrator"))
     rows = np.asarray([i for i, _ in cells], dtype=int)
     cols = np.asarray([j for _, j in cells], dtype=int)
     predicted = target_pred[rows, cols]
@@ -718,6 +796,11 @@ def predict_confidence_intervals(M_train, M_pred=None, artifact=None,
         "uncertainty": uncertainty,
         "lower": predicted - width,
         "upper": predicted + width,
+        "trust_probability": trust_probability,
+        "trust_threshold": (
+            None if not cal.get("trust_calibrator")
+            else float(cal["trust_calibrator"].get("threshold", 10.0))
+        ),
         "confidence_level": float(cal["conformal_ci"]),
         "artifact": artifact,
     }

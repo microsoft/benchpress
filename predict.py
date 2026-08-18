@@ -35,7 +35,6 @@ Usage:
 
 import argparse
 import csv
-import hashlib
 import io
 import json
 import os
@@ -179,275 +178,62 @@ def _summary_value(value, suffix=''):
     return f"{value:.2f}{suffix}"
 
 
-def evaluate_score_matrix_holdout(matrix):
-    """Leave-one-observed-cell-out validation for a user-provided matrix."""
-    records = []
-    skipped = 0
-    for i, j in np.argwhere(np.isfinite(matrix.values)):
-        train = np.array(matrix.values, dtype=float, copy=True)
-        train[i, j] = np.nan
-        if np.isfinite(train[i]).sum() == 0 or np.isfinite(train[:, j]).sum() == 0:
-            skipped += 1
+def score_matrix_missing_cells(matrix, model_filter=None, bench_filter=None):
+    observed = np.isfinite(matrix.values)
+    cells = []
+    for i, model_id in enumerate(matrix.model_ids):
+        if model_filter and model_id != model_filter:
             continue
-        M_pred = predict_benchpress_scores(
-            train,
-            metric=matrix.metric,
-            benchmark_ids=matrix.benchmark_ids,
-        )
-        predicted = M_pred[i, j]
-        actual = matrix.values[i, j]
-        if not np.isfinite(predicted):
-            skipped += 1
-            continue
-        benchmark_id = matrix.benchmark_ids[j]
-        records.append({
-            'model': matrix.model_ids[i],
-            'benchmark': benchmark_id,
-            'metric_type': matrix.metric[benchmark_id]['type'],
-            'actual': float(actual),
-            'predicted': float(predicted),
-            'abs_error': abs(float(predicted - actual)),
-        })
-
-    actual = [record['actual'] for record in records]
-    predicted = [record['predicted'] for record in records]
-    summary = {
-        'n_eval': len(records),
-        'n_skipped': skipped,
-        'medae': _median([record['abs_error'] for record in records]),
-        'medape': _medape(actual, predicted),
-        'by_metric': {},
-    }
-    for metric_type in sorted({record['metric_type'] for record in records}):
-        metric_records = [
-            record for record in records
-            if record['metric_type'] == metric_type
-        ]
-        metric_actual = [record['actual'] for record in metric_records]
-        metric_predicted = [record['predicted'] for record in metric_records]
-        summary['by_metric'][metric_type] = {
-            'n_eval': len(metric_records),
-            'medae': _median([record['abs_error'] for record in metric_records]),
-            'medape': _medape(metric_actual, metric_predicted),
-        }
-    return {'records': records, 'summary': summary}
+        for j, benchmark_id in enumerate(matrix.benchmark_ids):
+            if bench_filter and benchmark_id != bench_filter:
+                continue
+            if not observed[i, j]:
+                cells.append((i, j))
+    return cells
 
 
-def score_matrix_holdout_cache_path(matrix, matrix_path):
-    values = []
-    for row in matrix.values:
-        values.append([
-            None if not np.isfinite(value) else float(value)
-            for value in row
-        ])
-    cache_key_payload = {
-        'cache_version': 1,
-        'method': 'logit_bias_als_leave_one_observed_cell_out',
-        'model_ids': matrix.model_ids,
-        'benchmark_ids': matrix.benchmark_ids,
-        'metric': matrix.metric,
-        'values': values,
-    }
-    cache_key = hashlib.sha256(
-        json.dumps(cache_key_payload, sort_keys=True).encode('utf-8')
-    ).hexdigest()[:16]
-    resolved_path = resolve_repo_path(matrix_path)
-    cache_dir = os.path.join(os.path.dirname(resolved_path), '__benchpress_cache__')
-    return os.path.join(cache_dir, f'holdout_{cache_key}.json')
-
-
-def load_or_compute_score_matrix_holdout(matrix, matrix_path):
-    cache_path = score_matrix_holdout_cache_path(matrix, matrix_path)
-    if os.path.exists(cache_path):
-        with open(cache_path) as f:
-            return json.load(f)
-    validation = evaluate_score_matrix_holdout(matrix)
-    os.makedirs(os.path.dirname(cache_path), exist_ok=True)
-    with open(cache_path, 'w') as f:
-        json.dump(validation, f, indent=2)
-        f.write('\n')
-    return validation
-
-
-def _file_sha256(path):
-    h = hashlib.sha256()
-    with open(path, 'rb') as f:
-        while True:
-            chunk = f.read(1024 * 1024)
-            if not chunk:
-                break
-            h.update(chunk)
-    return h.hexdigest()
-
-
-def _score_matrix_source_digest(matrix_path):
-    resolved_path = resolve_repo_path(matrix_path)
-    parts = {
-        'scores': _file_sha256(resolved_path),
-    }
-    meta_path = os.path.splitext(resolved_path)[0] + '.meta.json'
-    if os.path.exists(meta_path):
-        parts['meta'] = _file_sha256(meta_path)
-    return parts
-
-
-def _confidence_artifact_identity(artifact_path):
-    if artifact_path is None:
-        from benchpress.methods.confidence import default_confidence_artifact_path
-        artifact_path = default_confidence_artifact_path()
-    resolved_path = resolve_repo_path(artifact_path)
-    if not os.path.exists(resolved_path):
-        return {'path': resolved_path, 'exists': False}
-    stat = os.stat(resolved_path)
-    return {
-        'path': resolved_path,
-        'exists': True,
-        'size': int(stat.st_size),
-        'mtime_ns': int(stat.st_mtime_ns),
-    }
-
-
-def score_matrix_confidence_cache_path(matrix, matrix_path, cells,
-                                       artifact_path=None,
-                                       method='combined_risk_model'):
-    cache_key_payload = {
-        'cache_version': 2,
-        'method': method,
-        'model_ids': matrix.model_ids,
-        'benchmark_ids': matrix.benchmark_ids,
-        'metric': matrix.metric,
-        'matrix_source': _score_matrix_source_digest(matrix_path),
-        'confidence_artifact': _confidence_artifact_identity(artifact_path),
-        'cells': [[int(i), int(j)] for i, j in cells],
-    }
-    cache_key = hashlib.sha256(
-        json.dumps(cache_key_payload, sort_keys=True).encode('utf-8')
-    ).hexdigest()[:16]
-    resolved_path = resolve_repo_path(matrix_path)
-    cache_dir = os.path.join(os.path.dirname(resolved_path), '__benchpress_cache__')
-    return os.path.join(cache_dir, f'confidence_{cache_key}.json')
-
-
-def _trust_probability_from_interval_width(width, threshold=10.0,
-                                           confidence_level=0.90):
-    if width is None or not np.isfinite(width):
-        return None
-    if width <= 0:
-        return 1.0
-    tail_probability = max(1.0 - float(confidence_level), 1e-12)
-    probability = 1.0 - tail_probability ** (threshold / float(width))
-    return float(np.clip(probability, 0.0, 1.0))
-
-
-def _score_matrix_confidence_from_payload(payload):
-    confidence = {'__metadata__': payload.get('metadata', {})}
-    for record in payload.get('records', []):
-        confidence[(int(record['row']), int(record['col']))] = record
-    return confidence
-
-
-def load_or_compute_score_matrix_confidence(matrix, predictions, matrix_path,
-                                            cells, artifact_path=None,
-                                            method='combined_risk_model'):
-    cache_path = score_matrix_confidence_cache_path(
-        matrix, matrix_path, cells, artifact_path=artifact_path, method=method)
-    if os.path.exists(cache_path):
-        with open(cache_path) as f:
-            payload = json.load(f)
-        payload.setdefault('metadata', {})['cache_hit'] = True
-        return _score_matrix_confidence_from_payload(payload)
-
+def score_matrix_confidence_lookup(matrix, predictions, cells, artifact_path=None,
+                                   method='combined_risk_model'):
+    """Run the standard BenchPress confidence model on a custom score matrix."""
     from benchpress.methods.confidence import predict_confidence_intervals
-    try:
-        result = predict_confidence_intervals(
-            matrix.values,
-            M_pred=predictions,
-            artifact_path=artifact_path,
-            method=method,
-            train_if_missing=False,
-            cells=cells,
-            metric=matrix.metric,
-            benchmark_ids=matrix.benchmark_ids,
-        )
-    except FileNotFoundError as exc:
-        raise SystemExit(
-            f"Confidence artifact not found: {exc}. "
-            "Run or provide a precomputed BenchPress confidence artifact with "
-            "--confidence-artifact before using --confidence on a custom matrix."
-        ) from exc
+    result = predict_confidence_intervals(
+        matrix.values,
+        M_pred=predictions,
+        artifact_path=artifact_path,
+        method=method,
+        cells=cells,
+        metric=matrix.metric,
+        benchmark_ids=matrix.benchmark_ids,
+    )
     confidence_level = float(result['confidence_level'])
-    trust_threshold = 10.0
-    records = []
+    confidence = {
+        '__metadata__': {
+            'confidence_level': confidence_level,
+            'confidence_method': result['method'],
+            'trust_threshold': result.get('trust_threshold'),
+        }
+    }
     for index, (i, j) in enumerate(result['cells']):
         benchmark_id = matrix.benchmark_ids[j]
         metric = matrix.metric[benchmark_id]
         predicted = float(result['predicted'][index])
         lower = float(result['lower'][index])
         upper = float(result['upper'][index])
-        half_width = max(abs(predicted - lower), abs(upper - predicted))
-        records.append({
-            'row': int(i),
-            'col': int(j),
+        trust_probability = None
+        if 'trust_probability' in result:
+            probability = result['trust_probability'][index]
+            if np.isfinite(probability):
+                trust_probability = float(probability)
+        confidence[(int(i), int(j))] = {
             'confidence_method': result['method'],
             'predicted': predicted,
             'uncertainty': float(result['uncertainty'][index]),
             'lower': _clip_to_metric(lower, metric),
             'upper': _clip_to_metric(upper, metric),
-            'trust_probability': _trust_probability_from_interval_width(
-                half_width,
-                threshold=trust_threshold,
-                confidence_level=confidence_level,
-            ),
-            'trust_threshold': trust_threshold,
-        })
-    payload = {
-        'metadata': {
-            'cache_hit': False,
-            'cache_path': cache_path,
-            'confidence_level': confidence_level,
-            'confidence_method': result['method'],
-            'trust_probability': 'Estimated P(abs(predicted - actual) <= 10 score points | hybrid uncertainty risk)',
-            'trust_threshold': trust_threshold,
-        },
-        'records': records,
-    }
-    os.makedirs(os.path.dirname(cache_path), exist_ok=True)
-    with open(cache_path, 'w') as f:
-        json.dump(payload, f, indent=2)
-        f.write('\n')
-    return _score_matrix_confidence_from_payload(payload)
-
-
-def score_matrix_holdout_errors(validation, metric_type):
-    same_metric_errors = [
-        record['abs_error'] for record in validation['records']
-        if record['metric_type'] == metric_type
-    ]
-    if len(same_metric_errors) >= 3:
-        return same_metric_errors
-    return [record['abs_error'] for record in validation['records']]
-
-
-def score_matrix_confidence_for_cell(score, benchmark_id, matrix, validation):
-    """Empirical interval from custom-matrix holdout residuals."""
-    if validation is None or not validation['records'] or not np.isfinite(score):
-        return None
-    metric_type = matrix.metric[benchmark_id]['type']
-    errors = score_matrix_holdout_errors(validation, metric_type)
-    if not errors:
-        return None
-    radius = float(np.quantile(errors, 0.9))
-    metric = matrix.metric[benchmark_id]
-    trust_threshold = 10.0
-    return {
-        'method': 'custom_holdout_empirical_90',
-        'uncertainty': radius,
-        'lower': _clip_to_metric(score - radius, metric),
-        'upper': _clip_to_metric(score + radius, metric),
-        'trust_probability': float(np.mean(np.asarray(errors, dtype=float) <= trust_threshold)),
-        'trust_threshold': trust_threshold,
-        'trust_calibration_cells': len(errors),
-    }
+            'trust_probability': trust_probability,
+            'trust_threshold': result.get('trust_threshold'),
+        }
+    return confidence
 
 
 def format_predictions(predictions, matrix, model_filter=None, bench_filter=None,
@@ -519,8 +305,14 @@ def format_score_matrix_predictions(predictions, matrix, model_filter=None,
                     'uncertainty': None if conf is None else round(float(conf['uncertainty']), 2),
                     'lower_90': None if conf is None else round(float(conf['lower']), 1),
                     'upper_90': None if conf is None else round(float(conf['upper']), 1),
-                    'trust_probability': None if conf is None else round(float(conf['trust_probability']), 3),
-                    'trust_threshold': None if conf is None else round(float(conf['trust_threshold']), 1),
+                    'trust_probability': (
+                        None if conf is None or conf.get('trust_probability') is None
+                        else round(float(conf['trust_probability']), 3)
+                    ),
+                    'trust_threshold': (
+                        None if conf is None or conf.get('trust_threshold') is None
+                        else round(float(conf['trust_threshold']), 1)
+                    ),
                 })
             rows.append(row)
     return render_prediction_rows(rows, fmt)
@@ -653,15 +445,19 @@ def predict_for_new_model(M_aug):
 
 def confidence_lookup(conf_result):
     """Convert confidence arrays into a cell-index lookup."""
-    return {
-        tuple(cell): {
+    lookup = {}
+    for idx, cell in enumerate(conf_result['cells']):
+        record = {
             'method': conf_result['method'],
             'uncertainty': conf_result['uncertainty'][idx],
             'lower': conf_result['lower'][idx],
             'upper': conf_result['upper'][idx],
         }
-        for idx, cell in enumerate(conf_result['cells'])
-    }
+        if 'trust_probability' in conf_result:
+            record['trust_probability'] = conf_result['trust_probability'][idx]
+            record['trust_threshold'] = conf_result.get('trust_threshold')
+        lookup[tuple(cell)] = record
+    return lookup
 
 
 def resolve_repo_path(path):
@@ -728,23 +524,17 @@ def run_matrix_mode(args):
         metric=matrix.metric,
         benchmark_ids=matrix.benchmark_ids,
     )
+
     confidence = None
     if args.confidence:
-        confidence_cells = []
-        for i, model_id in enumerate(matrix.model_ids):
-            if args.model and model_id != args.model:
-                continue
-            for j, benchmark_id in enumerate(matrix.benchmark_ids):
-                if args.benchmark and benchmark_id != args.benchmark:
-                    continue
-                if observed[i, j]:
-                    continue
-                if only_missing or args.all or args.benchmark:
-                    confidence_cells.append((i, j))
-        confidence = load_or_compute_score_matrix_confidence(
+        confidence_cells = score_matrix_missing_cells(
+            matrix,
+            model_filter=args.model,
+            bench_filter=args.benchmark,
+        )
+        confidence = score_matrix_confidence_lookup(
             matrix,
             predictions,
-            args.matrix,
             confidence_cells,
             artifact_path=args.confidence_artifact,
         )
@@ -807,7 +597,7 @@ def main():
     parser.add_argument('--output', '-o', type=str, default=None,
                         help='Output file path (default: stdout)')
     parser.add_argument('--confidence', action='store_true',
-                        help='Include 90%% intervals; custom matrices use leave-one-out holdout')
+                        help='Include calibrated 90%% intervals and trust probabilities')
     parser.add_argument('--confidence-artifact', type=str, default=None,
                         help='Path to confidence artifact (default: package artifact path)')
     parser.add_argument('--matrix', type=str, default=None,

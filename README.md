@@ -256,22 +256,20 @@ Add `--confidence` when you want BenchPress to check how trustworthy the predict
 python predict.py --matrix /path/to/my_matrix/scores.csv --model my-model-a --confidence
 ```
 
-For a custom matrix, `--confidence` does not use the calibrated confidence model trained on the built-in BenchPress dataset. Instead, it reruns BenchPress in leave-one-observed-cell-out mode on your matrix: each known score is hidden once, predicted from the remaining scores, and compared with the true value. The report then shows test MedAE, test MedAPE, and an empirical 90% interval for each predicted missing score:
+For a custom matrix, `--confidence` uses the same calibrated BenchPress confidence model as the built-in matrix. BenchPress computes the standard hybrid uncertainty features on your matrix, using your `scores.meta.json` metric metadata, then reports a calibrated 90% interval and trust probability for each predicted missing score:
 
 ```text
-Holdout validation on observed cells:
-  evaluated cells: 7
-  test MedAE: 11.06
-  test MedAPE: 7.89%
+Confidence:
+  method: combined_risk_model
+  interval: calibrated 90% conformal interval
+  trust probability: estimated P(abs error <= 10 score points) from hybrid uncertainty risk
 
-benchmark  score  interval_90   status     support       metric
----------  -----  ------------  ---------  ------------  ------------
-aime_2025  54.2   [43.3, 65.1]  predicted  row 2, col 2  pct [0, 100]
+benchmark  score  interval_90   trust probability  status     support       metric
+---------  -----  ------------  -----------------  ---------  ------------  ------------
+aime_2025  54.2   [43.3, 65.1]  81%                predicted  row 2, col 2  pct [0, 100]
 ```
 
-`support` is the amount of evidence available for that prediction: `row 2` means that model has 2 known scores, and `col 2` means that benchmark has scores from 2 models. On very small matrices, the interval is a rough empirical warning signal, not a formal guarantee.
-
-The holdout run is cached next to your matrix file. For `/path/to/my_matrix/scores.csv`, BenchPress writes `/path/to/my_matrix/__benchpress_cache__/holdout_<hash>.json`. The hash includes the loaded scores, model IDs, benchmark IDs, metric metadata, and cache version, so editing `scores.csv` or `scores.meta.json` creates a new cache entry automatically.
+`support` is the amount of evidence available for that prediction: `row 2` means that model has 2 known scores, and `col 2` means that benchmark has scores from 2 models. Trust probability is calibrated for the event that the prediction is within 10 score points of the true value.
 
 Use `--format csv` or `--format json` with `--confidence` when you want the same fields in machine-readable output.
 
