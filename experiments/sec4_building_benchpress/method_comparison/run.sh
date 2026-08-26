@@ -9,6 +9,8 @@ END=328
 LIMIT=""
 WORKERS=12
 FORCE=false
+MERGE=false
+TABLE_OUT=""
 
 usage() {
   cat <<'EOF'
@@ -22,6 +24,8 @@ Options:
   --limit N      Run at most N shard indices from --start
   --workers N    Parallel Python processes (default: 12)
   --force        Recompute selected shards even when valid outputs exist
+  --merge        Merge completed shards and render the plot after the sweep
+  --table-out P  Write the generated Table 4 LaTeX to P (requires --merge)
   -h, --help     Show this help
 EOF
 }
@@ -33,6 +37,8 @@ while [[ $# -gt 0 ]]; do
     --limit) LIMIT="$2"; shift 2 ;;
     --workers) WORKERS="$2"; shift 2 ;;
     --force) FORCE=true; shift ;;
+    --merge) MERGE=true; shift ;;
+    --table-out) TABLE_OUT="$2"; shift 2 ;;
     -h|--help) usage; exit 0 ;;
     *) echo "Unknown option: $1" >&2; usage >&2; exit 2 ;;
   esac
@@ -57,6 +63,10 @@ done
   echo "--workers must be positive." >&2
   exit 2
 }
+if [[ -n "${TABLE_OUT}" && "${MERGE}" != true ]]; then
+  echo "--table-out requires --merge." >&2
+  exit 2
+fi
 
 if [[ -n "${LIMIT}" ]]; then
   (( LIMIT > 0 )) || {
@@ -78,3 +88,12 @@ seq "${START}" "${END}" |
   xargs -P "${WORKERS}" -I{} bash -c \
     'python "$1" --shard-index "$2" "${@:3}"' \
     _ "${RUNNER}" "{}" "${FORCE_ARG[@]}"
+
+if [[ "${MERGE}" == true ]]; then
+  python "${RUNNER}" --merge
+  python "${SCRIPT_DIR}/plot.py"
+  if [[ -n "${TABLE_OUT}" ]]; then
+    mkdir -p "$(dirname "${TABLE_OUT}")"
+    python "${SCRIPT_DIR}/gen_table.py" > "${TABLE_OUT}"
+  fi
+fi

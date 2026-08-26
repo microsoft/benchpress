@@ -23,7 +23,8 @@ python experiments/sec4_building_benchpress/method_comparison/run.py --shard-ind
 # ... shard-index 1 .. 328 (parallelize across cores or pods as your infra allows)
 
 # Run the full sweep with bounded CPU parallelism
-experiments/sec4_building_benchpress/method_comparison/run.sh --workers 48
+experiments/sec4_building_benchpress/method_comparison/run.sh \
+  --workers 48 --merge --table-out /tmp/sec4_top15.tex
 
 # Merge: recompute metrics + figures from predictions/*.npz
 python experiments/sec4_building_benchpress/method_comparison/run.py --merge
