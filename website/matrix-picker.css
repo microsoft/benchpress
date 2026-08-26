@@ -49,6 +49,10 @@
   color: #b00020;
 }
 
+#lb-title {
+  overflow-wrap: anywhere;
+}
+
 .matrix-upload {
   max-width: 980px;
   margin: 8px auto 0;
