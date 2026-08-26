@@ -15,6 +15,30 @@ Evaluate the full transform-by-method grid under the shared per-model holdout fo
 This is a 329-shard sweep over `(transform, method, hyperparameter)`. Each shard runs all 30 shared folds and writes one `.npz` file under `predictions/`. Run sequentially (slow), in a local process pool, or distribute over a CPU cluster.
 
 ```bash
+# Confirm the current matrix and ordered benchmark-metric semantics before
+# reusing or generating prediction shards.
+python - <<'PY'
+from benchpress.evaluation_harness import (
+    BENCH_IDS,
+    BENCH_METRICS,
+    M_FULL,
+    benchmark_metric_identity_sha256,
+    matrix_identity_sha256,
+)
+
+matrix_identity = matrix_identity_sha256(M_FULL)
+metric_identity = benchmark_metric_identity_sha256(BENCH_METRICS, BENCH_IDS)
+assert M_FULL.shape == (129, 253)
+assert matrix_identity == (
+    "4d882cce44ff1d20c9fbada545a21a6dadf4bb8e3eb1a989f9d93bfed38bef25"
+)
+assert metric_identity == (
+    "96713a65a02bb93f7ee6668b0421cff189e88de5264a8ca6c99e7c05c2a74566"
+)
+print("matrix_identity_sha256:", matrix_identity)
+print("benchmark_metric_identity_sha256:", metric_identity)
+PY
+
 # List all shards (one JSON line per shard)
 python experiments/sec4_building_benchpress/method_comparison/run.py --list-shards
 
@@ -97,17 +121,27 @@ Each `predictions/*.npz` contains:
 | `test_i`, `test_j` | `(n_test,)` int | Held-out model and benchmark indices |
 | `actual` | `(n_test,)` float | True held-out scores |
 | `predicted` | `(n_test,)` float | Predicted held-out scores |
-| `metadata_json` | scalar string | Transform, method, HP, matrix shape, fold settings |
+| `metadata_json` | scalar string | Transform, method, HP, matrix shape, fold settings, matrix identity, and ordered benchmark-metric identity |
 
-`results.json` is intentionally not the cache. If metric definitions change, rerun only:
+`results.json` is intentionally not the cache. If only the aggregation of the
+same stored `actual` and `predicted` vectors changes, rerun only:
 
 ```bash
 python experiments/sec4_building_benchpress/method_comparison/run.py --merge
 ```
 
+If benchmark metric semantics, transforms, prediction methods, matrix values, or
+observed cells change, rerun the affected prediction shards. The runner rejects
+stale shards whose matrix or ordered benchmark-metric identity differs.
+
 ## Resume / rerun
 
-Resume is file-based. `run.py --shard-index K` skips if the expected `predictions/*.npz` file exists and contains the required keys. To rerun one bad shard, delete only that `.npz` file or run:
+Resume is file-based. `run.py --shard-index K` skips only when the expected
+`predictions/*.npz` file contains the required arrays and its matrix identity,
+ordered benchmark-metric identity, fold protocol, method, transform, and
+hyperparameters all match the current run. A shard from the same numeric matrix
+but different metric semantics is stale and is recomputed. To rerun one bad
+shard explicitly:
 
 ```bash
 python experiments/sec4_building_benchpress/method_comparison/run.py --shard-index K --force
@@ -146,4 +180,14 @@ BenchReg and ModelReg also require at least 5 shared observations for a pairwise
 
 ## Last valid result
 
-Previous valid result before adding prediction-first sharded runs: `results.json` from the old serial runner on the current 84 x 133 matrix. The current valid result has 329 prediction shard files, `manifest.json` with `n_completed_shards = 329`, and `results.json` derived from those shard files.
+Current metric-aware result:
+
+- code commit: `f4319afa41c47fac470a8a5b5ca0dacbd95ee3c8`
+- matrix: 129 models x 253 benchmarks, 4,905 observed cells
+- matrix identity: `4d882cce44ff1d20c9fbada545a21a6dadf4bb8e3eb1a989f9d93bfed38bef25`
+- ordered benchmark-metric identity: `96713a65a02bb93f7ee6668b0421cff189e88de5264a8ca6c99e7c05c2a74566`
+- completed shards: 329/329
+- selected full-coverage predictor: Logit Bias ALS, rank 2, lambda 0.1
+- held-out MedAPE: 7.740388161995237
+- held-out MedAE: 4.434680035745227
+- coverage: 100%
