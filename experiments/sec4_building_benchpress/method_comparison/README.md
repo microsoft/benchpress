@@ -22,6 +22,9 @@ python experiments/sec4_building_benchpress/method_comparison/run.py --list-shar
 python experiments/sec4_building_benchpress/method_comparison/run.py --shard-index 0
 # ... shard-index 1 .. 328 (parallelize across cores or pods as your infra allows)
 
+# Run the full sweep with bounded CPU parallelism
+experiments/sec4_building_benchpress/method_comparison/run.sh --workers 48
+
 # Merge: recompute metrics + figures from predictions/*.npz
 python experiments/sec4_building_benchpress/method_comparison/run.py --merge
 python experiments/sec4_building_benchpress/method_comparison/gen_table.py > /tmp/sec4_top15.tex
@@ -119,6 +122,7 @@ To submit only a range or a few missing shards:
 ```bash
 experiments/sec4_building_benchpress/method_comparison/run.sh --start 80 --end 120
 experiments/sec4_building_benchpress/method_comparison/run.sh --limit 20
+experiments/sec4_building_benchpress/method_comparison/run.sh --workers 48 --force
 ```
 
 Do not delete `predictions/` unless intentionally invalidating the whole experiment. Delete `results.json` or `manifest.json` freely; they are derived from `predictions/*.npz`.
