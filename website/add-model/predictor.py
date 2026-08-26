@@ -25,7 +25,9 @@ warnings.filterwarnings('ignore')
 # Transforms
 # --------------------------------------------------------------------------
 
-def _is_pct_bench(j, M):
+def _is_pct_bench(j, M, metric_types=None):
+    if metric_types is not None:
+        return metric_types[j] == 'pct'
     vals = M[~np.isnan(M[:, j]), j]
     if len(vals) == 0:
         return False
@@ -133,11 +135,15 @@ def _bias_als_zspace(M_z, rank=2, lam=0.1, n_iter=40,
 # Pipeline: logit + z-score + ALS + invert
 # --------------------------------------------------------------------------
 
-def predict_benchpress_scores(M_train, rank=2, lam=0.1):
+def predict_benchpress_scores(M_train, metric_types=None, rank=2, lam=0.1):
     """BenchPress default score predictor: Logit Bias ALS with lam=0.1 and rank=2."""
     obs = ~np.isnan(M_train)
     n_models, n_bench = M_train.shape
-    is_pct = np.array([_is_pct_bench(j, M_train) for j in range(n_bench)])
+    if metric_types is not None and len(metric_types) != n_bench:
+        raise ValueError(
+            f"metric_types has {len(metric_types)} entries; expected {n_bench}")
+    is_pct = np.array([
+        _is_pct_bench(j, M_train, metric_types) for j in range(n_bench)])
 
     # Forward: logit per pct-col
     M_t = M_train.copy()
@@ -173,7 +179,7 @@ def predict_benchpress_scores(M_train, rank=2, lam=0.1):
 # Add-model entry point (called from app.js)
 # --------------------------------------------------------------------------
 
-def predict_new_model(M_list, new_row_scores):
+def predict_new_model(M_list, new_row_scores, metric_types=None):
     """Append a new row with `new_row_scores` and return the predicted row.
 
     M_list:  n_models x n_bench list-of-lists, None for missing.
@@ -196,5 +202,21 @@ def predict_new_model(M_list, new_row_scores):
         new_row[0, j] = float(v)
 
     M_aug = np.vstack([M, new_row])
-    P = predict_benchpress_scores(M_aug)
+    P = predict_benchpress_scores(M_aug, metric_types=metric_types)
     return P[-1].tolist()
+
+
+def predict_matrix(M_list, metric_types=None):
+    """Return the completed matrix for a browser-provided score matrix."""
+    n_models = len(M_list)
+    n_bench = len(M_list[0])
+    M = np.full((n_models, n_bench), np.nan, dtype=float)
+    for i, row in enumerate(M_list):
+        if len(row) != n_bench:
+            raise ValueError(
+                f"matrix row {i} has {len(row)} entries; expected {n_bench}")
+        for j, value in enumerate(row):
+            if value is not None:
+                M[i, j] = float(value)
+    return predict_benchpress_scores(
+        M, metric_types=metric_types).tolist()

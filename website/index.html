@@ -6,6 +6,7 @@
 <title>BenchPress · Predict LLM Scores</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='white'/%3E%3Cg stroke='%23000' stroke-width='3' fill='white'%3E%3Crect x='10' y='10' width='10' height='10'/%3E%3Crect x='27' y='10' width='10' height='10'/%3E%3Crect x='44' y='10' width='10' height='10'/%3E%3Crect x='10' y='27' width='10' height='10'/%3E%3Crect x='27' y='27' width='10' height='10' fill='%23000'/%3E%3Crect x='44' y='27' width='10' height='10'/%3E%3Crect x='10' y='44' width='10' height='10' fill='%23000'/%3E%3Crect x='27' y='44' width='10' height='10'/%3E%3Crect x='44' y='44' width='10' height='10'/%3E%3C/g%3E%3C/svg%3E">
 <link rel="stylesheet" href="style.css?v=19">
+<link rel="stylesheet" href="matrix-picker.css?v=3">
 </head>
 <body>
 
@@ -40,6 +41,31 @@
 <section class="tile" id="picker">
   <p class="tile-eyebrow">01 / 02</p>
   <h2 class="tile-title">Pick a model. Pick a benchmark.</h2>
+  <div class="matrix-picker">
+    <label for="matrix-source">Score matrix</label>
+    <select id="matrix-source">
+      <option value="benchpress">BenchPress curated snapshot</option>
+      <option value="eee">Every Eval Ever (EEE)</option>
+      <option value="helm">HELM</option>
+      <option value="upload">Upload your own</option>
+    </select>
+    <p id="matrix-status">Loading BenchPress matrix…</p>
+  </div>
+  <div id="matrix-upload" class="matrix-upload" hidden>
+    <div>
+      <strong>Upload <code>scores.csv</code> and optional <code>scores.meta.json</code>.</strong>
+      <p>Rows are models, columns are benchmarks, and blank cells are scores to predict. Files stay in your browser.</p>
+    </div>
+    <div class="matrix-upload-actions">
+      <label class="btn btn-outline matrix-file-button">
+        Select files
+        <input id="matrix-files" type="file" accept=".csv,.json" multiple>
+      </label>
+      <a href="matrix/benchpress-score-matrix-template.zip" class="btn btn-outline" download>Download template</a>
+      <button id="matrix-run" class="btn btn-fill" hidden>Run BenchPress</button>
+      <button id="matrix-download" class="btn btn-outline" hidden>Download predictions</button>
+    </div>
+  </div>
   <div class="pickrow">
     <div class="picklabel">
       <span class="step">01</span>
@@ -105,6 +131,7 @@
   </div>
 </footer>
 
-<script src="app.js?v=16"></script>
+<script src="matrix-loader.js?v=2"></script>
+<script src="app.js?v=18"></script>
 </body>
 </html>

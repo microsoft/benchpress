@@ -4,6 +4,23 @@ Pick any LLM x benchmark cell to see the BenchPress point prediction, trust prob
 
 🌐 Live: https://microsoft.github.io/benchpress/
 
+The score-matrix selector on the existing project page supports:
+
+- the curated BenchPress paper snapshot;
+- filtered HELM and Every Eval Ever (EEE) snapshots;
+- a user-provided `scores.csv` with optional `scores.meta.json`;
+- local in-browser completion and downloadable prediction CSVs.
+
+Uploaded files stay in the browser. External and uploaded matrices show point
+predictions and support counts, not the BenchPress-matrix calibrated trust
+probability or 90% interval.
+
+The downloadable template is linked directly beside the upload control and is
+stored at `matrix/benchpress-score-matrix-template.zip`. Its CSV contract matches the
+package interface: the first column is `model`, remaining columns are
+benchmarks, and blank cells are missing scores. The optional metadata JSON
+declares non-percentage metric types and ranges.
+
 Links:
 
 - Project page: https://microsoft.github.io/benchpress/

@@ -1,0 +1,4 @@
+model,gpqa_diamond,aime_2025,chatbot_arena_elo,custom_accuracy
+my-model-a,72.0,55.0,1310,
+my-model-b,68.5,,1288,84.0
+my-model-c,,61.2,1301,79.0
