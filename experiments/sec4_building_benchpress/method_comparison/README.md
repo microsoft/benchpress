@@ -29,6 +29,7 @@ experiments/sec4_building_benchpress/method_comparison/run.sh \
 # Merge: recompute metrics + figures from predictions/*.npz
 python experiments/sec4_building_benchpress/method_comparison/run.py --merge
 python experiments/sec4_building_benchpress/method_comparison/gen_table.py > /tmp/sec4_top15.tex
+# Requires the nested-selection inner pass described below:
 python experiments/sec4_building_benchpress/method_comparison/plot.py
 ```
 
