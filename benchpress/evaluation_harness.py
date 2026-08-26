@@ -2,13 +2,16 @@
 """Evaluation harness for LLM benchmark matrix completion."""
 
 import hashlib
+import json
 import numpy as np
 import sys, warnings, os
 from collections import defaultdict
 from benchpress.io_utils import load_json, safe_token, write_json, write_json_atomic
 
 warnings.filterwarnings('ignore')
-from benchpress.build_benchmark_matrix import MODELS, BENCHMARKS, DATA
+from benchpress.build_benchmark_matrix import (
+    MODELS, BENCHMARKS, BENCHMARK_METRICS, DATA,
+)
 
 # ══════════════════════════════════════════════════════════════════════════════
 #  DATA LOADING
@@ -18,6 +21,10 @@ MODEL_IDS   = [m[0] for m in MODELS]
 BENCH_IDS   = [b[0] for b in BENCHMARKS]
 MODEL_NAMES = {m[0]: m[1] for m in MODELS}
 BENCH_NAMES = {b[0]: b[1] for b in BENCHMARKS}
+BENCH_METRICS = {
+    benchmark_id: BENCHMARK_METRICS[benchmark_id]
+    for benchmark_id in BENCH_IDS
+}
 MODEL_IDX   = {m: i for i, m in enumerate(MODEL_IDS)}
 BENCH_IDX   = {b: i for i, b in enumerate(BENCH_IDS)}
 N_MODELS    = len(MODEL_IDS)
@@ -49,6 +56,19 @@ def matrix_identity_sha256(matrix):
     digest.update(
         np.nan_to_num(matrix, nan=0.0).astype("<f8", copy=False).tobytes())
     return digest.hexdigest()
+
+
+def benchmark_metric_identity_sha256(metric=None, benchmark_ids=None):
+    """Hash ordered benchmark metric semantics used by score predictors."""
+    metric = BENCH_METRICS if metric is None else metric
+    benchmark_ids = BENCH_IDS if benchmark_ids is None else benchmark_ids
+    payload = [
+        {"benchmark_id": benchmark_id, "metric": metric.get(benchmark_id)}
+        for benchmark_id in benchmark_ids
+    ]
+    return hashlib.sha256(json.dumps(
+        payload, sort_keys=True, separators=(",", ":"),
+    ).encode()).hexdigest()
 
 
 def matrix_summary():

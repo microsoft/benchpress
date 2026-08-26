@@ -3,7 +3,11 @@
 
 import numpy as np
 
-from benchpress.evaluation_harness import make_score_predictor
+from benchpress.evaluation_harness import (
+    BENCH_IDS,
+    BENCH_METRICS,
+    make_score_predictor,
+)
 from benchpress.methods.completers import complete_bias_als
 
 
@@ -27,6 +31,13 @@ def predict_logit_bias_als_scores(M_train, rank=2, lam=0.1, metric=None,
 
 def predict_benchpress_scores(M_train, metric=None, benchmark_ids=None):
     """BenchPress default score predictor: Logit Bias ALS with lambda=0.1 and rank=2."""
+    if (metric is None) != (benchmark_ids is None):
+        raise ValueError(
+            "metric and benchmark_ids must be provided together.")
+    if metric is None and benchmark_ids is None:
+        if M_train.shape[1] == len(BENCH_IDS):
+            metric = BENCH_METRICS
+            benchmark_ids = BENCH_IDS
     return predict_logit_bias_als_scores(
         M_train, rank=2, lam=0.1, metric=metric, benchmark_ids=benchmark_ids)
 
@@ -44,4 +55,3 @@ def predict_benchmark_median_scores(M_train):
     M = np.asarray(M_train, dtype=float)
     col_medians = np.nanmedian(M, axis=0)  # shape (n_bench,)
     return np.broadcast_to(col_medians, M.shape).copy()
-

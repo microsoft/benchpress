@@ -41,8 +41,10 @@ INNER_PARTITION_FOLDS = 3
 
 with contextlib.redirect_stdout(io.StringIO()):
     from benchpress.evaluation_harness import (
-        M_FULL, load_folds, compute_prediction_error, make_score_predictor,
+        BENCH_IDS, BENCH_METRICS, M_FULL, load_folds,
+        compute_prediction_error, make_score_predictor,
         holdout_inner_per_model, mask_cells, matrix_identity_sha256,
+        benchmark_metric_identity_sha256,
     )
     from benchpress.all_methods import (
         complete_benchmark_mean, complete_model_mean,
@@ -127,6 +129,9 @@ def _validate_shard_metadata(meta, shard, path, n_seeds, n_folds, base_seed):
         'base_seed': base_seed,
         'matrix_shape': list(M_FULL.shape),
         'matrix_identity_sha256': matrix_identity_sha256(M_FULL),
+        'benchmark_metric_identity_sha256': (
+            benchmark_metric_identity_sha256(BENCH_METRICS, BENCH_IDS)
+        ),
     }
     actual = {key: meta.get(key) for key in expected}
     if actual != expected:
@@ -180,7 +185,12 @@ def run_shard(shard_index, n_seeds=10, n_folds=3, base_seed=42, force=False):
                                base_seed=base_seed)
     method_fn = METHODS[shard['method']]
     predict_fn = make_score_predictor(
-        method_fn, shard['transform'], **shard['hp'])
+        method_fn,
+        shard['transform'],
+        metric=BENCH_METRICS,
+        benchmark_ids=BENCH_IDS,
+        **shard['hp'],
+    )
 
     pred_mats, fold_ids, test_i, test_j, actual, predicted = [], [], [], [], [], []
     for fold_id, (M_train, test_set) in enumerate(folds):
@@ -201,6 +211,9 @@ def run_shard(shard_index, n_seeds=10, n_folds=3, base_seed=42, force=False):
         'base_seed': base_seed,
         'matrix_shape': list(M_FULL.shape),
         'matrix_identity_sha256': matrix_identity_sha256(M_FULL),
+        'benchmark_metric_identity_sha256': (
+            benchmark_metric_identity_sha256(BENCH_METRICS, BENCH_IDS)
+        ),
         'elapsed_sec': time.time() - t0,
     }
 
@@ -249,7 +262,12 @@ def run_inner_shard(shard_index, n_seeds=10, n_folds=3, base_seed=42, force=Fals
     folds = load_current_folds(n_seeds=n_seeds, n_folds=n_folds,
                                base_seed=base_seed)
     predict_fn = make_score_predictor(
-        METHODS[shard['method']], shard['transform'], **shard['hp'])
+        METHODS[shard['method']],
+        shard['transform'],
+        metric=BENCH_METRICS,
+        benchmark_ids=BENCH_IDS,
+        **shard['hp'],
+    )
 
     rows = []
     for outer_idx, (M_outer_train, outer_test_set) in enumerate(folds):
@@ -277,6 +295,9 @@ def run_inner_shard(shard_index, n_seeds=10, n_folds=3, base_seed=42, force=Fals
         'inner_seed_offset': INNER_SEED_OFFSET,
         'matrix_shape': list(M_FULL.shape),
         'matrix_identity_sha256': matrix_identity_sha256(M_FULL),
+        'benchmark_metric_identity_sha256': (
+            benchmark_metric_identity_sha256(BENCH_METRICS, BENCH_IDS)
+        ),
         'elapsed_sec': time.time() - t0,
     }
 

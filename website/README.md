@@ -33,8 +33,8 @@ Source matrix: 129 models x 253 benchmarks with 4,905 reported scores
 (August 26, 2026 snapshot). Point predictions use Logit Bias ALS (rank 2,
 lambda=0.1). Trust probabilities and intervals use the Section 4.4 hybrid
 uncertainty model with conformal calibration. Trust probability estimates how
-likely the prediction is to be within 10 score points of the true benchmark
-result.
+likely the prediction is to be within 10% of the benchmark's declared score
+range, or 10 raw score units when no finite range is declared.
 
 Generated prediction artifacts are intentionally not stored in Git. Rebuild
 the default snapshot from the canonical score matrix as follows. If the matrix
@@ -51,6 +51,7 @@ python -m website.scripts.build_default_snapshot \
   --snapshot-date 2026-08-26
 ```
 
-The shard runner automatically invalidates prediction files whose matrix
-identity differs. Confidence calibration and snapshot generation then fail if
-any required shard is missing or belongs to another matrix.
+The shard runner automatically invalidates prediction files whose matrix or
+ordered benchmark-metric identity differs. Confidence calibration and snapshot
+generation then fail if any required shard is missing or belongs to another
+matrix or metric specification.

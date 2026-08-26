@@ -71,7 +71,11 @@ def _is_pct_bench(j, M, metric=None, benchmark_ids=None):
     """Heuristic: benchmark j uses a percentage scale [0,100]."""
     spec = _metric_for_column(j, metric=metric, benchmark_ids=benchmark_ids)
     if spec is not None:
-        return _metric_type(spec) in {'pct', 'percent', 'percentage'}
+        score_range = _metric_range(spec)
+        return (
+            _metric_type(spec) in {'pct', 'percent', 'percentage'}
+            or score_range == (0.0, 100.0)
+        )
     vals = M[~np.isnan(M[:, j]), j]
     if len(vals) == 0:
         return False

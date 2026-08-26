@@ -25,9 +25,15 @@ warnings.filterwarnings('ignore')
 # Transforms
 # --------------------------------------------------------------------------
 
-def _is_pct_bench(j, M, metric_types=None):
-    if metric_types is not None:
-        return metric_types[j] == 'pct'
+def _is_pct_bench(j, M, metric_specs=None):
+    if metric_specs is not None:
+        spec = metric_specs[j]
+        metric_type = (
+            spec.get('type') if isinstance(spec, dict) else None)
+        return (
+            metric_type in {'pct', 'percent', 'percentage'}
+            or _metric_range(spec) == (0.0, 100.0)
+        )
     vals = M[~np.isnan(M[:, j]), j]
     if len(vals) == 0:
         return False
@@ -135,15 +141,27 @@ def _bias_als_zspace(M_z, rank=2, lam=0.1, n_iter=40,
 # Pipeline: logit + z-score + ALS + invert
 # --------------------------------------------------------------------------
 
-def predict_benchpress_scores(M_train, metric_types=None, rank=2, lam=0.1):
+def _metric_range(spec):
+    if not isinstance(spec, dict):
+        return None
+    score_range = spec.get('range')
+    if not isinstance(score_range, (list, tuple)) or len(score_range) != 2:
+        return None
+    lower, upper = score_range
+    if lower is None or upper is None:
+        return None
+    return float(lower), float(upper)
+
+
+def predict_benchpress_scores(M_train, metric_specs=None, rank=2, lam=0.1):
     """BenchPress default score predictor: Logit Bias ALS with lam=0.1 and rank=2."""
     obs = ~np.isnan(M_train)
     n_models, n_bench = M_train.shape
-    if metric_types is not None and len(metric_types) != n_bench:
+    if metric_specs is not None and len(metric_specs) != n_bench:
         raise ValueError(
-            f"metric_types has {len(metric_types)} entries; expected {n_bench}")
+            f"metric_specs has {len(metric_specs)} entries; expected {n_bench}")
     is_pct = np.array([
-        _is_pct_bench(j, M_train, metric_types) for j in range(n_bench)])
+        _is_pct_bench(j, M_train, metric_specs) for j in range(n_bench)])
 
     # Forward: logit per pct-col
     M_t = M_train.copy()
@@ -170,6 +188,13 @@ def predict_benchpress_scores(M_train, metric_types=None, rank=2, lam=0.1):
             v = v * cs[j] + cm[j]
             if is_pct[j]:
                 v = _from_logit(v)
+            score_range = (
+                None if metric_specs is None
+                else _metric_range(metric_specs[j])
+            )
+            if score_range is not None:
+                v = float(np.clip(v, score_range[0], score_range[1]))
+            elif is_pct[j]:
                 v = float(np.clip(v, 0, 100))
             M_out[i, j] = v
     return M_out
@@ -179,7 +204,7 @@ def predict_benchpress_scores(M_train, metric_types=None, rank=2, lam=0.1):
 # Add-model entry point (called from app.js)
 # --------------------------------------------------------------------------
 
-def predict_new_model(M_list, new_row_scores, metric_types=None):
+def predict_new_model(M_list, new_row_scores, metric_specs=None):
     """Append a new row with `new_row_scores` and return the predicted row.
 
     M_list:  n_models x n_bench list-of-lists, None for missing.
@@ -202,11 +227,11 @@ def predict_new_model(M_list, new_row_scores, metric_types=None):
         new_row[0, j] = float(v)
 
     M_aug = np.vstack([M, new_row])
-    P = predict_benchpress_scores(M_aug, metric_types=metric_types)
+    P = predict_benchpress_scores(M_aug, metric_specs=metric_specs)
     return P[-1].tolist()
 
 
-def predict_matrix(M_list, metric_types=None):
+def predict_matrix(M_list, metric_specs=None):
     """Return the completed matrix for a browser-provided score matrix."""
     n_models = len(M_list)
     n_bench = len(M_list[0])
@@ -219,4 +244,4 @@ def predict_matrix(M_list, metric_types=None):
             if value is not None:
                 M[i, j] = float(value)
     return predict_benchpress_scores(
-        M, metric_types=metric_types).tolist()
+        M, metric_specs=metric_specs).tolist()

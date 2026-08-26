@@ -114,10 +114,27 @@
     }
   }
 
-  function formatInterval(interval) {
+  function scoreDigits(benchmark) {
+    const range = benchmark?.metric?.range;
+    if (!Array.isArray(range) || range.length !== 2 ||
+        !range.every(Number.isFinite)) return 1;
+    const width = Math.abs(range[1] - range[0]);
+    if (width <= 1) return 3;
+    if (width <= 10) return 2;
+    return 1;
+  }
+
+  function formatScore(value, benchmark) {
+    return Number.isFinite(value)
+      ? value.toFixed(scoreDigits(benchmark))
+      : '—';
+  }
+
+  function formatInterval(interval, benchmark) {
     if (!interval || interval.length !== 2 ||
         interval[0] === null || interval[1] === null) return '—';
-    return `${interval[0].toFixed(1)}–${interval[1].toFixed(1)}`;
+    return `${formatScore(interval[0], benchmark)}–` +
+      `${formatScore(interval[1], benchmark)}`;
   }
 
   function formatTrustProbability(probability) {
@@ -136,7 +153,7 @@
     const interval = data.prediction_intervals?.[i]?.[j];
     if (!interval) return '';
     return `<div class="meta-line interval-text">90% predicted range: ` +
-      `${formatInterval(interval)}</div>`;
+      `${formatInterval(interval, data.benchmarks[j])}</div>`;
   }
 
   function settingLines(setting) {
@@ -215,7 +232,7 @@
     big.querySelector('.bigtag')?.remove();
     if (observed !== null) {
       bigEyebrow.textContent = 'Reported score';
-      bigval.textContent = observed.toFixed(1);
+      bigval.textContent = formatScore(observed, benchmark);
       bigval.classList.add('observed');
       bigsub.innerHTML = `<strong>${escapeHtml(model.name)}</strong> on ` +
         `${escapeHtml(benchmark.name)}`;
@@ -226,12 +243,12 @@
     } else if (Number.isFinite(predicted)) {
       bigEyebrow.textContent = data.meta?.confidence_available
         ? 'Predicted score + trust' : 'Predicted score';
-      bigval.textContent = predicted.toFixed(1);
+      bigval.textContent = formatScore(predicted, benchmark);
       bigsub.innerHTML = `<strong>${escapeHtml(model.name)}</strong> on ` +
         `${escapeHtml(benchmark.name)}<br>No public score reported` +
         `${trustLine(trustProbability)}` +
         `${interval ? `<br><span class="interval-text">90% predicted range: ` +
-          `${formatInterval(interval)}</span>` : ''}`;
+          `${formatInterval(interval, benchmark)}</span>` : ''}`;
       const tag = document.createElement('div');
       tag.className = 'bigtag predicted';
       tag.textContent = 'Predicted';
@@ -287,7 +304,7 @@
       const expanded = row.i === expandedI ? ' rowitem-expanded' : '';
       const interval = data.prediction_intervals?.[row.i]?.[j];
       const intervalHtml = !isObserved && interval
-        ? `<div class="val-interval">${formatInterval(interval)}</div>` : '';
+        ? `<div class="val-interval">${formatInterval(interval, benchmark)}</div>` : '';
       const trustProbability = data.trust_probabilities?.[row.i]?.[j];
       const trustHtml = !isObserved && Number.isFinite(trustProbability)
         ? `<div class="val-interval">trust ` +
@@ -297,7 +314,7 @@
           <div class="rank">#${k + 1}</div>
           <div class="name">${escapeHtml(row.name)}</div>
           <div class="tag ${className}">${isObserved ? 'reported' : 'predicted'}</div>
-          <div class="valwrap"><div class="val ${className}">${value.toFixed(1)}</div>${trustHtml}${intervalHtml}</div>
+          <div class="valwrap"><div class="val ${className}">${formatScore(value, benchmark)}</div>${trustHtml}${intervalHtml}</div>
           <div class="chev">▾</div>
         </div>
         <div class="rowdetails">${row.i === expandedI ? rowDetails(row) : ''}</div>

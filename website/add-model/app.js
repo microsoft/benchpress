@@ -47,7 +47,7 @@ async function boot() {
     await pyodide.loadPackage(['numpy']);
 
     setProgress(80, 'Loading predictor…');
-    const predictorSrc = await fetch('predictor.py?v=3').then(r => r.text());
+    const predictorSrc = await fetch('predictor.py?v=5').then(r => r.text());
     pyodide.FS.writeFile('predictor.py', predictorSrc);
     pyodide.runPython('import predictor');
 
@@ -58,10 +58,14 @@ async function boot() {
 
     // Pre-upload the observed matrix to Python (avoid reserializing on every predict)
     pyodide.globals.set('M_OBS_JSON', JSON.stringify(STATE.data.observed));
+    pyodide.globals.set('METRIC_SPECS_JSON', JSON.stringify(
+      STATE.data.benchmarks.map(benchmark => benchmark.metric)));
     pyodide.runPython(`
 import json
 M_OBS = json.loads(M_OBS_JSON)
+METRIC_SPECS = json.loads(METRIC_SPECS_JSON)
 del M_OBS_JSON
+del METRIC_SPECS_JSON
 `);
 
     setProgress(100, 'Ready.');
@@ -211,7 +215,7 @@ async function runPrediction(showAll) {
     STATE.pyodide.runPython(`
 import json
 new_scores = json.loads(NEW_SCORES_JSON)
-result_list = predictor.predict_new_model(M_OBS, new_scores)
+result_list = predictor.predict_new_model(M_OBS, new_scores, METRIC_SPECS)
 del NEW_SCORES_JSON
 `);
     preds = STATE.pyodide.globals.get('result_list').toJs();
@@ -251,6 +255,7 @@ function renderResults(modelName, preds, scores, knownIds, knownEntries, targetB
     known: knownIds.has(b.id),
     trustProbability: trustProbabilities[i],
     interval: intervalForPrediction(preds[i], halfWidths[i], i),
+    benchIdx: i,
   }));
 
   // Sort: known first, then predicted descending; but only if score is in [0,100] for sort
@@ -423,7 +428,7 @@ function facebookShareUrl() {
 }
 
 function roundScore(value) {
-  return Number.isFinite(value) ? Math.round(value * 10) / 10 : null;
+  return Number.isFinite(value) ? Math.round(value * 1000000) / 1000000 : null;
 }
 
 function slugify(value) {
@@ -451,10 +456,10 @@ function renderSummaryCard(rows, targetBenchId, showAll) {
       <div class="summary-row-head">
         <span class="summary-rank">${showAll ? `#${idx + 1}` : 'target'}</span>
         <strong>${escapeHtml(r.name)}</strong>
-        <span>${r.val.toFixed(1)}</span>
+        <span>${formatScore(r.val, r.benchIdx)}</span>
       </div>
       <div class="summary-bar"><span style="width:${width}%"></span></div>
-      <p>${trust}${r.interval ? ` · ${r.interval[0].toFixed(1)}-${r.interval[1].toFixed(1)}` : ''}</p>
+      <p>${trust}${r.interval ? ` · ${formatInterval(r.interval, r.benchIdx)}` : ''}</p>
     </li>`;
   }).join('');
   el.innerHTML = `
@@ -484,7 +489,7 @@ function renderAdviceCard(rows, scores, knownIds) {
     '<p>BenchPress is more reliable when you add informative observed scores. Start with missing probes, then validate low-trust predictions that matter for your decision.</p>',
     block('Best next probes', bestNext, b => `${escapeHtml(b.name)} <span class="advice-dim">adds high predictive coverage</span>`),
     block('Low-cost alternatives', lowCostNext, b => `${escapeHtml(b.name)} <span class="advice-dim">cheap candidate set</span>`),
-    block('Validate these low-confidence predictions', lowConfidence, r => `${escapeHtml(r.name)} <span class="advice-dim">trust ${Math.round(100 * r.trustProbability)}%, range ${r.interval ? `${r.interval[0].toFixed(1)}-${r.interval[1].toFixed(1)}` : 'wide'}</span>`),
+    block('Validate these low-confidence predictions', lowConfidence, r => `${escapeHtml(r.name)} <span class="advice-dim">trust ${Math.round(100 * r.trustProbability)}%, range ${r.interval ? formatInterval(r.interval, r.benchIdx) : 'wide'}</span>`),
     block('Closest public neighbors', neighbors, n => `${escapeHtml(n.name)} <span class="advice-dim">${n.provider ? escapeHtml(n.provider) + ', ' : ''}${n.overlap} shared score${n.overlap === 1 ? '' : 's'}</span>`),
   ].filter(Boolean).join('');
 
@@ -504,7 +509,7 @@ function renderEvidenceCard(entries) {
     return `<li>
       <div>
         <strong>${escapeHtml(e.name)}</strong>
-        <span>${Number(e.value).toFixed(1)}</span>
+        <span>${formatScore(Number(e.value), STATE.benchIdx[e.id])}</span>
       </div>
       ${source ? `<p>${source}</p>` : '<p class="advice-dim">No source attached</p>'}
     </li>`;
@@ -568,9 +573,9 @@ function renderResultsTable(rows) {
     const tr = document.createElement('tr');
     const cls = r.known ? 'score-known' : 'score-pred';
     const badge = r.known ? '<span class="badge badge-known">KNOWN</span>' : '';
-    const valStr = isFinite(r.val) ? r.val.toFixed(1) : '—';
+    const valStr = formatScore(r.val, r.benchIdx);
     const rangeStr = (!r.known && r.interval)
-      ? `${r.interval[0].toFixed(1)}–${r.interval[1].toFixed(1)}`
+      ? formatInterval(r.interval, r.benchIdx)
       : '—';
     const trustStr = (!r.known && isFinite(r.trustProbability))
       ? `${Math.round(100 * r.trustProbability)}%`
@@ -589,18 +594,32 @@ function intervalForPrediction(value, halfWidth, benchIdx) {
   if (!isFinite(value) || !isFinite(halfWidth)) return null;
   let lo = value - halfWidth;
   let hi = value + halfWidth;
-  if (isPercentLikeBenchmark(benchIdx)) {
-    lo = Math.max(0, lo);
-    hi = Math.min(100, hi);
+  const range = STATE.data.benchmarks[benchIdx]?.metric?.range;
+  if (Array.isArray(range) && range.length === 2 &&
+      range.every(Number.isFinite)) {
+    lo = Math.max(range[0], lo);
+    hi = Math.min(range[1], hi);
   }
   return [lo, hi];
 }
 
-function isPercentLikeBenchmark(benchIdx) {
-  const vals = STATE.data.observed
-    .map(row => row[benchIdx])
-    .filter(v => v !== null && isFinite(v));
-  return vals.length > 0 && Math.min(...vals) >= -1 && Math.max(...vals) <= 101;
+function scoreDigits(benchIdx) {
+  const range = STATE.data.benchmarks[benchIdx]?.metric?.range;
+  if (!Array.isArray(range) || range.length !== 2 ||
+      !range.every(Number.isFinite)) return 1;
+  const width = Math.abs(range[1] - range[0]);
+  if (width <= 1) return 3;
+  if (width <= 10) return 2;
+  return 1;
+}
+
+function formatScore(value, benchIdx) {
+  return Number.isFinite(value) ? value.toFixed(scoreDigits(benchIdx)) : '—';
+}
+
+function formatInterval(interval, benchIdx) {
+  return `${formatScore(interval[0], benchIdx)}–` +
+    `${formatScore(interval[1], benchIdx)}`;
 }
 
 function escapeHtml(s) {

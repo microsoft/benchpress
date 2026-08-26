@@ -62,14 +62,21 @@ def _pava_increasing(values, weights):
     return out
 
 
-def _fit_trust_calibrator(risk, actual, predicted, threshold=10.0, n_bins=20):
+def _fit_trust_calibrator(risk, actual, predicted, thresholds, n_bins=20):
     risk = np.asarray(risk, dtype=float)
     actual = np.asarray(actual, dtype=float)
     predicted = np.asarray(predicted, dtype=float)
-    finite = np.isfinite(risk) & np.isfinite(actual) & np.isfinite(predicted)
+    thresholds = np.asarray(thresholds, dtype=float)
+    finite = (
+        np.isfinite(risk)
+        & np.isfinite(actual)
+        & np.isfinite(predicted)
+        & np.isfinite(thresholds)
+    )
     risk = risk[finite]
     trusted = (
-        np.abs(predicted[finite] - actual[finite]) <= threshold).astype(float)
+        np.abs(predicted[finite] - actual[finite]) <= thresholds[finite]
+    ).astype(float)
     if risk.size == 0:
         raise ValueError("No finite held-out risk values available.")
 
@@ -99,7 +106,11 @@ def _fit_trust_calibrator(risk, actual, predicted, threshold=10.0, n_bins=20):
         return out
 
     metadata = {
-        "threshold": threshold,
+        "threshold": (
+            "10% of the declared benchmark range; "
+            "10 raw score units when no finite range is declared"
+        ),
+        "risk_scale": "threshold-normalized absolute-error risk",
         "num_calibration_cells": int(risk.size),
         "bin_count": int(len(bins)),
         "bin_risk_median": [_clean_float(value) for value in centers],
@@ -111,20 +122,6 @@ def _fit_trust_calibrator(risk, actual, predicted, threshold=10.0, n_bins=20):
         ],
     }
     return predict, metadata
-
-
-def _percent_like_columns(observed):
-    matrix = np.asarray([
-        [np.nan if value is None else float(value) for value in row]
-        for row in observed
-    ], dtype=float)
-    output = []
-    for j in range(matrix.shape[1]):
-        values = matrix[:, j]
-        values = values[np.isfinite(values)]
-        output.append(bool(
-            values.size and values.min() >= -1.0 and values.max() <= 101.0))
-    return output
 
 
 def attach_prediction_intervals(
@@ -155,18 +152,46 @@ def attach_prediction_intervals(
     ):
         raise ValueError("Confidence cache contains out-of-range cell indices.")
 
-    global_risk = float(np.nanmedian(risk))
-    model_risk = _median_by_index(risk, test_i, n_models, global_risk)
-    benchmark_risk = _median_by_index(
-        risk, test_j, n_benchmarks, global_risk)
     method = results["confidence_methods"]["combined_risk_model"]
     conformal_scale = float(method["conformal_90_scale_median"])
-    percent_like = _percent_like_columns(data["observed"])
+    benchmark_bounds = []
+    benchmark_thresholds = []
+    for benchmark in data["benchmarks"]:
+        score_range = (benchmark.get("metric") or {}).get("range")
+        if (
+            isinstance(score_range, list)
+            and len(score_range) == 2
+            and score_range[0] is not None
+            and score_range[1] is not None
+        ):
+            lower, upper = map(float, score_range)
+            if not np.isfinite(lower) or not np.isfinite(upper) or lower >= upper:
+                raise ValueError(
+                    f"Invalid benchmark range for {benchmark['id']}: "
+                    f"{score_range}"
+                )
+            benchmark_bounds.append((lower, upper))
+            benchmark_thresholds.append(0.1 * (upper - lower))
+        else:
+            benchmark_bounds.append(None)
+            benchmark_thresholds.append(10.0)
+    heldout_thresholds = np.asarray(
+        benchmark_thresholds, dtype=float)[test_j]
+    normalized_risk = risk / heldout_thresholds
     trust_predictor, trust_metadata = _fit_trust_calibrator(
-        risk, actual, predicted)
+        normalized_risk,
+        actual,
+        predicted,
+        heldout_thresholds,
+    )
 
+    global_normalized_risk = float(np.nanmedian(normalized_risk))
+    model_normalized_risk = _median_by_index(
+        normalized_risk, test_i, n_models, global_normalized_risk)
+    benchmark_normalized_risk = _median_by_index(
+        normalized_risk, test_j, n_benchmarks, global_normalized_risk)
     intervals = []
-    cell_risks = []
+    cell_normalized_risks = []
     for i, row in enumerate(data["predictions"]):
         interval_row = []
         risk_row = []
@@ -176,25 +201,33 @@ def attach_prediction_intervals(
                 risk_row.append(np.nan)
                 continue
             point = float(prediction)
+            cell_normalized_risk = (
+                0.5 * float(model_normalized_risk[i])
+                + 0.5 * float(benchmark_normalized_risk[j])
+            )
             cell_risk = (
-                0.5 * float(model_risk[i])
-                + 0.5 * float(benchmark_risk[j])
+                cell_normalized_risk * float(benchmark_thresholds[j])
             )
             half_width = conformal_scale * cell_risk
             lower = point - half_width
             upper = point + half_width
-            if percent_like[j]:
-                lower = max(0.0, lower)
-                upper = min(100.0, upper)
+            if benchmark_bounds[j] is not None:
+                bound_lower, bound_upper = benchmark_bounds[j]
+                lower = max(bound_lower, lower)
+                upper = min(bound_upper, upper)
             interval_row.append([_clean_float(lower), _clean_float(upper)])
-            risk_row.append(cell_risk)
+            risk_row.append(cell_normalized_risk)
         intervals.append(interval_row)
-        cell_risks.append(risk_row)
+        cell_normalized_risks.append(risk_row)
 
     trust_probabilities = trust_predictor(
-        np.asarray(cell_risks, dtype=float))
-    benchmark_half_width = conformal_scale * benchmark_risk
-    benchmark_trust = trust_predictor(benchmark_risk)
+        np.asarray(cell_normalized_risks, dtype=float))
+    benchmark_half_width = (
+        conformal_scale
+        * benchmark_normalized_risk
+        * np.asarray(benchmark_thresholds, dtype=float)
+    )
+    benchmark_trust = trust_predictor(benchmark_normalized_risk)
     data["prediction_intervals"] = intervals
     data["trust_probabilities"] = [
         [_clean_float(value) for value in row]
@@ -213,13 +246,14 @@ def attach_prediction_intervals(
         "results_source": results_source,
         "risk_field": risk_field,
         "trust_probability": (
-            "Calibrated P(abs(predicted - actual) <= 10 score points "
-            "| hybrid uncertainty risk)"
+            "Calibrated probability that absolute error is within 10% of "
+            "the declared benchmark range, or 10 raw units when unavailable"
         ),
         "trust_calibration": trust_metadata,
         "website_estimator": (
-            "0.5 * model median hybrid uncertainty + "
-            "0.5 * benchmark median hybrid uncertainty"
+            "0.5 * model median threshold-normalized hybrid uncertainty + "
+            "0.5 * benchmark median threshold-normalized hybrid uncertainty; "
+            "rescaled to the target benchmark"
         ),
         "benchmark_half_width": [
             _clean_float(value) for value in benchmark_half_width

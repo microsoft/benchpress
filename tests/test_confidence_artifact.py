@@ -5,7 +5,10 @@ import unittest
 
 import numpy as np
 
-from benchpress.evaluation_harness import matrix_identity_sha256
+from benchpress.evaluation_harness import (
+    benchmark_metric_identity_sha256,
+    matrix_identity_sha256,
+)
 from benchpress.methods.confidence import (
     load_or_train_default_confidence_calibrator,
 )
@@ -40,6 +43,40 @@ class ConfidenceArtifactTests(unittest.TestCase):
                     artifact_path=artifact_path,
                     train_if_missing=False,
                 )
+
+    def test_benchmark_metric_identity_tracks_ordered_semantics(self):
+        metric = {
+            "accuracy": {
+                "type": "pct",
+                "range": [0, 100],
+                "higher_is_better": True,
+            },
+            "edit_distance": {
+                "type": "normalized_edit_distance",
+                "range": [0, 1],
+                "higher_is_better": False,
+            },
+        }
+        identity = benchmark_metric_identity_sha256(
+            metric, ["accuracy", "edit_distance"])
+        self.assertEqual(
+            identity,
+            benchmark_metric_identity_sha256(
+                metric.copy(), ["accuracy", "edit_distance"]),
+        )
+
+        changed = {key: dict(value) for key, value in metric.items()}
+        changed["edit_distance"]["range"] = [0, 100]
+        self.assertNotEqual(
+            identity,
+            benchmark_metric_identity_sha256(
+                changed, ["accuracy", "edit_distance"]),
+        )
+        self.assertNotEqual(
+            identity,
+            benchmark_metric_identity_sha256(
+                metric, ["edit_distance", "accuracy"]),
+        )
 
 
 if __name__ == "__main__":

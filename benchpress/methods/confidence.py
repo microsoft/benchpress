@@ -13,7 +13,10 @@ from sklearn.neural_network import MLPRegressor
 from sklearn.preprocessing import StandardScaler
 
 from benchpress.evaluation_harness import (
+    BENCH_IDS,
+    BENCH_METRICS,
     M_FULL,
+    benchmark_metric_identity_sha256,
     compute_prediction_error,
     load_folds,
     make_score_predictor,
@@ -614,13 +617,17 @@ def default_confidence_features(M_train, target_pred=None, cells=None,
         hp_features, strong_features, structural_features), cells
 
 
-def _training_records(M, folds):
+def _training_records(M, folds, metric=None, benchmark_ids=None):
     fold_ids, rows, cols, actual, predicted = [], [], [], [], []
     strong_parts = []
     structural_parts = []
     for fold_id, (M_train, test_set) in enumerate(folds):
         target_pred, feature_sets, cells = default_confidence_features(
-            M_train, cells=test_set)
+            M_train,
+            cells=test_set,
+            metric=metric,
+            benchmark_ids=benchmark_ids,
+        )
         cell_rows = np.asarray([i for i, _ in cells], dtype=int)
         cell_cols = np.asarray([j for _, j in cells], dtype=int)
         fold_ids.append(np.full(len(cells), fold_id, dtype=int))
@@ -682,8 +689,12 @@ def _fit_final_confidence_model(actual, predicted, fold_id, feature_dict,
 
 def fit_default_confidence_calibrator(
         records, matrix, methods=None, artifact_path=None, seed=SEED,
+        metric=None, benchmark_ids=None,
         crossfit_uncertainty=None, crossfit_selected=None):
     """Fit and persist the default calibrator from aligned held-out records."""
+    if metric is None or benchmark_ids is None:
+        raise ValueError(
+            "Default confidence calibration requires benchmark metric metadata.")
     matrix = np.asarray(matrix, dtype=float)
     methods = DEFAULT_CONFIDENCE_METHODS if methods is None else list(methods)
     crossfit_uncertainty = (
@@ -728,6 +739,9 @@ def fit_default_confidence_calibrator(
         "version": 1,
         "matrix_shape": list(matrix.shape),
         "matrix_identity_sha256": matrix_identity_sha256(matrix),
+        "benchmark_metric_identity_sha256": (
+            benchmark_metric_identity_sha256(metric, benchmark_ids)
+        ),
         "seed": int(seed),
         "methods": methods,
         "calibrators": calibrators,
@@ -745,18 +759,27 @@ def fit_default_confidence_calibrator(
 
 
 def train_default_confidence_calibrator(M=None, folds=None, methods=None,
-                                        artifact_path=None, seed=SEED):
+                                        artifact_path=None, seed=SEED,
+                                        metric=None, benchmark_ids=None):
     """Train and persist the default BenchPress confidence calibrator."""
-    M = M_FULL if M is None else np.asarray(M, dtype=float)
+    if M is None:
+        M = M_FULL
+        metric = BENCH_METRICS if metric is None else metric
+        benchmark_ids = BENCH_IDS if benchmark_ids is None else benchmark_ids
+    else:
+        M = np.asarray(M, dtype=float)
     if folds is None:
         folds = load_folds(n_seeds=10, n_folds=3, base_seed=42, min_scores=1)
-    records = _training_records(M, folds)
+    records = _training_records(
+        M, folds, metric=metric, benchmark_ids=benchmark_ids)
     return fit_default_confidence_calibrator(
         records,
         M,
         methods=methods,
         artifact_path=artifact_path,
         seed=seed,
+        metric=metric,
+        benchmark_ids=benchmark_ids,
     )
 
 
@@ -770,9 +793,13 @@ def load_or_train_default_confidence_calibrator(artifact_path=None,
             artifact = pickle.load(f)
         expected_shape = list(M_FULL.shape)
         expected_identity = matrix_identity_sha256(M_FULL)
+        expected_metric_identity = benchmark_metric_identity_sha256()
         if (
             artifact.get("matrix_shape") == expected_shape
             and artifact.get("matrix_identity_sha256") == expected_identity
+            and artifact.get(
+                "benchmark_metric_identity_sha256"
+            ) == expected_metric_identity
         ):
             return artifact
         if not train_if_missing:
@@ -795,6 +822,13 @@ def predict_confidence_intervals(M_train, M_pred=None, artifact=None,
                                  train_if_missing=True, cells=None,
                                  metric=None, benchmark_ids=None):
     """Predict uncertainty and conformal intervals for missing/deployment cells."""
+    if (metric is None) != (benchmark_ids is None):
+        raise ValueError(
+            "metric and benchmark_ids must be provided together.")
+    if metric is None and benchmark_ids is None:
+        if M_train.shape[1] == len(BENCH_IDS):
+            metric = BENCH_METRICS
+            benchmark_ids = BENCH_IDS
     if artifact is None:
         artifact = load_or_train_default_confidence_calibrator(
             artifact_path=artifact_path, train_if_missing=train_if_missing)

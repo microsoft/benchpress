@@ -33,6 +33,7 @@ EXPECTED_METHOD_PROTOCOL = {
     "base_seed": 42,
     "matrix_shape": None,
     "matrix_identity_sha256": None,
+    "benchmark_metric_identity_sha256": None,
 }
 EXPECTED_TARGET = {
     "best_hp": {"lam": 0.1, "rank": 2},
@@ -44,7 +45,8 @@ EXPECTED_TARGET = {
 with contextlib.redirect_stdout(io.StringIO()):
     from benchpress.artifact_utils import ensure_method_comparison_results
     from benchpress.evaluation_harness import (
-        M_FULL, matrix_identity_sha256,
+        BENCH_IDS, BENCH_METRICS, M_FULL,
+        benchmark_metric_identity_sha256, matrix_identity_sha256,
         compute_prediction_error,
     )
     from benchpress.io_utils import load_json, write_json_atomic, write_npz_compressed_atomic
@@ -178,6 +180,9 @@ def _assert_prediction_cache_metadata(data, path):
     expected = dict(EXPECTED_METHOD_PROTOCOL)
     expected["matrix_shape"] = list(M_FULL.shape)
     expected["matrix_identity_sha256"] = matrix_identity_sha256(M_FULL)
+    expected["benchmark_metric_identity_sha256"] = (
+        benchmark_metric_identity_sha256(BENCH_METRICS, BENCH_IDS)
+    )
     actual = {key: metadata.get(key) for key in expected}
     if actual != expected:
         raise ValueError(
@@ -298,6 +303,8 @@ def build_confidence_scores(ensemble_transform="logit",
             methods=sorted(risk_methods),
             artifact_path=calibrator_path,
             seed=SEED,
+            metric=BENCH_METRICS,
+            benchmark_ids=BENCH_IDS,
             crossfit_uncertainty={
                 method: arrays[f"{method}_uncertainty"]
                 for method in risk_methods
@@ -320,6 +327,9 @@ def build_confidence_scores(ensemble_transform="logit",
         "folds_run": [int(f) for f in folds_to_run],
         "matrix_shape": list(M_FULL.shape),
         "matrix_identity_sha256": matrix_identity_sha256(M_FULL),
+        "benchmark_metric_identity_sha256": (
+            benchmark_metric_identity_sha256(BENCH_METRICS, BENCH_IDS)
+        ),
         "base_seed": SEED,
         "calibrator_path": (
             None if calibrator_path is None

@@ -238,12 +238,12 @@ const BenchPressMatrixSource = (() => {
     }
     pyodide.globals.set('MATRIX_JSON', JSON.stringify(matrix.observed));
     pyodide.globals.set('METRIC_JSON', JSON.stringify(
-      matrix.benchmarks.map(benchmark => benchmark.metric.type)));
+      matrix.benchmarks.map(benchmark => benchmark.metric)));
     pyodide.runPython(`
 import json
 matrix_values = json.loads(MATRIX_JSON)
-metric_types = json.loads(METRIC_JSON)
-completed_matrix = predictor.predict_matrix(matrix_values, metric_types)
+metric_specs = json.loads(METRIC_JSON)
+completed_matrix = predictor.predict_matrix(matrix_values, metric_specs)
 del MATRIX_JSON, METRIC_JSON
 `);
     const completedMatrix = pyodide.globals.get('completed_matrix');

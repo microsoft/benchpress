@@ -620,6 +620,18 @@ BENCHMARKS: list[tuple] = [
     if b["id"] in _KEEP_B
 ]
 
+BENCHMARK_METRICS: dict[str, dict] = {
+    b["id"]: {
+        "type": (b.get("canonical_setting") or {}).get("metric_type"),
+        "range": (b.get("canonical_setting") or {}).get("range"),
+        "higher_is_better": (
+            b.get("canonical_setting") or {}
+        ).get("higher_is_better", True),
+    }
+    for b in _RAW_CACHE["benchmarks"]
+    if b["id"] in _KEEP_B
+}
+
 DATA: list[tuple] = [
     (s["model_id"], s["benchmark_id"], s["score"], s.get("reference_url"))
     for s in _LEGACY_SCORES

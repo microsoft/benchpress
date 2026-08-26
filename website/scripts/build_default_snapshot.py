@@ -14,9 +14,11 @@ from benchpress.build_benchmark_matrix.build_benchmark_matrix import (
     _LEGACY_SCORES,
 )
 from benchpress.evaluation_harness import (
+    BENCH_METRICS,
     BENCH_IDS,
     M_FULL,
     MODEL_IDS,
+    benchmark_metric_identity_sha256,
     matrix_identity_sha256,
 )
 from benchpress.methods.predictors import predict_benchpress_scores
@@ -206,7 +208,8 @@ def _build_base_snapshot(raw, method_results, matrix_sha, snapshot_date):
         if float(score["score"]) == float(M_FULL[i, j]):
             sources[i][j] = _source_payload(score)
 
-    predictions = predict_benchpress_scores(M_FULL.copy())
+    predictions = predict_benchpress_scores(
+        M_FULL.copy(), metric=BENCH_METRICS, benchmark_ids=BENCH_IDS)
     if not np.all(np.isfinite(predictions)):
         raise ValueError("Default full-matrix prediction contains non-finite cells.")
     if not np.array_equal(
@@ -228,6 +231,9 @@ def _build_base_snapshot(raw, method_results, matrix_sha, snapshot_date):
             "snapshot_date": snapshot_date,
             "matrix_sha256": matrix_sha,
             "matrix_shape": list(M_FULL.shape),
+            "benchmark_metric_identity_sha256": (
+                benchmark_metric_identity_sha256(BENCH_METRICS, BENCH_IDS)
+            ),
             "observed_cells": int(np.isfinite(M_FULL).sum()),
             "prediction_method": "Logit Bias ALS",
             "transform": "logit",
@@ -288,6 +294,7 @@ def main():
         "n_folds",
         "base_seed",
         "matrix_shape",
+        "benchmark_metric_identity_sha256",
         "transform",
         "method",
         "hp",
@@ -335,10 +342,36 @@ def main():
     )
     identity_hash = _observed_identity_hash(M_FULL)
     website_identity_hash = _observed_identity_hash(website_observed)
+    prediction_range_violations = 0
+    interval_range_violations = 0
+    for j, benchmark in enumerate(data["benchmarks"]):
+        score_range = (benchmark.get("metric") or {}).get("range")
+        if (
+            not isinstance(score_range, list)
+            or len(score_range) != 2
+            or score_range[0] is None
+            or score_range[1] is None
+        ):
+            continue
+        lower, upper = map(float, score_range)
+        for prediction in (
+                data["predictions"][i][j] for i in range(len(MODEL_IDS))):
+            if prediction is not None and not lower <= prediction <= upper:
+                prediction_range_violations += 1
+        for interval in (
+                data["prediction_intervals"][i][j]
+                for i in range(len(MODEL_IDS))):
+            if (
+                interval is not None
+                and (interval[0] < lower or interval[1] > upper)
+            ):
+                interval_range_violations += 1
     if (
         int(np.sum(mismatch)) != 0
         or identity_hash != website_identity_hash
         or source_coverage != int(np.sum(observed_mask))
+        or prediction_range_violations != 0
+        or interval_range_violations != 0
     ):
         raise ValueError("Website observed-score identity validation failed.")
 
@@ -363,6 +396,8 @@ def main():
             0.0 if differences.size == 0 else float(np.max(differences))
         ),
         "observed_cells_with_sources": int(source_coverage),
+        "prediction_range_violations": prediction_range_violations,
+        "prediction_interval_range_violations": interval_range_violations,
         "finite_point_predictions": int(np.isfinite(np.asarray(
             data["predictions"], dtype=float)).sum()),
         "finite_prediction_intervals": sum(
@@ -381,6 +416,9 @@ def main():
         "confidence_target_metadata_alignment": metadata_alignment,
         "confidence_matrix_identity_sha256": confidence_metadata[
             "matrix_identity_sha256"
+        ],
+        "confidence_benchmark_metric_identity_sha256": confidence_metadata[
+            "benchmark_metric_identity_sha256"
         ],
         "output": os.path.relpath(args.output, REPO_ROOT),
         "output_sha256": hashlib.sha256(encoded).hexdigest(),
