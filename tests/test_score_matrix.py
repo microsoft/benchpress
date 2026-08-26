@@ -3,6 +3,7 @@ import json
 import os
 import tempfile
 import unittest
+from unittest.mock import patch
 
 import numpy as np
 
@@ -10,9 +11,9 @@ from benchpress.methods.predictors import predict_logit_bias_als_scores
 from benchpress.methods.transforms import _to_logit, apply_transform
 from benchpress.data.score_matrix import ScoreMatrix
 from predict import (
-	evaluate_score_matrix_holdout,
 	format_score_matrix_report,
-	load_or_compute_score_matrix_holdout,
+	score_matrix_confidence_lookup,
+	score_matrix_missing_cells,
 )
 
 
@@ -96,12 +97,13 @@ class ScoreMatrixTests(unittest.TestCase):
 				model_filter='my-model-b',
 				only_missing=True,
 			)
-			self.assertIn('Prediction results for my-model-b', report)
-			self.assertIn('Showing missing cells only', report)
+			self.assertIn('BenchPress estimates for my-model-b', report)
+			self.assertIn('Estimated values for scores missing from this matrix', report)
 			self.assertIn('aime_2025', report)
-			self.assertIn('predicted', report)
+			self.assertIn('estimated value', report)
 
-	def test_custom_matrix_confidence_reports_holdout_error(self):
+	@patch('benchpress.methods.confidence.predict_confidence_intervals')
+	def test_custom_matrix_confidence_report_uses_standard_model(self, predict_confidence):
 		with tempfile.TemporaryDirectory() as dir_name:
 			csv_path = self.write_matrix(dir_name)
 			matrix = ScoreMatrix.from_csv(csv_path)
@@ -110,42 +112,49 @@ class ScoreMatrixTests(unittest.TestCase):
 				metric=matrix.metric,
 				benchmark_ids=matrix.benchmark_ids,
 			)
-			validation = evaluate_score_matrix_holdout(matrix)
+			predict_confidence.return_value = {
+				'confidence_level': 0.9,
+				'method': 'combined_risk_model',
+				'cells': [(1, 1)],
+				'predicted': [60.0],
+				'uncertainty': [3.0],
+				'lower': [55.0],
+				'upper': [65.0],
+				'trust_probability': [0.8],
+				'trust_threshold': 10.0,
+			}
+			confidence = score_matrix_confidence_lookup(
+				matrix,
+				predictions,
+				[(1, 1)],
+			)
 			report = format_score_matrix_report(
 				predictions,
 				matrix,
 				csv_path,
 				model_filter='my-model-b',
 				only_missing=True,
-				validation=validation,
+				confidence=confidence,
 			)
-			self.assertGreater(validation['summary']['n_eval'], 0)
-			self.assertIsNotNone(validation['summary']['medae'])
-			self.assertIsNotNone(validation['summary']['medape'])
-			self.assertIn('Holdout validation on observed cells', report)
-			self.assertIn('test MedAE', report)
-			self.assertIn('test MedAPE', report)
-			self.assertIn('interval_90', report)
+			self.assertEqual(confidence['__metadata__']['confidence_level'], 0.9)
+			self.assertEqual(confidence[(1, 1)]['trust_probability'], 0.8)
+			self.assertIn('Confidence:', report)
+			self.assertIn('calibrated 90% conformal interval', report)
+			self.assertIn('[55.0, 65.0]', report)
+			self.assertIn('80%', report)
 
-	def test_custom_matrix_holdout_uses_matrix_folder_cache(self):
+	def test_custom_matrix_missing_cells_respects_filters(self):
 		with tempfile.TemporaryDirectory() as dir_name:
-			csv_path = self.write_matrix(dir_name)
-			matrix = ScoreMatrix.from_csv(csv_path)
-			validation = load_or_compute_score_matrix_holdout(matrix, csv_path)
-			cache_dir = os.path.join(dir_name, '__benchpress_cache__')
-			cache_files = os.listdir(cache_dir)
-			self.assertEqual(len(cache_files), 1)
-			self.assertGreater(validation['summary']['n_eval'], 0)
-
-			cache_path = os.path.join(cache_dir, cache_files[0])
-			with open(cache_path) as f:
-				cached_validation = json.load(f)
-			cached_validation['summary']['n_eval'] = 123
-			with open(cache_path, 'w') as f:
-				json.dump(cached_validation, f)
-
-			loaded_validation = load_or_compute_score_matrix_holdout(matrix, csv_path)
-			self.assertEqual(loaded_validation['summary']['n_eval'], 123)
+			matrix = ScoreMatrix.from_csv(self.write_matrix(dir_name))
+			self.assertEqual(score_matrix_missing_cells(matrix), [(1, 1), (2, 0)])
+			self.assertEqual(
+				score_matrix_missing_cells(matrix, model_filter='my-model-b'),
+				[(1, 1)],
+			)
+			self.assertEqual(
+				score_matrix_missing_cells(matrix, bench_filter='gpqa_diamond'),
+				[(2, 0)],
+			)
 
 
 if __name__ == '__main__':
