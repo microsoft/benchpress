@@ -178,7 +178,7 @@ const BenchPressMatrixSource = (() => {
 
   async function load(source) {
     if (source === 'benchpress') {
-      const response = await fetch('data.json?v=7');
+      const response = await fetch('data.json?v=20260826');
       if (!response.ok) throw new Error(`Could not load matrix (${response.status}).`);
       const data = await response.json();
       data.meta.id = 'benchpress';
@@ -189,7 +189,7 @@ const BenchPressMatrixSource = (() => {
         (total, row) => total + row.filter(Number.isFinite).length, 0);
       data.meta.confidence_available = true;
       data.benchmarks.forEach(benchmark => {
-        benchmark.metric = {
+        if (!benchmark.metric) benchmark.metric = {
           type: 'pct', range: [0, 100], higher_is_better: true,
         };
       });

@@ -32,10 +32,11 @@ EXPECTED_METHOD_PROTOCOL = {
     "n_folds": 3,
     "base_seed": 42,
     "matrix_shape": None,
+    "matrix_identity_sha256": None,
 }
 EXPECTED_TARGET = {
     "best_hp": {"lam": 0.1, "rank": 2},
-    "best_hp_index": 4,
+    "best_hp_index": 1,
     "prediction_file": TARGET_PREDICTION_REL,
 }
 
@@ -43,7 +44,7 @@ EXPECTED_TARGET = {
 with contextlib.redirect_stdout(io.StringIO()):
     from benchpress.artifact_utils import ensure_method_comparison_results
     from benchpress.evaluation_harness import (
-        M_FULL,
+        M_FULL, matrix_identity_sha256,
         compute_prediction_error,
     )
     from benchpress.io_utils import load_json, write_json_atomic, write_npz_compressed_atomic
@@ -51,6 +52,7 @@ with contextlib.redirect_stdout(io.StringIO()):
         confidence_feature_sets,
         conformal_interval,
         coverage_width,
+        fit_default_confidence_calibrator,
         leave_fold_mlp_error_calibrator,
         risk_model_grid_metadata,
         stack_features,
@@ -175,6 +177,7 @@ def _assert_prediction_cache_metadata(data, path):
     metadata = _metadata(data)
     expected = dict(EXPECTED_METHOD_PROTOCOL)
     expected["matrix_shape"] = list(M_FULL.shape)
+    expected["matrix_identity_sha256"] = matrix_identity_sha256(M_FULL)
     actual = {key: metadata.get(key) for key in expected}
     if actual != expected:
         raise ValueError(
@@ -200,7 +203,8 @@ def build_confidence_scores(ensemble_transform="logit",
                             risk_methods=None,
                             fold_shard_index=None,
                             num_fold_shards=None,
-                            scores_path=SCORES_PATH):
+                            scores_path=SCORES_PATH,
+                            calibrator_path=None):
     if risk_methods is None:
         risk_methods = ["disagreement", "structural_support", "combined_risk_model"]
     risk_methods = set(risk_methods)
@@ -277,6 +281,30 @@ def build_confidence_scores(ensemble_transform="logit",
         arrays["combined_risk_model_uncertainty"] = combined_uncertainty.astype(float)
         selected_by_method["combined_risk_model"] = selected
 
+    if calibrator_path is not None:
+        if not np.array_equal(folds_to_run, all_folds):
+            raise ValueError(
+                "Default calibrator requires uncertainties from every held-out fold")
+        fit_default_confidence_calibrator(
+            {
+                "fold_id": arrays["fold_id"],
+                "test_i": arrays["test_i"],
+                "test_j": arrays["test_j"],
+                "actual": arrays["actual"],
+                "predicted": arrays["predicted"],
+                "feature_sets": feature_sets,
+            },
+            M_FULL,
+            methods=sorted(risk_methods),
+            artifact_path=calibrator_path,
+            seed=SEED,
+            crossfit_uncertainty={
+                method: arrays[f"{method}_uncertainty"]
+                for method in risk_methods
+            },
+            crossfit_selected=selected_by_method,
+        )
+
     metadata = {
         "target_prediction_file": os.path.relpath(target_path, SCRIPT_DIR),
         "target_metadata": target_meta,
@@ -291,7 +319,12 @@ def build_confidence_scores(ensemble_transform="logit",
         "risk_methods": sorted(risk_methods),
         "folds_run": [int(f) for f in folds_to_run],
         "matrix_shape": list(M_FULL.shape),
+        "matrix_identity_sha256": matrix_identity_sha256(M_FULL),
         "base_seed": SEED,
+        "calibrator_path": (
+            None if calibrator_path is None
+            else os.path.relpath(calibrator_path, SCRIPT_DIR)
+        ),
     }
 
     arrays["metadata_json"] = np.asarray(json.dumps(metadata, sort_keys=True))
@@ -421,6 +454,7 @@ def main():
     parser.add_argument("--num-fold-shards", type=int)
     parser.add_argument("--scores-path", default=SCORES_PATH)
     parser.add_argument("--results-path", default=RESULTS_PATH)
+    parser.add_argument("--calibrator-path")
     parser.add_argument("--skip-results", action="store_true")
     parser.add_argument("--merge-scores", nargs="+")
     parser.add_argument("--ensure", action="store_true",
@@ -448,7 +482,8 @@ def main():
         risk_methods=args.risk_methods,
         fold_shard_index=args.fold_shard_index,
         num_fold_shards=args.num_fold_shards,
-        scores_path=args.scores_path)
+        scores_path=args.scores_path,
+        calibrator_path=args.calibrator_path)
     results = None
     if not args.skip_results:
         results = summarize(

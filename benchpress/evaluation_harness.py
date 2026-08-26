@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Evaluation harness for LLM benchmark matrix completion."""
 
+import hashlib
 import numpy as np
 import sys, warnings, os
 from collections import defaultdict
@@ -37,6 +38,17 @@ for mid, bid, score, url in DATA:
         M_FULL[MODEL_IDX[mid], BENCH_IDX[bid]] = score
 
 OBSERVED = ~np.isnan(M_FULL)
+
+
+def matrix_identity_sha256(matrix):
+    """Hash a score matrix by shape, observed mask, and exact float values."""
+    matrix = np.asarray(matrix, dtype=float)
+    digest = hashlib.sha256()
+    digest.update(np.asarray(matrix.shape, dtype="<i8").tobytes())
+    digest.update(np.isfinite(matrix).astype(np.uint8).tobytes())
+    digest.update(
+        np.nan_to_num(matrix, nan=0.0).astype("<f8", copy=False).tobytes())
+    return digest.hexdigest()
 
 
 def matrix_summary():

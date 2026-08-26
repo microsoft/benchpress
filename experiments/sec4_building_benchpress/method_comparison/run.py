@@ -42,7 +42,7 @@ INNER_PARTITION_FOLDS = 3
 with contextlib.redirect_stdout(io.StringIO()):
     from benchpress.evaluation_harness import (
         M_FULL, load_folds, compute_prediction_error, make_score_predictor,
-        holdout_inner_per_model, mask_cells,
+        holdout_inner_per_model, mask_cells, matrix_identity_sha256,
     )
     from benchpress.all_methods import (
         complete_benchmark_mean, complete_model_mean,
@@ -126,6 +126,7 @@ def _validate_shard_metadata(meta, shard, path, n_seeds, n_folds, base_seed):
         'n_folds': n_folds,
         'base_seed': base_seed,
         'matrix_shape': list(M_FULL.shape),
+        'matrix_identity_sha256': matrix_identity_sha256(M_FULL),
     }
     actual = {key: meta.get(key) for key in expected}
     if actual != expected:
@@ -199,6 +200,7 @@ def run_shard(shard_index, n_seeds=10, n_folds=3, base_seed=42, force=False):
         'n_folds': n_folds,
         'base_seed': base_seed,
         'matrix_shape': list(M_FULL.shape),
+        'matrix_identity_sha256': matrix_identity_sha256(M_FULL),
         'elapsed_sec': time.time() - t0,
     }
 
@@ -233,8 +235,15 @@ def run_inner_shard(shard_index, n_seeds=10, n_folds=3, base_seed=42, force=Fals
     path = os.path.join(INNER_SCORES_DIR, f"{shard['shard_id']}.npz")
 
     if os.path.exists(path) and not force:
-        print(f"SKIP existing inner shard {shard_index}: {path}")
-        return path
+        try:
+            with np.load(path, allow_pickle=False) as data:
+                metadata = json.loads(str(data['metadata_json']))
+            _validate_shard_metadata(
+                metadata, shard, path, n_seeds, n_folds, base_seed)
+            print(f"SKIP existing inner shard {shard_index}: {path}")
+            return path
+        except (OSError, KeyError, ValueError, json.JSONDecodeError):
+            print(f"Existing inner shard is stale; rerunning: {path}")
 
     t0 = time.time()
     folds = load_current_folds(n_seeds=n_seeds, n_folds=n_folds,
@@ -267,6 +276,7 @@ def run_inner_shard(shard_index, n_seeds=10, n_folds=3, base_seed=42, force=Fals
         'inner_partition_folds': INNER_PARTITION_FOLDS,
         'inner_seed_offset': INNER_SEED_OFFSET,
         'matrix_shape': list(M_FULL.shape),
+        'matrix_identity_sha256': matrix_identity_sha256(M_FULL),
         'elapsed_sec': time.time() - t0,
     }
 

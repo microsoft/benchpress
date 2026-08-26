@@ -17,6 +17,7 @@ from benchpress.evaluation_harness import (
     compute_prediction_error,
     load_folds,
     make_score_predictor,
+    matrix_identity_sha256,
 )
 from benchpress.methods.completers import (
     complete_bias_als,
@@ -679,25 +680,38 @@ def _fit_final_confidence_model(actual, predicted, fold_id, feature_dict,
     }
 
 
-def train_default_confidence_calibrator(M=None, folds=None, methods=None,
-                                        artifact_path=None, seed=SEED):
-    """Train and persist the default BenchPress confidence calibrator."""
-    M = M_FULL if M is None else np.asarray(M, dtype=float)
-    if folds is None:
-        folds = load_folds(n_seeds=10, n_folds=3, base_seed=42, min_scores=1)
+def fit_default_confidence_calibrator(
+        records, matrix, methods=None, artifact_path=None, seed=SEED,
+        crossfit_uncertainty=None, crossfit_selected=None):
+    """Fit and persist the default calibrator from aligned held-out records."""
+    matrix = np.asarray(matrix, dtype=float)
     methods = DEFAULT_CONFIDENCE_METHODS if methods is None else list(methods)
-    records = _training_records(M, folds)
+    crossfit_uncertainty = (
+        {} if crossfit_uncertainty is None else crossfit_uncertainty)
+    crossfit_selected = {} if crossfit_selected is None else crossfit_selected
     calibrators = {}
-    crossfit_selected = {}
     for method in methods:
-        uncertainty, feature_names, selected = leave_fold_mlp_error_calibrator(
-            records["actual"],
-            records["predicted"],
-            records["fold_id"],
-            records["feature_sets"][method],
-            label=method,
-            seed=seed,
-        )
+        if method not in records["feature_sets"]:
+            raise ValueError(f"Missing confidence feature set {method!r}")
+        uncertainty = crossfit_uncertainty.get(method)
+        selected = crossfit_selected.get(method)
+        if uncertainty is None or selected is None:
+            uncertainty, feature_names, selected = leave_fold_mlp_error_calibrator(
+                records["actual"],
+                records["predicted"],
+                records["fold_id"],
+                records["feature_sets"][method],
+                label=method,
+                seed=seed,
+            )
+        else:
+            uncertainty = np.asarray(uncertainty, dtype=float)
+            if uncertainty.shape != np.asarray(records["actual"]).shape:
+                raise ValueError(
+                    f"Cross-fit uncertainty shape mismatch for {method}: "
+                    f"{uncertainty.shape} != {np.asarray(records['actual']).shape}"
+                )
+            feature_names = sorted(records["feature_sets"][method])
         crossfit_selected[method] = selected
         calibrators[method] = _fit_final_confidence_model(
             records["actual"],
@@ -712,7 +726,8 @@ def train_default_confidence_calibrator(M=None, folds=None, methods=None,
 
     artifact = {
         "version": 1,
-        "matrix_shape": list(M.shape),
+        "matrix_shape": list(matrix.shape),
+        "matrix_identity_sha256": matrix_identity_sha256(matrix),
         "seed": int(seed),
         "methods": methods,
         "calibrators": calibrators,
@@ -729,6 +744,22 @@ def train_default_confidence_calibrator(M=None, folds=None, methods=None,
     return artifact
 
 
+def train_default_confidence_calibrator(M=None, folds=None, methods=None,
+                                        artifact_path=None, seed=SEED):
+    """Train and persist the default BenchPress confidence calibrator."""
+    M = M_FULL if M is None else np.asarray(M, dtype=float)
+    if folds is None:
+        folds = load_folds(n_seeds=10, n_folds=3, base_seed=42, min_scores=1)
+    records = _training_records(M, folds)
+    return fit_default_confidence_calibrator(
+        records,
+        M,
+        methods=methods,
+        artifact_path=artifact_path,
+        seed=seed,
+    )
+
+
 def load_or_train_default_confidence_calibrator(artifact_path=None,
                                                 train_if_missing=True):
     """Load the default confidence artifact, training and saving it if missing."""
@@ -736,7 +767,21 @@ def load_or_train_default_confidence_calibrator(artifact_path=None,
         artifact_path = default_confidence_artifact_path()
     if os.path.exists(artifact_path):
         with open(artifact_path, "rb") as f:
-            return pickle.load(f)
+            artifact = pickle.load(f)
+        expected_shape = list(M_FULL.shape)
+        expected_identity = matrix_identity_sha256(M_FULL)
+        if (
+            artifact.get("matrix_shape") == expected_shape
+            and artifact.get("matrix_identity_sha256") == expected_identity
+        ):
+            return artifact
+        if not train_if_missing:
+            raise ValueError(
+                "Default confidence artifact does not match the canonical "
+                f"score matrix: {artifact_path}"
+            )
+        return train_default_confidence_calibrator(
+            artifact_path=artifact_path)
     if not train_if_missing:
         raise FileNotFoundError(
             f"BenchPress confidence artifact not found: {artifact_path}. "

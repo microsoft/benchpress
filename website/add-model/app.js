@@ -36,7 +36,7 @@ function setProgress(pct, sub) {
 async function boot() {
   try {
     setProgress(5, 'Fetching benchmark matrix…');
-    const dataPromise = fetch('../data.json?v=7').then(r => r.json());
+    const dataPromise = fetch('../data.json?v=20260826').then(r => r.json());
 
     setProgress(15, 'Loading Python runtime…');
     const pyodide = await loadPyodide({

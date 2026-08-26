@@ -29,4 +29,28 @@ Links:
 - Dataset: https://huggingface.co/datasets/microsoft/benchpress-score-matrix
 - Paper: https://arxiv.org/pdf/2606.24020
 
-Source matrix: 84 models x 133 benchmarks. Point predictions use Logit Bias ALS (rank 2, lambda=0.1). Trust probabilities and intervals use the Section 4.4 hybrid uncertainty model with conformal calibration. Trust probability estimates how likely the prediction is to be within 10 score points of the true benchmark result.
+Source matrix: 129 models x 253 benchmarks with 4,905 reported scores
+(August 26, 2026 snapshot). Point predictions use Logit Bias ALS (rank 2,
+lambda=0.1). Trust probabilities and intervals use the Section 4.4 hybrid
+uncertainty model with conformal calibration. Trust probability estimates how
+likely the prediction is to be within 10 score points of the true benchmark
+result.
+
+Generated prediction artifacts are intentionally not stored in Git. Rebuild
+the default snapshot from the canonical score matrix as follows. If the matrix
+identity changed, rerun all 329 Section 4.2 shards first; otherwise reuse the
+existing identity-matched shards and start with confidence calibration.
+
+```bash
+experiments/sec4_building_benchpress/method_comparison/run.sh \
+  --workers 48 --merge
+python experiments/sec6_trust/confidence_calibration/run.py \
+  --calibrator-path \
+  benchpress/evaluation/default_confidence/benchpress_default/calibrator.pkl
+python -m website.scripts.build_default_snapshot \
+  --snapshot-date 2026-08-26
+```
+
+The shard runner automatically invalidates prediction files whose matrix
+identity differs. Confidence calibration and snapshot generation then fail if
+any required shard is missing or belongs to another matrix.
