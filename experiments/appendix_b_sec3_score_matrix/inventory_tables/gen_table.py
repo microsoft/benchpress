@@ -149,6 +149,10 @@ def fmt_params_millions(value: object) -> str:
 
 
 def fmt_bool(value: object) -> str:
+    if value is None:
+        return "---"
+    if isinstance(value, float) and math.isnan(value):
+        return "---"
     return r"\cmark" if bool(value) else r"\xmark"
 
 
