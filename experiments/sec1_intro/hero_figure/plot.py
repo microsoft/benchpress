@@ -97,7 +97,7 @@ PICKS = [
 ]
 HIDDEN_TARGET_PICKS = [
     ("gpt-5.6-sol", "browsecomp"),
-    ("claude-opus-5", "hle"),
+    ("claude-opus-5", "arc_agi_1"),
     ("phi-4-reasoning-plus", "gpqa_diamond"),
     ("deepseek-v4-pro", "terminal_bench"),
 ]
@@ -105,7 +105,7 @@ DISPLAY = {
     ("gpt-5.5", "browsecomp"): ("GPT-5.5", "BrowseComp"),
     ("gpt-5.6-sol", "browsecomp"): ("GPT-5.6 Sol", "BrowseComp"),
     ("claude-opus-4.7", "hle"): ("Claude Opus 4.7", "HLE"),
-    ("claude-opus-5", "hle"): ("Claude Opus 5", "HLE"),
+    ("claude-opus-5", "arc_agi_1"): ("Claude Opus 5", "ARC-AGI-1"),
     ("phi-4-reasoning-plus", "gpqa_diamond"): (
         "Phi-4 Reasoning Plus",
         "GPQA Diamond",
