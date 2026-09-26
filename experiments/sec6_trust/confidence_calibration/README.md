@@ -107,19 +107,19 @@ Only rerun if the score matrix, canonical folds, Section 4.2 method-comparison p
 
 ## Existing reusable artifacts
 
-These checked-in artifacts are the canonical §6.2 result set and should be reused unless one of the rerun conditions above is met:
+Canonical ICLR 2027 result: CHTC CPU job 6307658, github commit `9ac9963`, May 84 x 133 matrix, BenchPress = Logit Bias ALS with `rank=2`, `lam=0.1`. The job regenerates the 15 Section 4.2 prediction shards this experiment reads (fresh shard 124 per-fold MedAE 4.606, against 4.629 for the nested-selection value in the Aug 13 method-comparison `results.json`), then runs 12 fold shards, merges, and plots. Risk models and conformal scales are trained cell-disjointly: rows whose cell appears in the evaluated fold under another seed are excluded, and the inner architecture split is by `cell_id % 5`.
 
-- `confidence_scores.npz`: source-of-truth per-cell confidence cache; last touched in commit `4ea402b`.
-- `results.json`: aggregate metrics used by the paper; last touched in commit `6fb7ce6`.
-- `figures/bp_confidence_calibration.pdf` and `.png`: rendered paper figure; latest PDF last touched in commit `15aa89f`.
+Artifacts are gitignored and stored locally in this folder (`confidence_scores.npz`, `results.json`, `figures/bp_confidence_calibration.{pdf,png}`, appendix figures); mirror `CHTC:bp_iclr/out_conf_nl3.tar.gz`. The ICLR paper figure is `overleaf/iclr2027/figures/bp_confidence_calibration.pdf`.
 
-The canonical result uses the current 84 x 133 matrix, the cached Section 4.2 folds, and BenchPress = Logit Bias ALS with `rank=2`, `lam=0.1`. It evaluates 26,040 held-out predictions. Point prediction performance is MedAPE 7.76 and MedAE 4.60.
+It evaluates 26,040 held-out predictions; point prediction MedAPE 7.80 and pooled MedAE 4.59.
 
-| Method | Spearman risk vs. abs error | Top-20% MedAPE | 90% interval width | Coverage |
-|--------|-----------------------------|----------------|--------------------|----------|
-| Ensemble-spread uncertainty model | 0.495 | 3.29 | 27.65 | 0.900 |
-| Matrix-support uncertainty model | 0.475 | 2.87 | 29.27 | 0.900 |
-| Hybrid uncertainty model | 0.536 | 2.71 | 27.17 | 0.899 |
+| Method | Spearman risk vs. abs error | Top-20% MedAE | 80 / 90 / 95% interval width | 90% coverage |
+|--------|-----------------------------|---------------|------------------------------|--------------|
+| Ensemble-spread uncertainty model | 0.490 | 2.12 | 19.24 / 27.32 / 35.93 | 0.900 |
+| Matrix-support uncertainty model | 0.423 | 2.15 | 21.47 / 31.48 / 42.34 | 0.900 |
+| Hybrid uncertainty model | 0.510 | 1.97 | 19.85 / 27.96 / 37.01 | 0.899 |
+
+Hybrid 90% intervals by risk tercile: coverage 0.884 / 0.903 / 0.911 and median width 15.41 / 27.96 / 51.63 (low / medium / high risk). The earlier non-cell-disjoint run (hybrid top-20% MedAE 1.83, 90% width 27.01) let a cell's error from other seeds enter its own risk-model training and conformal calibration; it is superseded.
 
 ## Reuse boundary for `predict.py`
 
