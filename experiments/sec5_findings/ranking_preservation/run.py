@@ -1,11 +1,11 @@
 #!/usr/bin/env python
-"""Ranking preservation metrics for the BenchPress default predictor.
+"""Ranking preservation metrics for Section 4.2 prediction caches.
 
-This script reuses the Section 4.2 prediction-first cache for the paper's
-default BenchPress model (Logit Bias ALS, lambda=0.1, rank=2). It does not
+This script reuses existing Section 4.2 prediction-first caches. It does not
 rerun matrix completion. Pairwise ranking accuracy completes each benchmark
-leaderboard with true seen cells plus predictions for held-out cells, then
-scores same-benchmark pairs where at least one cell was held out.
+leaderboard with true seen cells plus the selected predictor's predictions for
+held-out cells, then scores same-benchmark pairs where at least one cell was
+held out.
 """
 
 from __future__ import annotations
