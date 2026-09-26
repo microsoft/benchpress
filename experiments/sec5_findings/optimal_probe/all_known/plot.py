@@ -17,6 +17,7 @@ import sys
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 RESULTS_DIR = os.path.join(SCRIPT_DIR, 'results')
 REPO_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, '..', '..', '..', '..'))
+OVERLEAF_FIGURES_DIR = os.path.abspath(os.path.join(REPO_ROOT, '..', 'overleaf', 'iclr2027', 'figures'))
 from benchpress.plot_helpers.visual_identity import (
     apply_single, save_fig, integer_ticks,
     VANILLA_BLUE, PALETTE, GRAY,
@@ -116,6 +117,24 @@ def infer_stem(filename):
     return filename[:-len('.json.gz')] if filename.endswith('.json.gz') else os.path.splitext(filename)[0]
 
 
+def fixed_order_hidden_scores(data, metric):
+    rows = sorted(data['summary_by_k'], key=lambda r: int(r['k']))
+    budgets = np.array([int(r['k']) for r in rows])
+    scores = np.array([float(r['hidden_only'][SCORE_FIELD[metric]]) for r in rows])
+    return None, budgets, scores, data['config']['benchmark_ids'][:len(rows)]
+
+
+def random_hidden_scores(random_data, metric):
+    by_k = {}
+    for row in random_data['summary_non_probe_by_k_seed']:
+        by_k.setdefault(int(row['k']), []).append(float(row[SCORE_FIELD[metric]]))
+    budgets = np.array(sorted(by_k))
+    means = np.array([np.mean(by_k[k]) for k in budgets])
+    p25 = np.array([np.percentile(by_k[k], 25) for k in budgets])
+    p75 = np.array([np.percentile(by_k[k], 75) for k in budgets])
+    return budgets, means, p25, p75
+
+
 def trajectory_scores(data, metric):
     field = SCORE_FIELD[metric]
     trajectory = data['trajectory']
@@ -153,14 +172,15 @@ def random_scores(random_data, metric):
     return budgets, means, p25, p75
 
 
-def plot_compare(all_data, cheap_data, metric, out_stem, random_data=None):
-    _, budgets_all, scores_all, _ = trajectory_scores(all_data, metric)
+def plot_compare(all_data, cheap_data, metric, out_stem, random_data=None, hidden_only=False):
+    curve_scores = fixed_order_hidden_scores if hidden_only else trajectory_scores
+    _, budgets_all, scores_all, _ = curve_scores(all_data, metric)
     max_k = 10
     budgets_all = budgets_all[:max_k]
     scores_all = scores_all[:max_k]
     scores_cheap = None
     if cheap_data is not None:
-        _, budgets_cheap, scores_cheap, _ = trajectory_scores(cheap_data, metric)
+        _, budgets_cheap, scores_cheap, _ = curve_scores(cheap_data, metric)
         budgets_cheap = budgets_cheap[:max_k]
         scores_cheap = scores_cheap[:max_k]
 
@@ -192,7 +212,8 @@ def plot_compare(all_data, cheap_data, metric, out_stem, random_data=None):
                 marker=cheap_style['marker'], color=cheap_style['color'], lw=1.75,
                 ms=5.0, label=cheap_style['label'], zorder=2)
     if random_data is not None:
-        budgets_random, scores_random, p25_random, p75_random = random_scores(
+        random_curve = random_hidden_scores if hidden_only else random_scores
+        budgets_random, scores_random, p25_random, p75_random = random_curve(
             random_data, metric,
         )
         keep = budgets_random <= max_k
@@ -236,7 +257,15 @@ def plot_compare(all_data, cheap_data, metric, out_stem, random_data=None):
         ymin = min(ymin, float(np.nanmin(p25_random)))
     ax.set_ylim(ymin - 0.25, ymax + 0.45)
     ax.grid(axis='y', color=GRAY, alpha=0.18, linewidth=0.7)
-    save_fig(out_stem)
+    if hidden_only:
+        os.makedirs(OVERLEAF_FIGURES_DIR, exist_ok=True)
+        out_pdf = os.path.join(OVERLEAF_FIGURES_DIR, f'{out_stem}.pdf')
+        plt.savefig(out_pdf, bbox_inches='tight')
+        plt.savefig(os.path.join('/tmp', f'{out_stem}_hidden_only.png'), bbox_inches='tight', dpi=200)
+        plt.close()
+        print(f'  -> {out_pdf}')
+    else:
+        save_fig(out_stem)
 
     print(f"\n=== Comparison ({metric}) ===")
     print(f"  k= 0  baseline={baseline_score:.3f}")
@@ -266,6 +295,9 @@ def main():
                         help='Optional Figure-1-style random baseline result for --compare.')
     parser.add_argument('--out', type=str, default=None,
                         help='Output stem under figures/.')
+    parser.add_argument('--hidden-only', action='store_true',
+                        help='With --compare: plot fixed-order hidden-only results and the random '
+                             'non-probe summary; writes the ICLR Overleaf figure.')
     args = parser.parse_args()
 
     if args.compare:
@@ -279,14 +311,17 @@ def main():
         if args.random_in is not None:
             random_name, random_data = load_result(args.random_in)
         metric = args.metric or all_data.get('config', {}).get('metric', 'medape')
-        assert_greedy_result(all_data, all_name, metric)
-        if cheap_data is not None:
-            assert_greedy_result(cheap_data, cheap_name, metric)
+        if not args.hidden_only:
+            assert_greedy_result(all_data, all_name, metric)
+            if cheap_data is not None:
+                assert_greedy_result(cheap_data, cheap_name, metric)
         if random_data is not None:
             assert_random_result(random_data, random_name)
+            if args.hidden_only and not random_data.get('summary_non_probe_by_k_seed'):
+                raise ValueError(f'{random_name} lacks summary_non_probe_by_k_seed')
         plot_compare(
             all_data, cheap_data, metric, args.out or 'bp_probe_evaluation',
-            random_data=random_data,
+            random_data=random_data, hidden_only=args.hidden_only,
         )
         return
 

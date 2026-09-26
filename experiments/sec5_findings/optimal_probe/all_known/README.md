@@ -45,6 +45,9 @@ python evaluate_order.py \
   --k-max 10 \
   --workers 10 \
   --out fixed_order_medae_low_cost_hidden_only.json.gz
+
+# Same command with --fixed-order medape_any / medape_low_cost and
+# --out fixed_order_medape_{any,low_cost}_hidden_only.json.gz for the MedAPE orderings.
 ```
 
 Plot from existing results:
@@ -80,6 +83,8 @@ Results are under `results/`; figures are under `figures/`.
 - `results/random_medape_hero_all_known.json.gz`
 - `results/fixed_order_medae_any_hidden_only.json.gz`
 - `results/fixed_order_medae_low_cost_hidden_only.json.gz`
+- `results/fixed_order_medape_any_hidden_only.json.gz`
+- `results/fixed_order_medape_low_cost_hidden_only.json.gz`
 
 Raw per-cell predictions are saved in every greedy candidate result and random
 baseline shard output. Fixed-order evaluation stores raw per `(target, k, cell)`
@@ -99,6 +104,15 @@ Full-matrix MedAE construction:
 - Any-benchmark k=5 MedAE: 3.93; k=10 MedAE: 3.07.
 - Low-cost k=5 MedAE: 4.55; k=10 MedAE: 3.80.
 
-`probe_orderings.json` stores the MedAE-objective top-10 prefixes from
+Hidden-only evaluation (unrevealed cells only; CHTC jobs 6307236/6307237/6307249/6307410/6307411, commits `2f1ca06`/`d3f65e2`, May matrix identity `9603f902…`):
+
+- MedAE orderings, k=5 / k=10 MedAE: any 4.745 / 4.345; low-cost 5.318 / 4.919.
+- MedAPE orderings, k=5 / k=10 MedAPE: any 7.873% / 7.329%; low-cost 8.851% / 8.375%.
+- Random prefixes, median over 10 seeds, k=5 / k=10 MedAE: 7.503 / 6.120.
+- The with-probe-zero MedAE of the any ordering is 3.955 at k=5, above the arXiv 3.93 because commit `f4319af` made default predictions metric-aware for non-percentage metrics; the low-cost value reproduces 4.55.
+
+ICLR figure: `plot.py --compare --hidden-only --metric medape --all-in fixed_order_medape_any_hidden_only.json.gz --cheap-in fixed_order_medape_low_cost_hidden_only.json.gz --random-in random_medape_hero_all_known.json.gz --out bp_probe_evaluation_cost_aware` writes `overleaf/iclr2027/figures/bp_probe_evaluation_cost_aware.pdf`.
+
+`probe_orderings.json` stores the four top-10 prefixes from
 `tab:probe_sets`. Its unrestricted k=5 prefix matches the brute-force diagnostic
 set `gpqa_diamond, hle, codeforces_rating, mmlu_pro, arc_agi_1` up to ordering.

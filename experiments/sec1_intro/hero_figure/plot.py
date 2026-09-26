@@ -154,6 +154,17 @@ def selected_examples():
     return [by_pair[pair] for pair in PICKS]
 
 
+def benchmark_median_baseline_medae():
+    """k=0 baseline: predict every observed cell with its benchmark column median."""
+    from benchpress.evaluation_harness import M_FULL, OBSERVED, compute_prediction_error
+    from benchpress.all_methods import predict_benchmark_median_scores
+    M_pred_baseline = predict_benchmark_median_scores(M_FULL)
+    test_cells = list(zip(*np.where(OBSERVED)))
+    baseline_metrics = compute_prediction_error(
+        M_FULL, M_pred_baseline, test_set=test_cells, aggregation='pool')
+    return float(baseline_metrics['medae'])
+
+
 def probe_policy_curves():
     random = load_json(RANDOM_PATH)
     greedy = load_json(GREEDY_MEDAE_PATH)
@@ -227,15 +238,7 @@ def probe_policy_curves():
         ],
     ])
     rand_rank_k, rand_rank_acc, rand_rank_q1, rand_rank_q3 = ranking_data_from_raw(random["raw_predictions"])
-
-    # k=0 baseline: predict every observed cell with its benchmark column median.
-    from benchpress.evaluation_harness import M_FULL, OBSERVED, compute_prediction_error
-    from benchpress.all_methods import predict_benchmark_median_scores
-    M_pred_baseline = predict_benchmark_median_scores(M_FULL)
-    test_cells = list(zip(*np.where(OBSERVED)))
-    baseline_metrics = compute_prediction_error(
-        M_FULL, M_pred_baseline, test_set=test_cells, aggregation='pool')
-    baseline_medae = float(baseline_metrics['medae'])
+    baseline_medae = benchmark_median_baseline_medae()
 
     return {
         "random_k": random_k,
@@ -261,6 +264,7 @@ def probe_policy_curves():
 
 
 def hidden_probe_policy_curves(allow_missing_random=False):
+    from benchpress.evaluation_harness import BENCH_NAMES
     greedy = load_json(FIXED_MEDAE_HIDDEN_PATH)
     greedy_cost_aware = load_json(FIXED_MEDAE_COST_AWARE_HIDDEN_PATH)
 
@@ -274,8 +278,8 @@ def hidden_probe_policy_curves(allow_missing_random=False):
             np.array([int(row["k"]) for row in rows]),
             np.array([float(row["hidden_only"]["medae"]) for row in rows]),
             [
-                {"added_benchmark_name": name}
-                for name in payload["config"]["display_names"][:len(rows)]
+                {"added_benchmark_name": BENCH_NAMES[bench_id]}
+                for bench_id in payload["config"]["benchmark_ids"][:len(rows)]
             ],
         )
 
@@ -316,7 +320,8 @@ def hidden_probe_policy_curves(allow_missing_random=False):
         "random_medae": random_medae,
         "random_q1": random_q1,
         "random_q3": random_q3,
-        "baseline_medae": None,
+        # No probe cell is revealed at k=0, so the hidden-only baseline covers all observed cells.
+        "baseline_medae": benchmark_median_baseline_medae(),
         "greedy_k": greedy_k,
         "greedy_medae": greedy_medae,
         "greedy_cost_aware_k": cost_k,
