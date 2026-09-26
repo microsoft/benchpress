@@ -29,8 +29,8 @@ TESTS = [
     ("bench", "H6", "medape", 0.209), ("bench", "H6", "medae", 0.035),
     ("bench", "H7", "medape", 0.832), ("bench", "H7", "medae", 0.725),
     # model-side (tab:model_hypotheses)
-    ("model", "H1", "medape", 0.101), ("model", "H1", "medae", 0.263),
-    ("model", "H2", "medape", SUB_1EM3), ("model", "H2", "medae", 0.003),
+    ("model", "H1", "medape", 0.010), ("model", "H1", "medae", 0.017),
+    ("model", "H2", "medape", SUB_1EM3), ("model", "H2", "medae", 0.004),
     ("model", "H3", "medape", SUB_1EM3), ("model", "H3", "medae", SUB_1EM3),
     ("model", "H4", "medape", 0.389), ("model", "H4", "medae", 0.042),
     ("model", "H5", "medape", SUB_1EM3), ("model", "H5", "medae", 0.004),
