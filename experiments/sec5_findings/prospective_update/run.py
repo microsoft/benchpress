@@ -43,10 +43,11 @@ def bootstrap_benchpress(train_json):
         matrix_identity_sha256,
     )
     from benchpress.io_utils import write_json_atomic
-    from benchpress.methods.completers import complete_benchmark_mean, complete_model_mean
+    from benchpress.methods.completers import complete_benchmark_mean
     from benchpress.methods.predictors import (
         predict_benchmark_median_scores,
         predict_benchpress_scores,
+        predict_logit_model_mean_scores,
     )
     return {
         "load_score_matrix": load_score_matrix,
@@ -55,9 +56,9 @@ def bootstrap_benchpress(train_json):
         "matrix_identity_sha256": matrix_identity_sha256,
         "write_json_atomic": write_json_atomic,
         "complete_benchmark_mean": complete_benchmark_mean,
-        "complete_model_mean": complete_model_mean,
         "predict_benchmark_median_scores": predict_benchmark_median_scores,
         "predict_benchpress_scores": predict_benchpress_scores,
+        "predict_logit_model_mean_scores": predict_logit_model_mean_scores,
     }
 
 
@@ -183,8 +184,8 @@ def part_i_new_cells(may, aug, bp, out):
     compute_prediction_error = bp["compute_prediction_error"]
     make_score_predictor = bp["make_score_predictor"]
     complete_benchmark_mean = bp["complete_benchmark_mean"]
-    complete_model_mean = bp["complete_model_mean"]
     predict_benchpress_scores = bp["predict_benchpress_scores"]
+    predict_logit_model_mean_scores = bp["predict_logit_model_mean_scores"]
 
     common_models = [mid for mid in may["model_ids"] if mid in aug["df"].index]
     common_benchmarks = [bid for bid in may["benchmark_ids"] if bid in aug["df"].columns]
@@ -213,12 +214,11 @@ def part_i_new_cells(may, aug, bp, out):
             metric=may["benchmark_metrics"],
             benchmark_ids=may["benchmark_ids"],
         )(may["matrix"]),
-        "logit_model_mean": make_score_predictor(
-            complete_model_mean,
-            "logit",
+        "logit_model_mean": predict_logit_model_mean_scores(
+            may["matrix"],
             metric=may["benchmark_metrics"],
             benchmark_ids=may["benchmark_ids"],
-        )(may["matrix"]),
+        ),
     }
 
     raw = []
@@ -321,13 +321,8 @@ def add_part_ii_rows(raw, may, aug, model_id, method, k, ordering, seed,
 def part_ii_new_models(may, aug, bp, args, orderings, out):
     predict_benchpress_scores = bp["predict_benchpress_scores"]
     predict_benchmark_median_scores = bp["predict_benchmark_median_scores"]
+    predict_logit_model_mean_scores = bp["predict_logit_model_mean_scores"]
     compute_prediction_error = bp["compute_prediction_error"]
-
-    def predict_logit_model_mean(M_train, metric, benchmark_ids):
-        return bp["make_score_predictor"](
-            bp["complete_model_mean"], "logit",
-            metric=metric, benchmark_ids=benchmark_ids,
-        )(M_train)
 
     k_values = [1, 3, 5, 10]
     new_models = [mid for mid in aug["model_ids"] if mid not in set(may["model_ids"])]
@@ -363,7 +358,7 @@ def part_ii_new_models(may, aug, bp, args, orderings, out):
                     ordering_key, None, prefix, pred_row,
                 )
                 model_mean_row = append_target_and_predict(
-                    may, observed_values, prefix, predict_logit_model_mean,
+                    may, observed_values, prefix, predict_logit_model_mean_scores,
                 )
                 add_part_ii_rows(
                     raw, may, aug, mid, "logit_model_mean_fixed_order", k,
