@@ -53,6 +53,13 @@ python evaluate_order.py \
 # --fixed-order coverage_any / coverage_low_cost (most-reported benchmarks first);
 # --fixed-order medae_any --rank 0 (offsets-only Bias ALS: model level from the probes,
 # no interaction term); default output fixed_order_<key>[_rank<r>]_hidden_only.json.gz.
+
+python run_coverage_matched_random.py \
+  --k-values 1 3 5 10 \
+  --n-subsets 10 \
+  --tolerance-fraction 0.10 \
+  --workers 8 \
+  --out coverage_matched_random_hidden_only.json.gz
 ```
 
 Plot from existing results:
@@ -90,6 +97,7 @@ Results are under `results/`; figures are under `figures/`.
 - `results/fixed_order_medae_low_cost_hidden_only.json.gz`
 - `results/fixed_order_medape_any_hidden_only.json.gz`
 - `results/fixed_order_medape_low_cost_hidden_only.json.gz`
+- `results/coverage_matched_random_hidden_only.json.gz`
 
 Raw per-cell predictions are saved in every greedy candidate result and random
 baseline shard output. Fixed-order evaluation stores raw per `(target, k, cell)`
