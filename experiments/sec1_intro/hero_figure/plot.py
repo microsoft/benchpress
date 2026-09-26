@@ -424,10 +424,11 @@ def render_panel_a(selected, output_path: Path | None = None) -> Path:
             [0], [base], marker="D", color="white", markeredgecolor=CHARCOAL,
             markeredgewidth=1.0, ms=4.8, zorder=4,
         )
+        label_below = base > 0.85 * y_top
         ax.annotate(
-            "Benchmark median", (0, base), xytext=(8, 2),
+            "Benchmark median", (0, base), xytext=(8, -2 if label_below else 2),
             textcoords="offset points", fontsize=12.0, color=CHARCOAL,
-            ha="left", va="bottom",
+            ha="left", va="top" if label_below else "bottom",
             bbox=dict(
                 boxstyle="round,pad=0.18", facecolor="white",
                 edgecolor="none", alpha=0.92,
