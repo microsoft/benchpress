@@ -18,10 +18,11 @@ Each target is saved atomically with raw scores, both the matrix-averaged and
 card-specific base scores, lookup training counts, and the revealed columns.
 Existing units must match the config and target specification before reuse.
 The first target runs serially before the remaining targets run in parallel.
-The sanity stage validates and reuses the existing 10-seed/3-fold raw paper
-predictions, then checks the current predictor against the first cached fold.
-No canonical prediction artifact is replaced. Copy the output root to durable
-project storage after running; the remote sandbox is not permanent storage.
+The sanity stage validates the existing 10-seed/3-fold raw paper predictions
+and compares them with current metric-aware predictions on the same folds.
+The historical cache predates metric-aware defaults and is not reusable as
+current predictions. No canonical artifact is replaced. Copy the output root
+to durable project storage; the remote sandbox is not permanent storage.
 """
 
 import argparse
@@ -86,7 +87,7 @@ def score_records(records, actual_key, prediction_keys):
 
 
 def run_sanity_fold(job, output_dir, config):
-    """Validate a cached fold; freshly compare the first fold to current code."""
+    """Compare current predictions with a validated historical reference fold."""
     fold, matrix, cells, cached = job
     path = os.path.join(output_dir, f"fold_{fold:02d}.json")
     specification = {"fold": fold, "cells": [list(cell) for cell in cells]}
@@ -99,14 +100,13 @@ def run_sanity_fold(job, output_dir, config):
         return payload["records"]
     observed = np.isfinite(matrix)
     np.testing.assert_array_equal(cached[observed], matrix[observed])
-    if fold == 0:
-        with threadpool_limits(limits=1):
-            predicted = predict_benchpress_scores(matrix)
-        np.testing.assert_allclose(predicted, cached, rtol=0, atol=1e-9)
+    with threadpool_limits(limits=1):
+        predicted = predict_benchpress_scores(matrix)
+    np.testing.assert_array_equal(predicted[observed], matrix[observed])
     records = [
         {"fold": fold, "i": int(i), "j": int(j),
-         "actual": float(M_FULL[i, j]), "predicted": float(cached[i, j]),
-         **({"current_predicted": float(predicted[i, j])} if fold == 0 else {})}
+         "actual": float(M_FULL[i, j]), "predicted": float(predicted[i, j]),
+         "reference_predicted": float(cached[i, j])}
         for i, j in cells
     ]
     score_records(records, "actual", ["predicted"])
@@ -254,7 +254,8 @@ def main():
             "folds_sha256": folds_hash, "seeds": list(range(42, 52)),
             "n_folds": 3, "n_test_predictions": sum(len(cells) for _, cells in folds),
             "reference_sha256": reference_hash,
-            "validation": "all reference targets/masks; current predictor on fold 0",
+            "validation": "all reference targets/masks; current predictor on all 30 folds",
+            "reference_semantics": "historical cache predates metric-aware defaults",
         })
         jobs = [(fold, matrix, cells, cached_matrices[fold])
                 for fold, (matrix, cells) in enumerate(folds)]
@@ -352,16 +353,13 @@ def main():
             if index % 20 == 0 or index == len(jobs):
                 print(f"[PROGRESS] {index}/{len(jobs)} units", flush=True)
     if args.stage == "sanity":
-        summary = {"reference_metrics": compute_prediction_error(
-            np.array([row["actual"] for row in records]),
-            np.array([row["predicted"] for row in records]),
-            groups=np.array([row["fold"] for row in records]),
-            aggregation="per_group_median"),
-            "fresh_fold": score_records([row for row in records if row["fold"] == 0],
-                                        "actual", ["current_predicted", "predicted"]),
-            "fresh_fold_max_prediction_difference": float(max(
-                abs(row["current_predicted"] - row["predicted"])
-                for row in records if row["fold"] == 0)),
+        summary = {
+            key: compute_prediction_error(
+                np.array([row["actual"] for row in records]),
+                np.array([row[key] for row in records]),
+                groups=np.array([row["fold"] for row in records]),
+                aggregation="per_group_median")
+            for key in ["predicted", "reference_predicted"]
         }
     else:
         keys = ["zero_delta", "lookup_all", "lookup_hidden_excluded",
