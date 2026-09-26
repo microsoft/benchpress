@@ -58,6 +58,7 @@ python run_coverage_matched_random.py \
   --k-values 1 3 5 10 \
   --n-subsets 10 \
   --tolerance-fraction 0.10 \
+  --coverage-proposal-power 2.0 \
   --workers 8 \
   --out coverage_matched_random_hidden_only.json.gz
 ```

@@ -43,6 +43,11 @@ def _observed_cell_count(benchmark_indices):
     return int(OBSERVED[:, indices].sum()) if indices else 0
 
 
+def _observed_counts(benchmark_indices):
+    """Return observed-cell counts for candidate benchmark indices."""
+    return np.array([int(OBSERVED[:, int(j)].sum()) for j in benchmark_indices], dtype=float)
+
+
 def _load_greedy_targets(order_json_path):
     """Return coverage targets for the MedAE greedy prefixes used for matching."""
     payload = load_json(order_json_path)
@@ -86,11 +91,15 @@ def _draw_matched_subsets(
     tolerance_fraction,
     seed,
     max_draws,
+    proposal_power,
 ):
     """Sample unique k-subsets whose observed-cell count matches the target band."""
     if k > len(candidate_indices):
         raise ValueError(f"k={k} exceeds {pool_key} candidate pool size {len(candidate_indices)}")
     rng = np.random.RandomState(int(seed))
+    candidate_indices = [int(j) for j in candidate_indices]
+    weights = np.power(_observed_counts(candidate_indices) + 1.0, float(proposal_power))
+    weights = weights / weights.sum()
     lower = int(np.floor((1.0 - tolerance_fraction) * target_revealed_cells))
     upper = int(np.ceil((1.0 + tolerance_fraction) * target_revealed_cells))
     seen = set()
@@ -98,7 +107,7 @@ def _draw_matched_subsets(
     draws = 0
     while len(accepted) < n_subsets and draws < max_draws:
         draws += 1
-        sample = rng.choice(candidate_indices, size=int(k), replace=False)
+        sample = rng.choice(candidate_indices, size=int(k), replace=False, p=weights)
         key = tuple(sorted(int(j) for j in sample))
         if key in seen:
             continue
@@ -244,6 +253,8 @@ def main():
     parser.add_argument("--tolerance-fraction", type=float, default=0.10)
     parser.add_argument("--base-seed", type=int, default=20260925)
     parser.add_argument("--max-draws-per-k", type=int, default=200000)
+    parser.add_argument("--coverage-proposal-power", type=float, default=2.0,
+                        help="Draw proposals with probability proportional to observed_count**power.")
     parser.add_argument("--rank", type=int, default=2)
     parser.add_argument("--workers", type=int, default=1)
     parser.add_argument("--out", default=DEFAULT_OUTPUT)
@@ -262,6 +273,10 @@ def main():
             "candidate_benchmark_ids": ids,
             "candidate_pool_size": len(indices),
             "candidate_indices": indices,
+            "candidate_observed_counts": {
+                BENCH_IDS[int(j)]: int(OBSERVED[:, int(j)].sum())
+                for j in indices
+            },
         }
 
     subsets = []
@@ -284,6 +299,7 @@ def main():
                 tolerance_fraction=args.tolerance_fraction,
                 seed=args.base_seed + 1009 * pool_offset + 37 * k,
                 max_draws=args.max_draws_per_k,
+                proposal_power=args.coverage_proposal_power,
             )
             subsets.extend(accepted)
             draw_diagnostics.append({
@@ -335,6 +351,7 @@ def main():
                 key: {
                     "candidate_pool_size": value["candidate_pool_size"],
                     "candidate_benchmark_ids": value["candidate_benchmark_ids"],
+                    "candidate_observed_counts": value["candidate_observed_counts"],
                 }
                 for key, value in pool_configs.items()
             },
@@ -346,14 +363,18 @@ def main():
                 "lambda=0.1)"
             ),
             "matching_rule": (
-                "For each pool and k, draw uniform random k-subsets without replacement "
-                "from the candidate pool and keep unique subsets whose observed probe "
-                "cells are within +/- tolerance_fraction of the corresponding MedAE "
-                "greedy prefix's observed probe cells. If fewer than n_subsets unique "
+                "For each pool and k, draw random k-subset proposals without replacement "
+                "from the candidate pool, using probability proportional to each benchmark's "
+                "observed-cell count raised to coverage_proposal_power, and keep unique "
+                "subsets whose observed probe cells are within +/- tolerance_fraction of "
+                "the corresponding MedAE greedy prefix's observed probe cells. The proposal "
+                "only makes the high-coverage conditional sample tractable; every retained "
+                "subset must pass the coverage-matching band. If fewer than n_subsets unique "
                 "matches exist after max_draws_per_k, reuse the matched subsets with "
                 "is_reused_subset=true so every pool-k has the same reported replicate "
                 "count without hiding the unique-subset count."
             ),
+            "coverage_proposal_power": float(args.coverage_proposal_power),
             "eval_scope": "hidden_only excludes revealed probe cells; with_probe_zero keeps them as exact",
         },
         "manifest": _manifest(),
