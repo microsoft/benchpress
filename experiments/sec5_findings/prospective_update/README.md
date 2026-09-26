@@ -52,4 +52,8 @@ the same deterministic seeds and matrix identities.
 
 ## Last valid result
 
-Not yet run. This directory was added for the ICLR 2027 final experiment batch.
+CHTC CPU job 6307243, github commit `2f1ca06`, 2 CPUs, `python:3.11` container. May matrix 84 x 133 / 2,604 observed (same content as `evaluation_harness.M_FULL`; the manifest hash differs only because `load_score_matrix` orders models differently); August matrix 129 x 253 / 4,905 observed. The 2,604 shared cells are 99.65% identical.
+
+- Part (i), 178 August cells of May models on May benchmarks that were missing in May: BenchPress MedAE 4.44 (MedAPE 6.39%); logit model mean 4.86; logit benchmark mean 9.55.
+- Part (ii), 45 August-only models, pooled MedAE on unrevealed cells (targets / cells) with May benchmark medians on the same cells: `medae_any` k=5 6.88 (40 / 541) vs 10.15; k=10 6.38 (41 / 502) vs 9.30. `medae_low_cost` k=5 8.08 (37 / 517) vs 10.00; k=10 7.00 (37 / 485) vs 9.61. Random orderings pooled over 10 seeds: k=5 8.50 (2,935 cells) vs 10.80; k=10 7.29 (4,033 cells) vs 10.20.
+- Paper: ICLR `tab:prospective_new_models` in `app:temporal_deployment`.
