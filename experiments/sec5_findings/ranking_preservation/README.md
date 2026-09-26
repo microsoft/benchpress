@@ -66,20 +66,31 @@ The script is deterministic and cheap. Re-run `run.sh` to overwrite `results.jso
 
 ## Last valid result
 
-Regenerated the same-cell baselines as lightweight post-processing using the cached logit-space model mean and logit-space benchmark mean prediction shards.
-Latest baseline regeneration: CHTC job `6307703`, tag `rk_rank_bases`, commit `c54ce04d07cd82c7b4bfc098ec33a9e5ac52da1e`, May 2026 matrix `84 x 133`, 10 seeds x 3 folds.
-The BenchPress column below reports the paper-current numbers from `results.json` / `tab:ranking_preservation`.
+Latest regeneration: CHTC job `6307820`, tag `rb_rank_bh`, code commit `1ee4fa68b5954fb3f338480a3391101b11ecf7c9`, May 2026 matrix `84 x 133`, 10 seeds x 3 folds.
+The job regenerated the three source prediction shards (`benchpress`, `logit_model_mean`, `logit_benchmark_mean`) and ran `run.py --include-both-hidden` for each predictor.
 
-Key aggregate results:
+Pairwise ranking accuracy, median across benchmarks:
 
-| Metric | Setting | logit-space benchmark mean | logit-space model mean | BenchPress | Paper location |
-|--------|---------|----------------------------|------------------------|------------|----------------|
-| Pairwise ranking accuracy | margin 0 | 59.2% | 78.3% | 83.8% | Main |
-| Pairwise ranking accuracy | margin 1 | 60.0% | 80.2% | 86.3% | Main |
-| Pairwise ranking accuracy | margin 2 | 61.2% | 82.1% | 88.0% | Main |
-| Pairwise ranking accuracy | margin 5 | 64.4% | 86.7% | 92.1% | Main |
-| Top-fraction overlap | top 10% | 66.7% | 66.7% | 72.4% | Appendix |
-| Top-fraction overlap | top 20% | 66.7% | 72.5% | 79.3% | Appendix |
-| Top-fraction overlap | top 30% | 67.6% | 79.6% | 83.9% | Appendix |
+| Predictor | Pair subset | Margin 0 | Margin 1 | Margin 2 | Margin 5 | Pair counts at margins 0 / 1 / 2 / 5 |
+|-----------|-------------|----------|----------|----------|----------|---------------------------------------|
+| \benchpress{} | all scored pairs | 84.1% | 86.5% | 87.8% | 92.2% | 589,830 / 561,283 / 531,498 / 454,090 |
+| logit-space model mean | all scored pairs | 78.3% | 80.2% | 82.1% | 86.7% | 589,830 / 561,283 / 531,498 / 454,090 |
+| logit-space benchmark mean | all scored pairs | 59.2% | 60.0% | 61.2% | 64.4% | 589,830 / 561,283 / 531,498 / 454,090 |
+| \benchpress{} | both held out | 81.3% | 82.8% | 84.4% | 88.1% | 117,990 / 112,117 / 106,202 / 90,810 |
+| logit-space model mean | both held out | 76.7% | 78.0% | 79.2% | 83.3% | 117,990 / 112,117 / 106,202 / 90,810 |
+| logit-space benchmark mean | both held out | 0.0% | 0.0% | 0.0% | 0.0% | 117,990 / 112,117 / 106,202 / 90,810 |
 
-Raw rows and full summaries are in `results.json`, `results_logit_model_mean.json`, and `results_logit_benchmark_mean.json`.
+The both-held-out subset restricts each fold-benchmark leaderboard to held-out cells before scoring pairs, so every scored pair compares two predicted scores. The logit-space benchmark mean produces identical predictions within a benchmark, so all both-held-out same-benchmark pairs are predicted ties and count as incorrect under the pairwise metric.
+
+Top-fraction overlap, median across benchmarks:
+
+| Predictor | Leaderboard universe | Top 10% | Top 20% | Top 30% | Slots at top 10% / 20% / 30% |
+|-----------|----------------------|---------|---------|---------|-------------------------------|
+| \benchpress{} | all observed cells | 72.4% | 79.3% | 84.3% | 9,515 / 17,154 / 25,091 |
+| logit-space model mean | all observed cells | 66.7% | 72.5% | 79.6% | 9,515 / 17,154 / 25,091 |
+| logit-space benchmark mean | all observed cells | 66.7% | 66.7% | 67.6% | 9,515 / 17,154 / 25,091 |
+| \benchpress{} | held-out cells only | 58.6% | 65.9% | 75.0% | 4,497 / 6,660 / 9,501 |
+| logit-space model mean | held-out cells only | 51.7% | 59.8% | 68.1% | 4,497 / 6,660 / 9,501 |
+| logit-space benchmark mean | held-out cells only | 20.7% | 29.0% | 43.8% | 4,497 / 6,660 / 9,501 |
+
+Raw rows and full summaries are in `results.json`, `results_logit_model_mean.json`, and `results_logit_benchmark_mean.json`. The current ICLR main table displays the earlier BenchPress all-pairs row as `83.8%`, `86.3%`, `88.0%`, and `92.1%`; the same-pair baseline columns above match the paper-current baseline numbers.
