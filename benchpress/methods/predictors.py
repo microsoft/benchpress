@@ -8,7 +8,7 @@ from benchpress.evaluation_harness import (
     BENCH_METRICS,
     make_score_predictor,
 )
-from benchpress.methods.completers import complete_bias_als
+from benchpress.methods.completers import complete_bias_als, complete_model_mean
 
 
 def predict_probit_bias_als_scores(M_train, rank=2, lam=0.1, metric=None,
@@ -40,6 +40,20 @@ def predict_benchpress_scores(M_train, metric=None, benchmark_ids=None):
             benchmark_ids = BENCH_IDS
     return predict_logit_bias_als_scores(
         M_train, rank=2, lam=0.1, metric=metric, benchmark_ids=benchmark_ids)
+
+
+def predict_logit_model_mean_scores(M_train, metric=None, benchmark_ids=None):
+    """Score predictor: Logit transform + row mean completion."""
+    if (metric is None) != (benchmark_ids is None):
+        raise ValueError(
+            "metric and benchmark_ids must be provided together.")
+    if metric is None and benchmark_ids is None:
+        if M_train.shape[1] == len(BENCH_IDS):
+            metric = BENCH_METRICS
+            benchmark_ids = BENCH_IDS
+    predict_fn = make_score_predictor(
+        complete_model_mean, 'logit', metric=metric, benchmark_ids=benchmark_ids)
+    return predict_fn(M_train)
 
 
 def predict_benchmark_median_scores(M_train):
