@@ -304,6 +304,14 @@ def main() -> None:
         default=None,
         help="Output JSON name/path. Defaults to a predictor-specific file.",
     )
+    parser.add_argument(
+        "--include-both-hidden",
+        action="store_true",
+        help=(
+            "Also report pairwise accuracy restricted to model pairs where both "
+            "cells were held out, plus held-out-only top-fraction recovery."
+        ),
+    )
     args = parser.parse_args()
 
     predictor_config = PREDICTORS[args.predictor]
@@ -318,7 +326,9 @@ def main() -> None:
     predicted_all = arrays["predicted"]
 
     pairwise_rows: list[dict[str, Any]] = []
+    pairwise_both_hidden_rows: list[dict[str, Any]] = []
     top_rows: list[dict[str, Any]] = []
+    top_hidden_rows: list[dict[str, Any]] = []
 
     for (fold, bench), indices in sorted(_group_indices(fold_id, test_j).items()):
         idx = np.asarray(indices, dtype=int)
@@ -356,10 +366,22 @@ def main() -> None:
             fold, bench, bench_ids[bench], bench_names[bench], bench_cats[bench],
             pairwise_actual, pairwise_predicted, pairwise_heldout))
 
+        if args.include_both_hidden and int(pairwise_heldout.sum()) >= 2:
+            hidden_actual = pairwise_actual[pairwise_heldout]
+            hidden_predicted = pairwise_predicted[pairwise_heldout]
+            hidden_heldout = np.ones(int(hidden_actual.size), dtype=bool)
+            pairwise_both_hidden_rows.extend(_pairwise_rows_for_group(
+                fold, bench, bench_ids[bench], bench_names[bench], bench_cats[bench],
+                hidden_actual, hidden_predicted, hidden_heldout))
+            top_hidden_rows.extend(_top_rows_for_group(
+                fold, bench, bench_ids[bench], bench_names[bench], bench_cats[bench],
+                hidden_actual, hidden_predicted, hidden_heldout))
+
     output = {
         "metadata": {
             "experiment": "sec5_findings/ranking_preservation",
             "predictor_key": args.predictor,
+            "include_both_hidden": bool(args.include_both_hidden),
             "predictor": {
                 "display_name": predictor_config["display_name"],
                 "transform": predictor_config["transform"],
@@ -382,6 +404,11 @@ def main() -> None:
                     "remaining pairs whose true score gap clears the margin; summary "
                     "accuracy is the median across benchmarks"
                 ),
+                "pairwise_accuracy_both_hidden": (
+                    "same pairwise ranking accuracy, but each fold-benchmark "
+                    "leaderboard is first restricted to cells held out in that "
+                    "same fold, so every scored pair compares two predicted scores"
+                ),
                 "margin": "minimum absolute true score gap required for a pair",
                 "top_fraction_recovery": (
                     "for each fold and benchmark, complete the full observed "
@@ -389,6 +416,10 @@ def main() -> None:
                     "predictor's predictions for held-out cells; compare the true and completed "
                     "top-k model sets on that full observed leaderboard; summary "
                     "recovery is the median across benchmarks"
+                ),
+                "top_fraction_recovery_heldout_only": (
+                    "same top-k set overlap, but the leaderboard universe is "
+                    "restricted to held-out cells for that fold and benchmark"
                 ),
             },
         },
@@ -399,6 +430,13 @@ def main() -> None:
             "top_by_fraction": _summarize_top(top_rows),
         },
     }
+    if args.include_both_hidden:
+        output["pairwise_both_hidden_rows"] = pairwise_both_hidden_rows
+        output["top_hidden_rows"] = top_hidden_rows
+        output["summary"]["pairwise_both_hidden_by_margin"] = (
+            _summarize_pairwise(pairwise_both_hidden_rows)
+        )
+        output["summary"]["top_hidden_by_fraction"] = _summarize_top(top_hidden_rows)
 
     out_path = _output_path(args.predictor, args.out)
     write_json_atomic(

@@ -24,6 +24,11 @@ cd "$(git rev-parse --show-toplevel)"
 bash experiments/sec5_findings/ranking_preservation/run.sh
 bash experiments/sec5_findings/ranking_preservation/run.sh --predictor logit_model_mean
 bash experiments/sec5_findings/ranking_preservation/run.sh --predictor logit_benchmark_mean
+
+# Include the stricter reviewer-facing subset where both compared cells are held out:
+bash experiments/sec5_findings/ranking_preservation/run.sh --include-both-hidden
+bash experiments/sec5_findings/ranking_preservation/run.sh --predictor logit_model_mean --include-both-hidden
+bash experiments/sec5_findings/ranking_preservation/run.sh --predictor logit_benchmark_mean --include-both-hidden
 ```
 
 ## Inputs
@@ -51,7 +56,9 @@ The file contains:
 | `metadata` | source cache, fold setting, margins, top fractions |
 | `pairwise_rows` | one row per `(fold, benchmark, margin)` with correct/total pair counts and accuracy |
 | `top_rows` | one row per `(fold, benchmark, top_fraction)` with full-observed-leaderboard top-k overlap metrics |
-| `summary` | benchmark-level median summaries for each margin and top fraction |
+| `pairwise_both_hidden_rows` | when `--include-both-hidden` is used, pairwise rows restricted to pairs where both cells were held out in the same fold and benchmark |
+| `top_hidden_rows` | when `--include-both-hidden` is used, top-fraction recovery over the held-out-only leaderboard for the same fold and benchmark |
+| `summary` | benchmark-level median summaries for each margin and top fraction; with `--include-both-hidden`, also includes `pairwise_both_hidden_by_margin` and `top_hidden_by_fraction` |
 
 ## Resume / rerun
 
