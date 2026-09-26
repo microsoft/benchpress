@@ -32,4 +32,11 @@ The script overwrites `results.json`. No score data file is edited.
 
 ## Last valid result
 
-Pending aggregation.
+- CHTC job: `6307697` (`dd_varnoise2`); local aggregation gives the same values because the script only reads `may.json`
+- code commit: `b34cd43b913a988be591c6e3d2031c2d848ff12e`
+- matrix: May 2026, 84 models x 133 benchmarks, 2,604 observed cells
+- final-matrix cells with at least two distinct numeric values across the chosen score and stored alternatives: 373 cells, 610 alternatives
+- chosen vs alternative: median per-cell absolute difference 3.4 score points; pooled median 3.0 over 466 chosen-alternative pairs
+- alternative vs alternative: median per-cell absolute difference 3.2 score points; pooled median 3.0 over 213 alternative-alternative pairs
+- percentage-metric subset: chosen vs alternative median per-cell absolute difference 3.2 points over 361 cells
+- artifact: `results.json`; remote tarball `CHTC:~/bp_iclr/out_dd_varnoise2.tar.gz`

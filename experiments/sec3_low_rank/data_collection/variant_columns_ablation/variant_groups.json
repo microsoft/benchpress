@@ -1,0 +1,2019 @@
+{
+  "drop_benchmark_ids_for_dedup": [
+    "aider_polyglot_whole",
+    "aime_2024",
+    "aime_2026",
+    "mt_aime_2024",
+    "arc_agi_1",
+    "bfcl_v3",
+    "browsecomp_long_context_128k",
+    "browsecomp_zh",
+    "charxiv_descriptive",
+    "frontiermath_tier4",
+    "gpqa_main",
+    "graphwalks_parents_0k_128k",
+    "hle_text",
+    "hle_tools",
+    "hmmt_feb_2026",
+    "hmmt_nov_2025",
+    "longfact_objects",
+    "math",
+    "mmmlu",
+    "mmmu_pro",
+    "mrcr_v1",
+    "mrcr_v2_2needle_128k",
+    "mrcr_v2_8needle",
+    "multichallenge_o3mini_grader",
+    "omnidocbench",
+    "simpleqa_verified",
+    "chinese_simpleqa",
+    "swe_bench_pro",
+    "swe_bench_multilingual",
+    "multi_swe_bench",
+    "swelancer_freelance_dollars",
+    "tau_bench_airline",
+    "tau_bench_retail",
+    "tau2_bench_airline",
+    "tau2_bench_retail",
+    "tau3_bench",
+    "terminal_bench_1",
+    "terminal_bench_hard"
+  ],
+  "groups": [
+    {
+      "description": "Same Aider Polyglot benchmark under diff-mode versus whole-file edit mode.",
+      "dropped_benchmark_ids": [
+        "aider_polyglot_whole"
+      ],
+      "group_id": "aider_polyglot",
+      "keep_rule": "keep the member with the most observed cells; ties use the order in VARIANT_GROUPS",
+      "kept_benchmark_id": "aider_polyglot_diff",
+      "members": [
+        {
+          "benchmark_id": "aider_polyglot_diff",
+          "category": "Coding",
+          "metric": {
+            "higher_is_better": true,
+            "range": [
+              0,
+              100
+            ],
+            "type": "pct"
+          },
+          "n_observed": 32,
+          "name": "Aider Polyglot (diff mode)"
+        },
+        {
+          "benchmark_id": "aider_polyglot_whole",
+          "category": "Coding",
+          "metric": {
+            "higher_is_better": true,
+            "range": [
+              0,
+              100
+            ],
+            "type": "pct"
+          },
+          "n_observed": 17,
+          "name": "Aider Polyglot (whole mode)"
+        }
+      ],
+      "pairwise": [
+        {
+          "benchmark_a": "aider_polyglot_diff",
+          "benchmark_b": "aider_polyglot_whole",
+          "n_overlap": 17,
+          "overlap_jaccard": 0.53125,
+          "overlap_of_smaller": 1.0,
+          "pearson_direction_aligned": 0.9756509864404508,
+          "pearson_raw": 0.9756509864404508,
+          "rule_judgment": {
+            "reason": "same task family and score scale; only the edit harness differs.",
+            "status": "violation"
+          }
+        }
+      ]
+    },
+    {
+      "description": "AIME annual editions plus the multi-turn AIME 2024 protocol.",
+      "dropped_benchmark_ids": [
+        "aime_2024",
+        "aime_2026",
+        "mt_aime_2024"
+      ],
+      "group_id": "aime",
+      "keep_rule": "keep the member with the most observed cells; ties use the order in VARIANT_GROUPS",
+      "kept_benchmark_id": "aime_2025",
+      "members": [
+        {
+          "benchmark_id": "aime_2024",
+          "category": "Math",
+          "metric": {
+            "higher_is_better": true,
+            "range": [
+              0,
+              100
+            ],
+            "type": "pct"
+          },
+          "n_observed": 30,
+          "name": "AIME 2024"
+        },
+        {
+          "benchmark_id": "aime_2025",
+          "category": "Math",
+          "metric": {
+            "higher_is_better": true,
+            "range": [
+              0,
+              100
+            ],
+            "type": "pct"
+          },
+          "n_observed": 47,
+          "name": "AIME 2025"
+        },
+        {
+          "benchmark_id": "aime_2026",
+          "category": "Math",
+          "metric": {
+            "higher_is_better": true,
+            "range": [
+              0,
+              100
+            ],
+            "type": "pct"
+          },
+          "n_observed": 15,
+          "name": "AIME 2026"
+        },
+        {
+          "benchmark_id": "mt_aime_2024",
+          "category": "Math",
+          "metric": {
+            "higher_is_better": true,
+            "range": [
+              0,
+              100
+            ],
+            "type": "pct"
+          },
+          "n_observed": 23,
+          "name": "MT-AIME2024"
+        }
+      ],
+      "pairwise": [
+        {
+          "benchmark_a": "aime_2024",
+          "benchmark_b": "aime_2025",
+          "n_overlap": 19,
+          "overlap_jaccard": 0.3275862068965517,
+          "overlap_of_smaller": 0.6333333333333333,
+          "pearson_direction_aligned": 0.705010199418136,
+          "pearson_raw": 0.705010199418136,
+          "rule_judgment": {
+            "reason": "the item set or interaction protocol differs by edition.",
+            "status": "allowed_protocol_variant"
+          }
+        },
+        {
+          "benchmark_a": "aime_2024",
+          "benchmark_b": "aime_2026",
+          "n_overlap": 0,
+          "overlap_jaccard": 0.0,
+          "overlap_of_smaller": 0.0,
+          "pearson_direction_aligned": null,
+          "pearson_raw": null,
+          "rule_judgment": {
+            "reason": "the item set or interaction protocol differs by edition.",
+            "status": "allowed_protocol_variant"
+          }
+        },
+        {
+          "benchmark_a": "aime_2024",
+          "benchmark_b": "mt_aime_2024",
+          "n_overlap": 19,
+          "overlap_jaccard": 0.5588235294117647,
+          "overlap_of_smaller": 0.8260869565217391,
+          "pearson_direction_aligned": 0.6417699854293815,
+          "pearson_raw": 0.6417699854293815,
+          "rule_judgment": {
+            "reason": "same AIME 2024 items, but multi-turn interaction changes the evaluation protocol",
+            "status": "ambiguous"
+          }
+        },
+        {
+          "benchmark_a": "aime_2025",
+          "benchmark_b": "aime_2026",
+          "n_overlap": 8,
+          "overlap_jaccard": 0.14814814814814814,
+          "overlap_of_smaller": 0.5333333333333333,
+          "pearson_direction_aligned": 0.8326783880985319,
+          "pearson_raw": 0.8326783880985319,
+          "rule_judgment": {
+            "reason": "the item set or interaction protocol differs by edition.",
+            "status": "allowed_protocol_variant"
+          }
+        },
+        {
+          "benchmark_a": "aime_2025",
+          "benchmark_b": "mt_aime_2024",
+          "n_overlap": 18,
+          "overlap_jaccard": 0.34615384615384615,
+          "overlap_of_smaller": 0.782608695652174,
+          "pearson_direction_aligned": 0.7485422592019914,
+          "pearson_raw": 0.7485422592019914,
+          "rule_judgment": {
+            "reason": "the item set or interaction protocol differs by edition.",
+            "status": "allowed_protocol_variant"
+          }
+        },
+        {
+          "benchmark_a": "aime_2026",
+          "benchmark_b": "mt_aime_2024",
+          "n_overlap": 0,
+          "overlap_jaccard": 0.0,
+          "overlap_of_smaller": 0.0,
+          "pearson_direction_aligned": null,
+          "pearson_raw": null,
+          "rule_judgment": {
+            "reason": "the item set or interaction protocol differs by edition.",
+            "status": "allowed_protocol_variant"
+          }
+        }
+      ]
+    },
+    {
+      "description": "ARC-AGI version 1 and version 2.",
+      "dropped_benchmark_ids": [
+        "arc_agi_1"
+      ],
+      "group_id": "arc_agi",
+      "keep_rule": "keep the member with the most observed cells; ties use the order in VARIANT_GROUPS",
+      "kept_benchmark_id": "arc_agi_2",
+      "members": [
+        {
+          "benchmark_id": "arc_agi_1",
+          "category": "Reasoning",
+          "metric": {
+            "higher_is_better": true,
+            "range": [
+              0,
+              100
+            ],
+            "type": "pct"
+          },
+          "n_observed": 37,
+          "name": "ARC-AGI-1"
+        },
+        {
+          "benchmark_id": "arc_agi_2",
+          "category": "Reasoning",
+          "metric": {
+            "higher_is_better": true,
+            "range": [
+              0,
+              100
+            ],
+            "type": "pct"
+          },
+          "n_observed": 41,
+          "name": "ARC-AGI-2"
+        }
+      ],
+      "pairwise": [
+        {
+          "benchmark_a": "arc_agi_1",
+          "benchmark_b": "arc_agi_2",
+          "n_overlap": 37,
+          "overlap_jaccard": 0.9024390243902439,
+          "overlap_of_smaller": 1.0,
+          "pearson_direction_aligned": 0.8226870495145723,
+          "pearson_raw": 0.8226870495145723,
+          "rule_judgment": {
+            "reason": "new benchmark version with a different task distribution.",
+            "status": "allowed_protocol_variant"
+          }
+        }
+      ]
+    },
+    {
+      "description": "Berkeley Function Calling Leaderboard versions.",
+      "dropped_benchmark_ids": [
+        "bfcl_v3"
+      ],
+      "group_id": "bfcl",
+      "keep_rule": "keep the member with the most observed cells; ties use the order in VARIANT_GROUPS",
+      "kept_benchmark_id": "bfcl",
+      "members": [
+        {
+          "benchmark_id": "bfcl",
+          "category": "Tool use",
+          "metric": {
+            "higher_is_better": true,
+            "range": [
+              0,
+              100
+            ],
+            "type": "pct"
+          },
+          "n_observed": 11,
+          "name": "BFCL"
+        },
+        {
+          "benchmark_id": "bfcl_v3",
+          "category": "Tool use",
+          "metric": {
+            "higher_is_better": true,
+            "range": [
+              0,
+              100
+            ],
+            "type": "pct"
+          },
+          "n_observed": 8,
+          "name": "BFCL v3"
+        }
+      ],
+      "pairwise": [
+        {
+          "benchmark_a": "bfcl",
+          "benchmark_b": "bfcl_v3",
+          "n_overlap": 4,
+          "overlap_jaccard": 0.26666666666666666,
+          "overlap_of_smaller": 0.5,
+          "pearson_direction_aligned": 1.0,
+          "pearson_raw": 1.0,
+          "rule_judgment": {
+            "reason": "versioned function-calling variants share a family but differ in benchmark release.",
+            "status": "ambiguous"
+          }
+        }
+      ]
+    },
+    {
+      "description": "BrowseComp base, long-context, and Chinese variants.",
+      "dropped_benchmark_ids": [
+        "browsecomp_long_context_128k",
+        "browsecomp_zh"
+      ],
+      "group_id": "browsecomp",
+      "keep_rule": "keep the member with the most observed cells; ties use the order in VARIANT_GROUPS",
+      "kept_benchmark_id": "browsecomp",
+      "members": [
+        {
+          "benchmark_id": "browsecomp",
+          "category": "Agentic",
+          "metric": {
+            "higher_is_better": true,
+            "range": [
+              0,
+              100
+            ],
+            "type": "pct"
+          },
+          "n_observed": 30,
+          "name": "BrowseComp"
+        },
+        {
+          "benchmark_id": "browsecomp_long_context_128k",
+          "category": "Long Context",
+          "metric": {
+            "higher_is_better": true,
+            "range": [
+              0,
+              100
+            ],
+            "type": "pct"
+          },
+          "n_observed": 10,
+          "name": "BrowseComp Long Context 128k"
+        },
+        {
+          "benchmark_id": "browsecomp_zh",
+          "category": "Agentic search",
+          "metric": {
+            "higher_is_better": true,
+            "range": [
+              0,
+              100
+            ],
+            "type": "pct"
+          },
+          "n_observed": 17,
+          "name": "BrowseComp-ZH"
+        }
+      ],
+      "pairwise": [
+        {
+          "benchmark_a": "browsecomp",
+          "benchmark_b": "browsecomp_long_context_128k",
+          "n_overlap": 4,
+          "overlap_jaccard": 0.1111111111111111,
+          "overlap_of_smaller": 0.4,
+          "pearson_direction_aligned": 0.5555394191868411,
+          "pearson_raw": 0.5555394191868411,
+          "rule_judgment": {
+            "reason": "context length or language changes the evaluation setting.",
+            "status": "allowed_protocol_variant"
+          }
+        },
+        {
+          "benchmark_a": "browsecomp",
+          "benchmark_b": "browsecomp_zh",
+          "n_overlap": 17,
+          "overlap_jaccard": 0.5666666666666667,
+          "overlap_of_smaller": 1.0,
+          "pearson_direction_aligned": 0.9420659011995702,
+          "pearson_raw": 0.9420659011995702,
+          "rule_judgment": {
+            "reason": "context length or language changes the evaluation setting.",
+            "status": "allowed_protocol_variant"
+          }
+        },
+        {
+          "benchmark_a": "browsecomp_long_context_128k",
+          "benchmark_b": "browsecomp_zh",
+          "n_overlap": 2,
+          "overlap_jaccard": 0.08,
+          "overlap_of_smaller": 0.2,
+          "pearson_direction_aligned": 1.0,
+          "pearson_raw": 1.0,
+          "rule_judgment": {
+            "reason": "context length or language changes the evaluation setting.",
+            "status": "allowed_protocol_variant"
+          }
+        }
+      ]
+    },
+    {
+      "description": "CharXiv descriptive and reasoning subtasks.",
+      "dropped_benchmark_ids": [
+        "charxiv_descriptive"
+      ],
+      "group_id": "charxiv",
+      "keep_rule": "keep the member with the most observed cells; ties use the order in VARIANT_GROUPS",
+      "kept_benchmark_id": "charxiv_reasoning",
+      "members": [
+        {
+          "benchmark_id": "charxiv_descriptive",
+          "category": "Vision",
+          "metric": {
+            "higher_is_better": true,
+            "range": [
+              0,
+              100
+            ],
+            "type": "pct"
+          },
+          "n_observed": 11,
+          "name": "CharXiv Descriptive"
+        },
+        {
+          "benchmark_id": "charxiv_reasoning",
+          "category": "Multimodal",
+          "metric": {
+            "higher_is_better": true,
+            "range": [
+              0,
+              100
+            ],
+            "type": "pct"
+          },
+          "n_observed": 29,
+          "name": "CharXiv Reasoning"
+        }
+      ],
+      "pairwise": [
+        {
+          "benchmark_a": "charxiv_descriptive",
+          "benchmark_b": "charxiv_reasoning",
+          "n_overlap": 11,
+          "overlap_jaccard": 0.3793103448275862,
+          "overlap_of_smaller": 1.0,
+          "pearson_direction_aligned": 0.8940950484670372,
+          "pearson_raw": 0.8940950484670372,
+          "rule_judgment": {
+            "reason": "subtasks require different visual reasoning behavior.",
+            "status": "allowed_protocol_variant"
+          }
+        }
+      ]
+    },
+    {
+      "description": "FrontierMath overall versus Tier 4 hard subset.",
+      "dropped_benchmark_ids": [
+        "frontiermath_tier4"
+      ],
+      "group_id": "frontiermath",
+      "keep_rule": "keep the member with the most observed cells; ties use the order in VARIANT_GROUPS",
+      "kept_benchmark_id": "frontiermath",
+      "members": [
+        {
+          "benchmark_id": "frontiermath",
+          "category": "Math",
+          "metric": {
+            "higher_is_better": true,
+            "range": [
+              0,
+              100
+            ],
+            "type": "pct"
+          },
+          "n_observed": 24,
+          "name": "FrontierMath"
+        },
+        {
+          "benchmark_id": "frontiermath_tier4",
+          "category": "Math",
+          "metric": {
+            "higher_is_better": true,
+            "range": [
+              0,
+              100
+            ],
+            "type": "pct"
+          },
+          "n_observed": 11,
+          "name": "FrontierMath Tier 4"
+        }
+      ],
+      "pairwise": [
+        {
+          "benchmark_a": "frontiermath",
+          "benchmark_b": "frontiermath_tier4",
+          "n_overlap": 11,
+          "overlap_jaccard": 0.4583333333333333,
+          "overlap_of_smaller": 1.0,
+          "pearson_direction_aligned": 0.7379587616726185,
+          "pearson_raw": 0.7379587616726185,
+          "rule_judgment": {
+            "reason": "Tier 4 is a subset of the same benchmark on the same percentage scale.",
+            "status": "violation"
+          }
+        }
+      ]
+    },
+    {
+      "description": "GPQA Diamond subset and GPQA main/full set.",
+      "dropped_benchmark_ids": [
+        "gpqa_main"
+      ],
+      "group_id": "gpqa",
+      "keep_rule": "keep the member with the most observed cells; ties use the order in VARIANT_GROUPS",
+      "kept_benchmark_id": "gpqa_diamond",
+      "members": [
+        {
+          "benchmark_id": "gpqa_diamond",
+          "category": "Science",
+          "metric": {
+            "higher_is_better": true,
+            "range": [
+              0,
+              100
+            ],
+            "type": "pct"
+          },
+          "n_observed": 82,
+          "name": "GPQA Diamond"
+        },
+        {
+          "benchmark_id": "gpqa_main",
+          "category": "Science",
+          "metric": {
+            "higher_is_better": true,
+            "range": [
+              0,
+              100
+            ],
+            "type": "pct"
+          },
+          "n_observed": 71,
+          "name": "GPQA Main (full set)"
+        }
+      ],
+      "pairwise": [
+        {
+          "benchmark_a": "gpqa_diamond",
+          "benchmark_b": "gpqa_main",
+          "n_overlap": 69,
+          "overlap_jaccard": 0.8214285714285714,
+          "overlap_of_smaller": 0.971830985915493,
+          "pearson_direction_aligned": 0.9353783882939811,
+          "pearson_raw": 0.9353783882939811,
+          "rule_judgment": {
+            "reason": "same benchmark family and score scale; Diamond is a curated subset.",
+            "status": "violation"
+          }
+        }
+      ]
+    },
+    {
+      "description": "GraphWalks BFS and parent-retrieval tasks at the same context range.",
+      "dropped_benchmark_ids": [
+        "graphwalks_parents_0k_128k"
+      ],
+      "group_id": "graphwalks",
+      "keep_rule": "keep the member with the most observed cells; ties use the order in VARIANT_GROUPS",
+      "kept_benchmark_id": "graphwalks_bfs_0k_128k",
+      "members": [
+        {
+          "benchmark_id": "graphwalks_bfs_0k_128k",
+          "category": "Long Context",
+          "metric": {
+            "higher_is_better": true,
+            "range": [
+              0,
+              100
+            ],
+            "type": "pct"
+          },
+          "n_observed": 20,
+          "name": "GraphWalks BFS 0-128K"
+        },
+        {
+          "benchmark_id": "graphwalks_parents_0k_128k",
+          "category": "Long Context",
+          "metric": {
+            "higher_is_better": true,
+            "range": [
+              0,
+              100
+            ],
+            "type": "pct"
+          },
+          "n_observed": 20,
+          "name": "GraphWalks parents 0-128K"
+        }
+      ],
+      "pairwise": [
+        {
+          "benchmark_a": "graphwalks_bfs_0k_128k",
+          "benchmark_b": "graphwalks_parents_0k_128k",
+          "n_overlap": 20,
+          "overlap_jaccard": 1.0,
+          "overlap_of_smaller": 1.0,
+          "pearson_direction_aligned": 0.9015654037864546,
+          "pearson_raw": 0.9015654037864546,
+          "rule_judgment": {
+            "reason": "same dataset family but different graph query task.",
+            "status": "allowed_protocol_variant"
+          }
+        }
+      ]
+    },
+    {
+      "description": "Humanity's Last Exam full, text-only, and tool-access variants.",
+      "dropped_benchmark_ids": [
+        "hle_text",
+        "hle_tools"
+      ],
+      "group_id": "hle",
+      "keep_rule": "keep the member with the most observed cells; ties use the order in VARIANT_GROUPS",
+      "kept_benchmark_id": "hle",
+      "members": [
+        {
+          "benchmark_id": "hle",
+          "category": "Reasoning",
+          "metric": {
+            "higher_is_better": true,
+            "range": [
+              0,
+              100
+            ],
+            "type": "pct"
+          },
+          "n_observed": 46,
+          "name": "HLE (Humanity's Last Exam)"
+        },
+        {
+          "benchmark_id": "hle_text",
+          "category": "Reasoning",
+          "metric": {
+            "higher_is_better": true,
+            "range": [
+              0,
+              100
+            ],
+            "type": "pct"
+          },
+          "n_observed": 39,
+          "name": "HLE Text"
+        },
+        {
+          "benchmark_id": "hle_tools",
+          "category": "Reasoning & Knowledge",
+          "metric": {
+            "higher_is_better": true,
+            "range": null,
+            "type": null
+          },
+          "n_observed": 11,
+          "name": "HLE (w/ tools)"
+        }
+      ],
+      "pairwise": [
+        {
+          "benchmark_a": "hle",
+          "benchmark_b": "hle_text",
+          "n_overlap": 38,
+          "overlap_jaccard": 0.8085106382978723,
+          "overlap_of_smaller": 0.9743589743589743,
+          "pearson_direction_aligned": 0.9181575962220616,
+          "pearson_raw": 0.9181575962220616,
+          "rule_judgment": {
+            "reason": "same benchmark family; HLE Text is a subset-like same-scale view.",
+            "status": "violation"
+          }
+        },
+        {
+          "benchmark_a": "hle",
+          "benchmark_b": "hle_tools",
+          "n_overlap": 11,
+          "overlap_jaccard": 0.2391304347826087,
+          "overlap_of_smaller": 1.0,
+          "pearson_direction_aligned": 0.8542545803441489,
+          "pearson_raw": 0.8542545803441489,
+          "rule_judgment": {
+            "reason": "tool access changes the evaluation protocol",
+            "status": "allowed_protocol_variant"
+          }
+        },
+        {
+          "benchmark_a": "hle_text",
+          "benchmark_b": "hle_tools",
+          "n_overlap": 10,
+          "overlap_jaccard": 0.25,
+          "overlap_of_smaller": 0.9090909090909091,
+          "pearson_direction_aligned": 0.9624452795100735,
+          "pearson_raw": 0.9624452795100735,
+          "rule_judgment": {
+            "reason": "tool access changes the evaluation protocol",
+            "status": "allowed_protocol_variant"
+          }
+        }
+      ]
+    },
+    {
+      "description": "HMMT contest editions.",
+      "dropped_benchmark_ids": [
+        "hmmt_feb_2026",
+        "hmmt_nov_2025"
+      ],
+      "group_id": "hmmt",
+      "keep_rule": "keep the member with the most observed cells; ties use the order in VARIANT_GROUPS",
+      "kept_benchmark_id": "hmmt_feb_2025",
+      "members": [
+        {
+          "benchmark_id": "hmmt_feb_2025",
+          "category": "Math",
+          "metric": {
+            "higher_is_better": true,
+            "range": [
+              0,
+              100
+            ],
+            "type": "pct"
+          },
+          "n_observed": 34,
+          "name": "HMMT Feb 2025"
+        },
+        {
+          "benchmark_id": "hmmt_feb_2026",
+          "category": "Math",
+          "metric": {
+            "higher_is_better": true,
+            "range": [
+              0,
+              100
+            ],
+            "type": "pct"
+          },
+          "n_observed": 12,
+          "name": "HMMT Feb 2026"
+        },
+        {
+          "benchmark_id": "hmmt_nov_2025",
+          "category": "Math",
+          "metric": {
+            "higher_is_better": true,
+            "range": [
+              0,
+              100
+            ],
+            "type": "pct"
+          },
+          "n_observed": 22,
+          "name": "HMMT Nov 2025"
+        }
+      ],
+      "pairwise": [
+        {
+          "benchmark_a": "hmmt_feb_2025",
+          "benchmark_b": "hmmt_feb_2026",
+          "n_overlap": 5,
+          "overlap_jaccard": 0.12195121951219512,
+          "overlap_of_smaller": 0.4166666666666667,
+          "pearson_direction_aligned": 0.42261416221653814,
+          "pearson_raw": 0.42261416221653814,
+          "rule_judgment": {
+            "reason": "different contest editions use different item sets.",
+            "status": "allowed_protocol_variant"
+          }
+        },
+        {
+          "benchmark_a": "hmmt_feb_2025",
+          "benchmark_b": "hmmt_nov_2025",
+          "n_overlap": 16,
+          "overlap_jaccard": 0.4,
+          "overlap_of_smaller": 0.7272727272727273,
+          "pearson_direction_aligned": 0.9487399824941541,
+          "pearson_raw": 0.9487399824941541,
+          "rule_judgment": {
+            "reason": "different contest editions use different item sets.",
+            "status": "allowed_protocol_variant"
+          }
+        },
+        {
+          "benchmark_a": "hmmt_feb_2026",
+          "benchmark_b": "hmmt_nov_2025",
+          "n_overlap": 9,
+          "overlap_jaccard": 0.36,
+          "overlap_of_smaller": 0.75,
+          "pearson_direction_aligned": 0.6354149249359885,
+          "pearson_raw": 0.6354149249359885,
+          "rule_judgment": {
+            "reason": "different contest editions use different item sets.",
+            "status": "allowed_protocol_variant"
+          }
+        }
+      ]
+    },
+    {
+      "description": "LongFact concepts and objects hallucination rates.",
+      "dropped_benchmark_ids": [
+        "longfact_objects"
+      ],
+      "group_id": "longfact",
+      "keep_rule": "keep the member with the most observed cells; ties use the order in VARIANT_GROUPS",
+      "kept_benchmark_id": "longfact_concepts",
+      "members": [
+        {
+          "benchmark_id": "longfact_concepts",
+          "category": "Hallucination",
+          "metric": {
+            "higher_is_better": false,
+            "range": [
+              0,
+              100
+            ],
+            "type": "pct"
+          },
+          "n_observed": 12,
+          "name": "LongFact-Concepts (hallucination rate)"
+        },
+        {
+          "benchmark_id": "longfact_objects",
+          "category": "Hallucination",
+          "metric": {
+            "higher_is_better": false,
+            "range": [
+              0,
+              100
+            ],
+            "type": "pct"
+          },
+          "n_observed": 12,
+          "name": "LongFact-Objects (hallucination rate)"
+        }
+      ],
+      "pairwise": [
+        {
+          "benchmark_a": "longfact_concepts",
+          "benchmark_b": "longfact_objects",
+          "n_overlap": 12,
+          "overlap_jaccard": 1.0,
+          "overlap_of_smaller": 1.0,
+          "pearson_direction_aligned": 0.9995269898083056,
+          "pearson_raw": 0.9995269898083056,
+          "rule_judgment": {
+            "reason": "parallel subsets of the same benchmark with the same lower-is-better metric.",
+            "status": "violation"
+          }
+        }
+      ]
+    },
+    {
+      "description": "MATH full benchmark and MATH-500 subset.",
+      "dropped_benchmark_ids": [
+        "math"
+      ],
+      "group_id": "math",
+      "keep_rule": "keep the member with the most observed cells; ties use the order in VARIANT_GROUPS",
+      "kept_benchmark_id": "math_500",
+      "members": [
+        {
+          "benchmark_id": "math",
+          "category": "Math",
+          "metric": {
+            "higher_is_better": true,
+            "range": [
+              0,
+              100
+            ],
+            "type": "pct"
+          },
+          "n_observed": 30,
+          "name": "MATH"
+        },
+        {
+          "benchmark_id": "math_500",
+          "category": "Math",
+          "metric": {
+            "higher_is_better": true,
+            "range": [
+              0,
+              100
+            ],
+            "type": "pct"
+          },
+          "n_observed": 32,
+          "name": "MATH-500"
+        }
+      ],
+      "pairwise": [
+        {
+          "benchmark_a": "math",
+          "benchmark_b": "math_500",
+          "n_overlap": 18,
+          "overlap_jaccard": 0.4090909090909091,
+          "overlap_of_smaller": 0.6,
+          "pearson_direction_aligned": 0.8432787605384165,
+          "pearson_raw": 0.8432787605384165,
+          "rule_judgment": {
+            "reason": "MATH-500 is a subset-style same-scale view of MATH.",
+            "status": "violation"
+          }
+        }
+      ]
+    },
+    {
+      "description": "MMLU-derived pro and multilingual variants retained in the May matrix.",
+      "dropped_benchmark_ids": [
+        "mmmlu"
+      ],
+      "group_id": "mmlu",
+      "keep_rule": "keep the member with the most observed cells; ties use the order in VARIANT_GROUPS",
+      "kept_benchmark_id": "mmlu_pro",
+      "members": [
+        {
+          "benchmark_id": "mmlu_pro",
+          "category": "Knowledge",
+          "metric": {
+            "higher_is_better": true,
+            "range": [
+              0,
+              100
+            ],
+            "type": "pct"
+          },
+          "n_observed": 58,
+          "name": "MMLU-Pro"
+        },
+        {
+          "benchmark_id": "mmmlu",
+          "category": "Knowledge",
+          "metric": {
+            "higher_is_better": true,
+            "range": [
+              0,
+              100
+            ],
+            "type": "pct"
+          },
+          "n_observed": 38,
+          "name": "MMMLU"
+        }
+      ],
+      "pairwise": [
+        {
+          "benchmark_a": "mmlu_pro",
+          "benchmark_b": "mmmlu",
+          "n_overlap": 20,
+          "overlap_jaccard": 0.2631578947368421,
+          "overlap_of_smaller": 0.5263157894736842,
+          "pearson_direction_aligned": 0.9486028504825061,
+          "pearson_raw": 0.9486028504825061,
+          "rule_judgment": {
+            "reason": "MMLU-Pro and MMMLU change difficulty construction or language coverage.",
+            "status": "allowed_protocol_variant"
+          }
+        }
+      ]
+    },
+    {
+      "description": "MMMU and MMMU-Pro.",
+      "dropped_benchmark_ids": [
+        "mmmu_pro"
+      ],
+      "group_id": "mmmu",
+      "keep_rule": "keep the member with the most observed cells; ties use the order in VARIANT_GROUPS",
+      "kept_benchmark_id": "mmmu",
+      "members": [
+        {
+          "benchmark_id": "mmmu",
+          "category": "Multimodal",
+          "metric": {
+            "higher_is_better": true,
+            "range": [
+              0,
+              100
+            ],
+            "type": "pct"
+          },
+          "n_observed": 36,
+          "name": "MMMU"
+        },
+        {
+          "benchmark_id": "mmmu_pro",
+          "category": "Multimodal",
+          "metric": {
+            "higher_is_better": true,
+            "range": [
+              0,
+              100
+            ],
+            "type": "pct"
+          },
+          "n_observed": 29,
+          "name": "MMMU-Pro"
+        }
+      ],
+      "pairwise": [
+        {
+          "benchmark_a": "mmmu",
+          "benchmark_b": "mmmu_pro",
+          "n_overlap": 20,
+          "overlap_jaccard": 0.4444444444444444,
+          "overlap_of_smaller": 0.6896551724137931,
+          "pearson_direction_aligned": 0.9772434276727147,
+          "pearson_raw": 0.9772434276727147,
+          "rule_judgment": {
+            "reason": "same benchmark family, but MMMU-Pro changes answer-option and vision-only construction.",
+            "status": "ambiguous"
+          }
+        }
+      ]
+    },
+    {
+      "description": "MRCR benchmark versions and needle/context settings.",
+      "dropped_benchmark_ids": [
+        "mrcr_v1",
+        "mrcr_v2_2needle_128k",
+        "mrcr_v2_8needle"
+      ],
+      "group_id": "mrcr",
+      "keep_rule": "keep the member with the most observed cells; ties use the order in VARIANT_GROUPS",
+      "kept_benchmark_id": "mrcr_v2",
+      "members": [
+        {
+          "benchmark_id": "mrcr_v1",
+          "category": "Long-context",
+          "metric": {
+            "higher_is_better": true,
+            "range": [
+              0,
+              100
+            ],
+            "type": "pct"
+          },
+          "n_observed": 9,
+          "name": "MRCR v1"
+        },
+        {
+          "benchmark_id": "mrcr_v2",
+          "category": "Long Context",
+          "metric": {
+            "higher_is_better": true,
+            "range": [
+              0,
+              100
+            ],
+            "type": "pct"
+          },
+          "n_observed": 10,
+          "name": "MRCR v2"
+        },
+        {
+          "benchmark_id": "mrcr_v2_2needle_128k",
+          "category": "Long Context",
+          "metric": {
+            "higher_is_better": true,
+            "range": [
+              0,
+              100
+            ],
+            "type": "pct"
+          },
+          "n_observed": 10,
+          "name": "OpenAI MRCR v2 (2 needle, 128k)"
+        },
+        {
+          "benchmark_id": "mrcr_v2_8needle",
+          "category": "Long Context",
+          "metric": {
+            "higher_is_better": true,
+            "range": [
+              0,
+              100
+            ],
+            "type": "pct"
+          },
+          "n_observed": 10,
+          "name": "OpenAI MRCR v2 (8-needle)"
+        }
+      ],
+      "pairwise": [
+        {
+          "benchmark_a": "mrcr_v1",
+          "benchmark_b": "mrcr_v2",
+          "n_overlap": 4,
+          "overlap_jaccard": 0.26666666666666666,
+          "overlap_of_smaller": 0.4444444444444444,
+          "pearson_direction_aligned": 0.11573887138741397,
+          "pearson_raw": 0.11573887138741397,
+          "rule_judgment": {
+            "reason": "version, number of needles, or context length changes the long-context protocol.",
+            "status": "allowed_protocol_variant"
+          }
+        },
+        {
+          "benchmark_a": "mrcr_v1",
+          "benchmark_b": "mrcr_v2_2needle_128k",
+          "n_overlap": 0,
+          "overlap_jaccard": 0.0,
+          "overlap_of_smaller": 0.0,
+          "pearson_direction_aligned": null,
+          "pearson_raw": null,
+          "rule_judgment": {
+            "reason": "version, number of needles, or context length changes the long-context protocol.",
+            "status": "allowed_protocol_variant"
+          }
+        },
+        {
+          "benchmark_a": "mrcr_v1",
+          "benchmark_b": "mrcr_v2_8needle",
+          "n_overlap": 3,
+          "overlap_jaccard": 0.1875,
+          "overlap_of_smaller": 0.3333333333333333,
+          "pearson_direction_aligned": 0.38877678209947913,
+          "pearson_raw": 0.38877678209947913,
+          "rule_judgment": {
+            "reason": "version, number of needles, or context length changes the long-context protocol.",
+            "status": "allowed_protocol_variant"
+          }
+        },
+        {
+          "benchmark_a": "mrcr_v2",
+          "benchmark_b": "mrcr_v2_2needle_128k",
+          "n_overlap": 0,
+          "overlap_jaccard": 0.0,
+          "overlap_of_smaller": 0.0,
+          "pearson_direction_aligned": null,
+          "pearson_raw": null,
+          "rule_judgment": {
+            "reason": "version, number of needles, or context length changes the long-context protocol.",
+            "status": "allowed_protocol_variant"
+          }
+        },
+        {
+          "benchmark_a": "mrcr_v2",
+          "benchmark_b": "mrcr_v2_8needle",
+          "n_overlap": 7,
+          "overlap_jaccard": 0.5384615384615384,
+          "overlap_of_smaller": 0.7,
+          "pearson_direction_aligned": 0.5089065333024403,
+          "pearson_raw": 0.5089065333024403,
+          "rule_judgment": {
+            "reason": "version, number of needles, or context length changes the long-context protocol.",
+            "status": "allowed_protocol_variant"
+          }
+        },
+        {
+          "benchmark_a": "mrcr_v2_2needle_128k",
+          "benchmark_b": "mrcr_v2_8needle",
+          "n_overlap": 0,
+          "overlap_jaccard": 0.0,
+          "overlap_of_smaller": 0.0,
+          "pearson_direction_aligned": null,
+          "pearson_raw": null,
+          "rule_judgment": {
+            "reason": "version, number of needles, or context length changes the long-context protocol.",
+            "status": "allowed_protocol_variant"
+          }
+        }
+      ]
+    },
+    {
+      "description": "MultiChallenge with two grader choices.",
+      "dropped_benchmark_ids": [
+        "multichallenge_o3mini_grader"
+      ],
+      "group_id": "multichallenge",
+      "keep_rule": "keep the member with the most observed cells; ties use the order in VARIANT_GROUPS",
+      "kept_benchmark_id": "multichallenge",
+      "members": [
+        {
+          "benchmark_id": "multichallenge",
+          "category": "Instruction Following",
+          "metric": {
+            "higher_is_better": true,
+            "range": [
+              0,
+              100
+            ],
+            "type": "pct"
+          },
+          "n_observed": 19,
+          "name": "MultiChallenge"
+        },
+        {
+          "benchmark_id": "multichallenge_o3mini_grader",
+          "category": "Instruction Following",
+          "metric": {
+            "higher_is_better": true,
+            "range": [
+              0,
+              100
+            ],
+            "type": "pct"
+          },
+          "n_observed": 13,
+          "name": "MultiChallenge (o3-mini grader)"
+        }
+      ],
+      "pairwise": [
+        {
+          "benchmark_a": "multichallenge",
+          "benchmark_b": "multichallenge_o3mini_grader",
+          "n_overlap": 11,
+          "overlap_jaccard": 0.5238095238095238,
+          "overlap_of_smaller": 0.8461538461538461,
+          "pearson_direction_aligned": 0.9570325180175412,
+          "pearson_raw": 0.9570325180175412,
+          "rule_judgment": {
+            "reason": "grader changes are protocol changes under the current rule text.",
+            "status": "allowed_protocol_variant"
+          }
+        }
+      ]
+    },
+    {
+      "description": "OmniDocBench original normalized-edit-distance metric and OmniDocBench 1.5 percentage metric.",
+      "dropped_benchmark_ids": [
+        "omnidocbench"
+      ],
+      "group_id": "omnidocbench",
+      "keep_rule": "keep the member with the most observed cells; ties use the order in VARIANT_GROUPS",
+      "kept_benchmark_id": "omnidocbench_1.5",
+      "members": [
+        {
+          "benchmark_id": "omnidocbench",
+          "category": "Vision",
+          "metric": {
+            "higher_is_better": false,
+            "range": [
+              0,
+              100
+            ],
+            "type": "pct"
+          },
+          "n_observed": 8,
+          "name": "OmniDocBench (normalized edit distance, lower is better)"
+        },
+        {
+          "benchmark_id": "omnidocbench_1.5",
+          "category": "Vision",
+          "metric": {
+            "higher_is_better": true,
+            "range": [
+              0,
+              100
+            ],
+            "type": "pct"
+          },
+          "n_observed": 11,
+          "name": "OmniDocBench 1.5"
+        }
+      ],
+      "pairwise": [
+        {
+          "benchmark_a": "omnidocbench",
+          "benchmark_b": "omnidocbench_1.5",
+          "n_overlap": 8,
+          "overlap_jaccard": 0.7272727272727273,
+          "overlap_of_smaller": 1.0,
+          "pearson_direction_aligned": 0.4813879692224886,
+          "pearson_raw": -0.4813879692224886,
+          "rule_judgment": {
+            "reason": "same family is retained under different metric direction and scale.",
+            "status": "violation"
+          }
+        }
+      ]
+    },
+    {
+      "description": "SimpleQA base, verified subset, and Chinese variant.",
+      "dropped_benchmark_ids": [
+        "simpleqa_verified",
+        "chinese_simpleqa"
+      ],
+      "group_id": "simpleqa",
+      "keep_rule": "keep the member with the most observed cells; ties use the order in VARIANT_GROUPS",
+      "kept_benchmark_id": "simpleqa",
+      "members": [
+        {
+          "benchmark_id": "simpleqa",
+          "category": "Knowledge",
+          "metric": {
+            "higher_is_better": true,
+            "range": [
+              0,
+              100
+            ],
+            "type": "pct"
+          },
+          "n_observed": 35,
+          "name": "SimpleQA"
+        },
+        {
+          "benchmark_id": "simpleqa_verified",
+          "category": "Knowledge",
+          "metric": {
+            "higher_is_better": true,
+            "range": [
+              0,
+              100
+            ],
+            "type": "pct"
+          },
+          "n_observed": 16,
+          "name": "SimpleQA-Verified"
+        },
+        {
+          "benchmark_id": "chinese_simpleqa",
+          "category": "Knowledge",
+          "metric": {
+            "higher_is_better": true,
+            "range": [
+              0,
+              100
+            ],
+            "type": "pct"
+          },
+          "n_observed": 15,
+          "name": "Chinese-SimpleQA"
+        }
+      ],
+      "pairwise": [
+        {
+          "benchmark_a": "simpleqa",
+          "benchmark_b": "simpleqa_verified",
+          "n_overlap": 4,
+          "overlap_jaccard": 0.0851063829787234,
+          "overlap_of_smaller": 0.25,
+          "pearson_direction_aligned": 0.9994863999677996,
+          "pearson_raw": 0.9994863999677996,
+          "rule_judgment": {
+            "reason": "SimpleQA and SimpleQA-Verified are same-scale subset variants.",
+            "status": "violation"
+          }
+        },
+        {
+          "benchmark_a": "simpleqa",
+          "benchmark_b": "chinese_simpleqa",
+          "n_overlap": 10,
+          "overlap_jaccard": 0.25,
+          "overlap_of_smaller": 0.6666666666666666,
+          "pearson_direction_aligned": 0.8355970730274632,
+          "pearson_raw": 0.8355970730274632,
+          "rule_judgment": {
+            "reason": "SimpleQA and SimpleQA-Verified are same-scale subset variants.",
+            "status": "violation"
+          }
+        },
+        {
+          "benchmark_a": "simpleqa_verified",
+          "benchmark_b": "chinese_simpleqa",
+          "n_overlap": 7,
+          "overlap_jaccard": 0.2916666666666667,
+          "overlap_of_smaller": 0.4666666666666667,
+          "pearson_direction_aligned": 0.8625577637812475,
+          "pearson_raw": 0.8625577637812475,
+          "rule_judgment": {
+            "reason": "SimpleQA and SimpleQA-Verified are same-scale subset variants.",
+            "status": "violation"
+          }
+        }
+      ]
+    },
+    {
+      "description": "SWE-bench verified, pro, multilingual, and Multi-SWE-bench variants.",
+      "dropped_benchmark_ids": [
+        "swe_bench_pro",
+        "swe_bench_multilingual",
+        "multi_swe_bench"
+      ],
+      "group_id": "swe_bench",
+      "keep_rule": "keep the member with the most observed cells; ties use the order in VARIANT_GROUPS",
+      "kept_benchmark_id": "swe_bench_verified",
+      "members": [
+        {
+          "benchmark_id": "swe_bench_verified",
+          "category": "Coding",
+          "metric": {
+            "higher_is_better": true,
+            "range": [
+              0,
+              100
+            ],
+            "type": "pct"
+          },
+          "n_observed": 54,
+          "name": "SWE-bench Verified"
+        },
+        {
+          "benchmark_id": "swe_bench_pro",
+          "category": "Coding",
+          "metric": {
+            "higher_is_better": true,
+            "range": [
+              0,
+              100
+            ],
+            "type": "pct"
+          },
+          "n_observed": 26,
+          "name": "SWE-bench Pro"
+        },
+        {
+          "benchmark_id": "swe_bench_multilingual",
+          "category": "Coding",
+          "metric": {
+            "higher_is_better": true,
+            "range": [
+              0,
+              100
+            ],
+            "type": "pct"
+          },
+          "n_observed": 24,
+          "name": "SWE-bench Multilingual"
+        },
+        {
+          "benchmark_id": "multi_swe_bench",
+          "category": "Coding",
+          "metric": {
+            "higher_is_better": true,
+            "range": [
+              0,
+              100
+            ],
+            "type": "pct"
+          },
+          "n_observed": 11,
+          "name": "Multi-SWE-bench"
+        }
+      ],
+      "pairwise": [
+        {
+          "benchmark_a": "swe_bench_verified",
+          "benchmark_b": "swe_bench_pro",
+          "n_overlap": 22,
+          "overlap_jaccard": 0.3793103448275862,
+          "overlap_of_smaller": 0.8461538461538461,
+          "pearson_direction_aligned": 0.7932865631282701,
+          "pearson_raw": 0.7932865631282701,
+          "rule_judgment": {
+            "reason": "the retained columns change instance source, language mix, or benchmark construction.",
+            "status": "allowed_protocol_variant"
+          }
+        },
+        {
+          "benchmark_a": "swe_bench_verified",
+          "benchmark_b": "swe_bench_multilingual",
+          "n_overlap": 23,
+          "overlap_jaccard": 0.41818181818181815,
+          "overlap_of_smaller": 0.9583333333333334,
+          "pearson_direction_aligned": 0.8888783852013078,
+          "pearson_raw": 0.8888783852013078,
+          "rule_judgment": {
+            "reason": "the retained columns change instance source, language mix, or benchmark construction.",
+            "status": "allowed_protocol_variant"
+          }
+        },
+        {
+          "benchmark_a": "swe_bench_verified",
+          "benchmark_b": "multi_swe_bench",
+          "n_overlap": 11,
+          "overlap_jaccard": 0.2037037037037037,
+          "overlap_of_smaller": 1.0,
+          "pearson_direction_aligned": 0.6197691377544873,
+          "pearson_raw": 0.6197691377544873,
+          "rule_judgment": {
+            "reason": "the retained columns change instance source, language mix, or benchmark construction.",
+            "status": "allowed_protocol_variant"
+          }
+        },
+        {
+          "benchmark_a": "swe_bench_pro",
+          "benchmark_b": "swe_bench_multilingual",
+          "n_overlap": 17,
+          "overlap_jaccard": 0.5151515151515151,
+          "overlap_of_smaller": 0.7083333333333334,
+          "pearson_direction_aligned": 0.9212221530755371,
+          "pearson_raw": 0.9212221530755371,
+          "rule_judgment": {
+            "reason": "the retained columns change instance source, language mix, or benchmark construction.",
+            "status": "allowed_protocol_variant"
+          }
+        },
+        {
+          "benchmark_a": "swe_bench_pro",
+          "benchmark_b": "multi_swe_bench",
+          "n_overlap": 7,
+          "overlap_jaccard": 0.23333333333333334,
+          "overlap_of_smaller": 0.6363636363636364,
+          "pearson_direction_aligned": 0.7903821547862817,
+          "pearson_raw": 0.7903821547862817,
+          "rule_judgment": {
+            "reason": "the retained columns change instance source, language mix, or benchmark construction.",
+            "status": "allowed_protocol_variant"
+          }
+        },
+        {
+          "benchmark_a": "swe_bench_multilingual",
+          "benchmark_b": "multi_swe_bench",
+          "n_overlap": 11,
+          "overlap_jaccard": 0.4583333333333333,
+          "overlap_of_smaller": 1.0,
+          "pearson_direction_aligned": 0.7254876761154009,
+          "pearson_raw": 0.7254876761154009,
+          "rule_judgment": {
+            "reason": "the retained columns change instance source, language mix, or benchmark construction.",
+            "status": "allowed_protocol_variant"
+          }
+        }
+      ]
+    },
+    {
+      "description": "SWE-Lancer percentage score and freelance-dollar score.",
+      "dropped_benchmark_ids": [
+        "swelancer_freelance_dollars"
+      ],
+      "group_id": "swelancer",
+      "keep_rule": "keep the member with the most observed cells; ties use the order in VARIANT_GROUPS",
+      "kept_benchmark_id": "swelancer",
+      "members": [
+        {
+          "benchmark_id": "swelancer",
+          "category": "Coding",
+          "metric": {
+            "higher_is_better": true,
+            "range": [
+              0,
+              100
+            ],
+            "type": "pct"
+          },
+          "n_observed": 8,
+          "name": "SWE-Lancer IC Diamond"
+        },
+        {
+          "benchmark_id": "swelancer_freelance_dollars",
+          "category": "Coding",
+          "metric": {
+            "higher_is_better": true,
+            "range": [
+              0,
+              200000
+            ],
+            "type": "dollars"
+          },
+          "n_observed": 8,
+          "name": "SWE-Lancer IC SWE Diamond Freelance ($)"
+        }
+      ],
+      "pairwise": [
+        {
+          "benchmark_a": "swelancer",
+          "benchmark_b": "swelancer_freelance_dollars",
+          "n_overlap": 0,
+          "overlap_jaccard": 0.0,
+          "overlap_of_smaller": 0.0,
+          "pearson_direction_aligned": null,
+          "pearson_raw": null,
+          "rule_judgment": {
+            "reason": "same family retained under different units, directly contrary to the different-scale exclusion sentence.",
+            "status": "violation"
+          }
+        }
+      ]
+    },
+    {
+      "description": "\u03c4-bench, \u03c4\u00b2-bench, and \u03c4\u00b3-bench domains/versions.",
+      "dropped_benchmark_ids": [
+        "tau_bench_airline",
+        "tau_bench_retail",
+        "tau2_bench_airline",
+        "tau2_bench_retail",
+        "tau3_bench"
+      ],
+      "group_id": "tau_bench",
+      "keep_rule": "keep the member with the most observed cells; ties use the order in VARIANT_GROUPS",
+      "kept_benchmark_id": "tau2_bench_telecom",
+      "members": [
+        {
+          "benchmark_id": "tau_bench_airline",
+          "category": "Agentic",
+          "metric": {
+            "higher_is_better": true,
+            "range": [
+              0,
+              100
+            ],
+            "type": "pct"
+          },
+          "n_observed": 18,
+          "name": "tau-bench Airline"
+        },
+        {
+          "benchmark_id": "tau_bench_retail",
+          "category": "Agentic",
+          "metric": {
+            "higher_is_better": true,
+            "range": [
+              0,
+              100
+            ],
+            "type": "pct"
+          },
+          "n_observed": 19,
+          "name": "Tau-Bench Retail"
+        },
+        {
+          "benchmark_id": "tau2_bench_airline",
+          "category": "Agentic",
+          "metric": {
+            "higher_is_better": true,
+            "range": [
+              0,
+              100
+            ],
+            "type": "pct"
+          },
+          "n_observed": 14,
+          "name": "\u03c4\u00b2-bench Airline"
+        },
+        {
+          "benchmark_id": "tau2_bench_retail",
+          "category": "Agentic",
+          "metric": {
+            "higher_is_better": true,
+            "range": [
+              0,
+              100
+            ],
+            "type": "pct"
+          },
+          "n_observed": 21,
+          "name": "\u03c4\u00b2-bench Retail"
+        },
+        {
+          "benchmark_id": "tau2_bench_telecom",
+          "category": "Agentic",
+          "metric": {
+            "higher_is_better": true,
+            "range": [
+              0,
+              100
+            ],
+            "type": "pct"
+          },
+          "n_observed": 27,
+          "name": "\u03c4\u00b2-bench Telecom"
+        },
+        {
+          "benchmark_id": "tau3_bench",
+          "category": "Tool Use",
+          "metric": {
+            "higher_is_better": true,
+            "range": [
+              0,
+              100
+            ],
+            "type": "pct"
+          },
+          "n_observed": 8,
+          "name": "\u03c4\u00b3-Bench"
+        }
+      ],
+      "pairwise": [
+        {
+          "benchmark_a": "tau_bench_airline",
+          "benchmark_b": "tau_bench_retail",
+          "n_overlap": 18,
+          "overlap_jaccard": 0.9473684210526315,
+          "overlap_of_smaller": 1.0,
+          "pearson_direction_aligned": 0.9578570442777763,
+          "pearson_raw": 0.9578570442777763,
+          "rule_judgment": {
+            "reason": "domain and version changes define separate agentic tasks.",
+            "status": "allowed_protocol_variant"
+          }
+        },
+        {
+          "benchmark_a": "tau_bench_airline",
+          "benchmark_b": "tau2_bench_airline",
+          "n_overlap": 6,
+          "overlap_jaccard": 0.23076923076923078,
+          "overlap_of_smaller": 0.42857142857142855,
+          "pearson_direction_aligned": 0.9519291148052724,
+          "pearson_raw": 0.9519291148052724,
+          "rule_judgment": {
+            "reason": "domain and version changes define separate agentic tasks.",
+            "status": "allowed_protocol_variant"
+          }
+        },
+        {
+          "benchmark_a": "tau_bench_airline",
+          "benchmark_b": "tau2_bench_retail",
+          "n_overlap": 6,
+          "overlap_jaccard": 0.18181818181818182,
+          "overlap_of_smaller": 0.3333333333333333,
+          "pearson_direction_aligned": 0.9511954309688303,
+          "pearson_raw": 0.9511954309688303,
+          "rule_judgment": {
+            "reason": "domain and version changes define separate agentic tasks.",
+            "status": "allowed_protocol_variant"
+          }
+        },
+        {
+          "benchmark_a": "tau_bench_airline",
+          "benchmark_b": "tau2_bench_telecom",
+          "n_overlap": 6,
+          "overlap_jaccard": 0.15384615384615385,
+          "overlap_of_smaller": 0.3333333333333333,
+          "pearson_direction_aligned": 0.8419190506689522,
+          "pearson_raw": 0.8419190506689522,
+          "rule_judgment": {
+            "reason": "domain and version changes define separate agentic tasks.",
+            "status": "allowed_protocol_variant"
+          }
+        },
+        {
+          "benchmark_a": "tau_bench_airline",
+          "benchmark_b": "tau3_bench",
+          "n_overlap": 0,
+          "overlap_jaccard": 0.0,
+          "overlap_of_smaller": 0.0,
+          "pearson_direction_aligned": null,
+          "pearson_raw": null,
+          "rule_judgment": {
+            "reason": "domain and version changes define separate agentic tasks.",
+            "status": "allowed_protocol_variant"
+          }
+        },
+        {
+          "benchmark_a": "tau_bench_retail",
+          "benchmark_b": "tau2_bench_airline",
+          "n_overlap": 6,
+          "overlap_jaccard": 0.2222222222222222,
+          "overlap_of_smaller": 0.42857142857142855,
+          "pearson_direction_aligned": 0.9857366217351508,
+          "pearson_raw": 0.9857366217351508,
+          "rule_judgment": {
+            "reason": "domain and version changes define separate agentic tasks.",
+            "status": "allowed_protocol_variant"
+          }
+        },
+        {
+          "benchmark_a": "tau_bench_retail",
+          "benchmark_b": "tau2_bench_retail",
+          "n_overlap": 7,
+          "overlap_jaccard": 0.21212121212121213,
+          "overlap_of_smaller": 0.3684210526315789,
+          "pearson_direction_aligned": 0.9823587193638925,
+          "pearson_raw": 0.9823587193638925,
+          "rule_judgment": {
+            "reason": "domain and version changes define separate agentic tasks.",
+            "status": "allowed_protocol_variant"
+          }
+        },
+        {
+          "benchmark_a": "tau_bench_retail",
+          "benchmark_b": "tau2_bench_telecom",
+          "n_overlap": 7,
+          "overlap_jaccard": 0.1794871794871795,
+          "overlap_of_smaller": 0.3684210526315789,
+          "pearson_direction_aligned": 0.8148106778310217,
+          "pearson_raw": 0.8148106778310217,
+          "rule_judgment": {
+            "reason": "domain and version changes define separate agentic tasks.",
+            "status": "allowed_protocol_variant"
+          }
+        },
+        {
+          "benchmark_a": "tau_bench_retail",
+          "benchmark_b": "tau3_bench",
+          "n_overlap": 0,
+          "overlap_jaccard": 0.0,
+          "overlap_of_smaller": 0.0,
+          "pearson_direction_aligned": null,
+          "pearson_raw": null,
+          "rule_judgment": {
+            "reason": "domain and version changes define separate agentic tasks.",
+            "status": "allowed_protocol_variant"
+          }
+        },
+        {
+          "benchmark_a": "tau2_bench_airline",
+          "benchmark_b": "tau2_bench_retail",
+          "n_overlap": 14,
+          "overlap_jaccard": 0.6666666666666666,
+          "overlap_of_smaller": 1.0,
+          "pearson_direction_aligned": 0.9730441750972258,
+          "pearson_raw": 0.9730441750972258,
+          "rule_judgment": {
+            "reason": "domain and version changes define separate agentic tasks.",
+            "status": "allowed_protocol_variant"
+          }
+        },
+        {
+          "benchmark_a": "tau2_bench_airline",
+          "benchmark_b": "tau2_bench_telecom",
+          "n_overlap": 14,
+          "overlap_jaccard": 0.5185185185185185,
+          "overlap_of_smaller": 1.0,
+          "pearson_direction_aligned": 0.7543513508694646,
+          "pearson_raw": 0.7543513508694646,
+          "rule_judgment": {
+            "reason": "domain and version changes define separate agentic tasks.",
+            "status": "allowed_protocol_variant"
+          }
+        },
+        {
+          "benchmark_a": "tau2_bench_airline",
+          "benchmark_b": "tau3_bench",
+          "n_overlap": 1,
+          "overlap_jaccard": 0.047619047619047616,
+          "overlap_of_smaller": 0.125,
+          "pearson_direction_aligned": null,
+          "pearson_raw": null,
+          "rule_judgment": {
+            "reason": "domain and version changes define separate agentic tasks.",
+            "status": "allowed_protocol_variant"
+          }
+        },
+        {
+          "benchmark_a": "tau2_bench_retail",
+          "benchmark_b": "tau2_bench_telecom",
+          "n_overlap": 21,
+          "overlap_jaccard": 0.7777777777777778,
+          "overlap_of_smaller": 1.0,
+          "pearson_direction_aligned": 0.7949866877628016,
+          "pearson_raw": 0.7949866877628016,
+          "rule_judgment": {
+            "reason": "domain and version changes define separate agentic tasks.",
+            "status": "allowed_protocol_variant"
+          }
+        },
+        {
+          "benchmark_a": "tau2_bench_retail",
+          "benchmark_b": "tau3_bench",
+          "n_overlap": 3,
+          "overlap_jaccard": 0.11538461538461539,
+          "overlap_of_smaller": 0.375,
+          "pearson_direction_aligned": 0.21034895035902904,
+          "pearson_raw": 0.21034895035902904,
+          "rule_judgment": {
+            "reason": "domain and version changes define separate agentic tasks.",
+            "status": "allowed_protocol_variant"
+          }
+        },
+        {
+          "benchmark_a": "tau2_bench_telecom",
+          "benchmark_b": "tau3_bench",
+          "n_overlap": 4,
+          "overlap_jaccard": 0.12903225806451613,
+          "overlap_of_smaller": 0.5,
+          "pearson_direction_aligned": -0.49118162770055057,
+          "pearson_raw": -0.49118162770055057,
+          "rule_judgment": {
+            "reason": "domain and version changes define separate agentic tasks.",
+            "status": "allowed_protocol_variant"
+          }
+        }
+      ]
+    },
+    {
+      "description": "Terminal-Bench 2.0, Terminal-Bench 1.0, and hard subset.",
+      "dropped_benchmark_ids": [
+        "terminal_bench_1",
+        "terminal_bench_hard"
+      ],
+      "group_id": "terminal_bench",
+      "keep_rule": "keep the member with the most observed cells; ties use the order in VARIANT_GROUPS",
+      "kept_benchmark_id": "terminal_bench",
+      "members": [
+        {
+          "benchmark_id": "terminal_bench",
+          "category": "Agentic",
+          "metric": {
+            "higher_is_better": true,
+            "range": [
+              0,
+              100
+            ],
+            "type": "pct"
+          },
+          "n_observed": 38,
+          "name": "Terminal-Bench 2.0"
+        },
+        {
+          "benchmark_id": "terminal_bench_1",
+          "category": "Agentic",
+          "metric": {
+            "higher_is_better": true,
+            "range": [
+              0,
+              100
+            ],
+            "type": "pct"
+          },
+          "n_observed": 18,
+          "name": "Terminal-Bench 1.0"
+        },
+        {
+          "benchmark_id": "terminal_bench_hard",
+          "category": "Coding",
+          "metric": {
+            "higher_is_better": true,
+            "range": [
+              0,
+              100
+            ],
+            "type": "pct"
+          },
+          "n_observed": 11,
+          "name": "Terminal-Bench Hard"
+        }
+      ],
+      "pairwise": [
+        {
+          "benchmark_a": "terminal_bench",
+          "benchmark_b": "terminal_bench_1",
+          "n_overlap": 10,
+          "overlap_jaccard": 0.21739130434782608,
+          "overlap_of_smaller": 0.5555555555555556,
+          "pearson_direction_aligned": 0.73815150691911,
+          "pearson_raw": 0.73815150691911,
+          "rule_judgment": {
+            "reason": "version and hard-subset variants share the same family but change task set/difficulty.",
+            "status": "ambiguous"
+          }
+        },
+        {
+          "benchmark_a": "terminal_bench",
+          "benchmark_b": "terminal_bench_hard",
+          "n_overlap": 11,
+          "overlap_jaccard": 0.2894736842105263,
+          "overlap_of_smaller": 1.0,
+          "pearson_direction_aligned": 0.7433529076660933,
+          "pearson_raw": 0.7433529076660933,
+          "rule_judgment": {
+            "reason": "version and hard-subset variants share the same family but change task set/difficulty.",
+            "status": "ambiguous"
+          }
+        },
+        {
+          "benchmark_a": "terminal_bench_1",
+          "benchmark_b": "terminal_bench_hard",
+          "n_overlap": 5,
+          "overlap_jaccard": 0.20833333333333334,
+          "overlap_of_smaller": 0.45454545454545453,
+          "pearson_direction_aligned": 0.6281058678841216,
+          "pearson_raw": 0.6281058678841216,
+          "rule_judgment": {
+            "reason": "version and hard-subset variants share the same family but change task set/difficulty.",
+            "status": "ambiguous"
+          }
+        }
+      ]
+    }
+  ],
+  "n_drop_benchmarks_for_dedup": 38,
+  "n_groups": 23,
+  "n_unique_benchmarks_in_groups": 61,
+  "variant_config": "reviewer_groups"
+}

@@ -43,4 +43,11 @@ The script overwrites `variant_groups.json` and `results.json` atomically throug
 
 ## Last valid result
 
-Pending CHTC run.
+- CHTC job: `6307697` (`dd_varnoise2`)
+- code commit: `b34cd43b913a988be591c6e3d2031c2d848ff12e`
+- matrix: May 2026, 84 models x 133 benchmarks, 2,604 observed cells
+- dedup rule: 23 variant groups, keep the member with the most observed cells, drop 38 columns, leaving 95 columns
+- evaluation cells: 18,820 held-out predictions from the canonical 10 seed x 3 per-model folds after filtering to kept columns
+- full matrix on kept-column cells: per-fold median MedAE 4.693, MedAPE 7.924%; pooled MedAE 4.704, MedAPE 7.816%
+- deduplicated matrix: per-fold median MedAE 4.982, MedAPE 8.119%; pooled MedAE 4.947, MedAPE 8.148%
+- artifacts: `results.json`, `variant_groups.json`; remote tarball `CHTC:~/bp_iclr/out_dd_varnoise2.tar.gz`
