@@ -12,7 +12,9 @@ The current arXiv Hero Figure is a reproducible two-panel asset pair. `plot.py` 
 | File | Role |
 |------|------|
 | `run.py` | Data-provenance entry point for target-cell keep-k raw predictions; recommended on a remote CPU machine, not local |
+| `run_target_cells.py` | ICLR 2027 panel A compute: target-hidden keep-k curves for selected cells on one score snapshot; remote CPU only |
 | `plot.py` | Current arXiv two-panel renderer; reads committed summaries and writes generated PDFs to `figures/` |
+| `results/target_cells_may_2026.json`, `results/target_cells_aug_2026.json` | `run_target_cells.py` outputs (config + manifest, per-seed raw predictions, per-k summary) for ICLR panel A |
 | `results.json` | Legacy raw prediction rows from the older full keep-k sweep; retained only as provenance/fallback data, not as a current rendering target |
 | `results/hero_candidate_grid_summary.json` | Source summary for the current four example cells in panel A |
 | `results/phi4_reasoning_plus_gpqa_keepk_summary.json` | Source summary for the Phi-4 Reasoning Plus / GPQA Diamond cell in panel A |
@@ -57,6 +59,16 @@ This renders and verifies the canonical current arXiv assets:
 `plot.py` writes rendered PDFs:
 - `figures/bp_hero_panel_a_examples.pdf`
 - `figures/bp_hero_panel_b_overall.pdf`
+
+### ICLR 2027 panel A (target-hidden)
+```bash
+python run_target_cells.py --score-json <may.json> --output results/target_cells_may_2026.json \
+  --target claude-opus-4.7:hle --target phi-4-reasoning-plus:gpqa_diamond --target deepseek-v4-pro:terminal_bench
+python run_target_cells.py --score-json <aug.json> --output results/target_cells_aug_2026.json \
+  --target gpt-5.6-sol:browsecomp
+python plot.py --hidden-target-panel-a   # -> overleaf/iclr2027/figures/bp_hero_panel_a_examples.pdf
+```
+For each target cell and each (k, seed), the target model keeps k scores sampled from its other observed benchmarks; the target cell is never revealed. k=0 is the benchmark median over the other models. GPT-5.6 Sol (released July 2026) uses the August 26, 2026 snapshot; the other three cells use the May 2026 snapshot. Phi-4 Reasoning Plus has 11 observed paper benchmarks (below the 15-benchmark row threshold), so it is appended to the May matrix as an extra row. `run_target_cells.py` rewrites its output after each target and skips finished targets on restart; a config mismatch fails fast.
 
 ## Resume / rerun
 - `run.py --k K` skips shard files in `--shard-dir` whose size is >100 bytes.

@@ -39,6 +39,10 @@ FIGURES_DIR = HERE / "figures"
 
 SUMMARY_PATH = RESULTS_DIR / "hero_candidate_grid_summary.json"
 PHI_SUMMARY_PATH = RESULTS_DIR / "phi4_reasoning_plus_gpqa_keepk_summary.json"
+TARGET_CELL_PATHS = [
+    RESULTS_DIR / "target_cells_may_2026.json",
+    RESULTS_DIR / "target_cells_aug_2026.json",
+]
 RANDOM_PATH = (
     HERE / ".." / ".." / "sec5_findings" / "optimal_probe" / "all_known" / "results"
     / "random_medape_hero_all_known.json.gz"
@@ -91,8 +95,15 @@ PICKS = [
     ("phi-4-reasoning-plus", "gpqa_diamond"),
     ("deepseek-v4-pro", "terminal_bench"),
 ]
+HIDDEN_TARGET_PICKS = [
+    ("gpt-5.6-sol", "browsecomp"),
+    ("claude-opus-4.7", "hle"),
+    ("phi-4-reasoning-plus", "gpqa_diamond"),
+    ("deepseek-v4-pro", "terminal_bench"),
+]
 DISPLAY = {
     ("gpt-5.5", "browsecomp"): ("GPT-5.5", "BrowseComp"),
+    ("gpt-5.6-sol", "browsecomp"): ("GPT-5.6 Sol", "BrowseComp"),
     ("claude-opus-4.7", "hle"): ("Claude Opus 4.7", "HLE"),
     ("phi-4-reasoning-plus", "gpqa_diamond"): (
         "Phi-4 Reasoning Plus",
@@ -152,6 +163,18 @@ def selected_examples():
     if missing:
         raise RuntimeError(f"Missing selected hero pairs: {missing}")
     return [by_pair[pair] for pair in PICKS]
+
+
+def hidden_target_examples():
+    """Panel A cells from run_target_cells.py, where the target cell is never revealed."""
+    by_pair = {}
+    for path in TARGET_CELL_PATHS:
+        for item in load_json(path)["targets"].values():
+            by_pair[(item["model_id"], item["bench_id"])] = item
+    missing = [pair for pair in HIDDEN_TARGET_PICKS if pair not in by_pair]
+    if missing:
+        raise RuntimeError(f"Missing target-hidden hero cells: {missing}")
+    return [by_pair[pair] for pair in HIDDEN_TARGET_PICKS]
 
 
 def benchmark_median_baseline_medae():
@@ -376,7 +399,7 @@ def apply_style() -> None:
     })
 
 
-def render_panel_a(selected) -> Path:
+def render_panel_a(selected, output_path: Path | None = None) -> Path:
     fig_a, axes_a = plt.subplots(2, 2, figsize=(6.0, 5.7))
     axes_a = axes_a.ravel()
     for idx, (ax, item) in enumerate(zip(axes_a, selected)):
@@ -444,7 +467,7 @@ def render_panel_a(selected) -> Path:
         left=0.108, right=0.990, top=0.925, bottom=0.112,
         hspace=0.42, wspace=0.24,
     )
-    output = FIGURES_DIR / "bp_hero_panel_a_examples.pdf"
+    output = output_path or (FIGURES_DIR / "bp_hero_panel_a_examples.pdf")
     save_pdf(fig_a, output)
     return output
 
@@ -626,6 +649,8 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--hidden-only-panel-b", action="store_true",
                         help="Render Figure 1 panel B from hidden-only probe summaries.")
+    parser.add_argument("--hidden-target-panel-a", action="store_true",
+                        help="Render Figure 1 panel A from target-hidden run_target_cells.py outputs.")
     parser.add_argument("--panel-b-only", action="store_true",
                         help="Render only Figure 1 panel B.")
     parser.add_argument("--allow-missing-random", action="store_true",
@@ -635,6 +660,17 @@ def main() -> None:
     args = parser.parse_args()
 
     apply_style()
+    if args.hidden_target_panel_a:
+        selected = hidden_target_examples()
+        for item in selected:
+            print(f"{item['model_id']}/{item['bench_id']}: k=0 {item['baseline_ae']:.2f} " + " ".join(
+                f"k={v['k']}:{v['median']:.2f}" for v in item["random"]))
+        output = render_panel_a(
+            selected,
+            output_path=OVERLEAF_FIGURES_DIR / "bp_hero_panel_a_examples.pdf",
+        )
+        print(f"  -> {output}")
+        return
     if args.hidden_only_panel_b:
         curves = hidden_probe_policy_curves(
             allow_missing_random=args.allow_missing_random,
