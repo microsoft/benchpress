@@ -2,6 +2,7 @@
 """Evaluate a fixed all-known probe ordering without rerunning greedy search."""
 
 import argparse
+import functools
 import os
 import subprocess
 import sys
@@ -16,6 +17,7 @@ if REPO_ROOT not in sys.path:
 
 from benchpress.evaluation_harness import (
     BENCH_IDS,
+    BENCH_METRICS,
     BENCH_NAMES,
     M_FULL,
     MODEL_IDS,
@@ -28,7 +30,7 @@ from benchpress.evaluation_harness import (
     matrix_identity_sha256,
 )
 from benchpress.io_utils import load_json, write_json_atomic
-from benchpress.methods.predictors import predict_benchpress_scores
+from benchpress.methods.predictors import predict_logit_bias_als_scores
 
 RESULTS_DIR = os.path.join(SCRIPT_DIR, "results")
 DEFAULT_ORDER_JSON = os.path.join(SCRIPT_DIR, "probe_orderings.json")
@@ -79,12 +81,14 @@ def _error_summary(rows, total_cells):
 
 
 def _evaluate_k(args):
-    k, order_indices = args
+    k, order_indices, rank = args
     prefix = order_indices[:k]
     probe_set = set(prefix)
     predictions, _, _ = evaluate_probe_set(
         prefix,
-        predict_benchpress_scores,
+        functools.partial(
+            predict_logit_bias_als_scores, rank=rank, lam=0.1,
+            metric=BENCH_METRICS, benchmark_ids=BENCH_IDS),
         metric="medae",
     )
     rows = []
@@ -127,9 +131,10 @@ def _load_order(path, key):
     return payload, order
 
 
-def _resolve_out_path(out_arg, fixed_order):
+def _resolve_out_path(out_arg, fixed_order, rank):
     if out_arg is None:
-        out_arg = f"fixed_order_{fixed_order}_hidden_only.json.gz"
+        rank_tag = "" if rank == 2 else f"_rank{rank}"
+        out_arg = f"fixed_order_{fixed_order}{rank_tag}_hidden_only.json.gz"
     if os.path.isabs(out_arg):
         return out_arg
     return os.path.join(RESULTS_DIR, out_arg)
@@ -141,6 +146,8 @@ def main():
     parser.add_argument("--fixed-order", required=True,
                         help="Key in --fixed-order-json, e.g. medae_any or medae_low_cost.")
     parser.add_argument("--k-max", type=int, default=None)
+    parser.add_argument("--rank", type=int, default=2,
+                        help="Bias ALS rank; 2 is the BenchPress default, 0 keeps only offsets.")
     parser.add_argument("--workers", type=int, default=1)
     parser.add_argument("--out", default=None)
     args = parser.parse_args()
@@ -151,7 +158,7 @@ def main():
         raise SystemExit(f"--k-max must be in [1, {len(order['benchmark_ids'])}]")
 
     order_indices = [BENCH_IDS.index(bid) for bid in order["benchmark_ids"]]
-    units = [(k, order_indices) for k in range(1, k_max + 1)]
+    units = [(k, order_indices, args.rank) for k in range(1, k_max + 1)]
     if args.workers <= 1:
         evaluated = [_evaluate_k(unit) for unit in units]
     else:
@@ -181,7 +188,8 @@ def main():
             "n_models": int(N_MODELS),
             "n_bench": int(N_BENCH),
             "n_observed": int(OBSERVED.sum()),
-            "prediction_engine": "predict_benchpress_scores (Logit Bias ALS, rank=2, lambda=0.1)",
+            "prediction_engine": f"predict_logit_bias_als_scores (Logit Bias ALS, rank={args.rank}, lambda=0.1)",
+            "rank": int(args.rank),
             "eval_scope": "all observed cells; probe cells are exact for with_probe_zero and excluded for hidden_only",
         },
         "manifest": _manifest(),
@@ -189,7 +197,7 @@ def main():
         "raw_predictions": raw_predictions,
     }
 
-    out_path = _resolve_out_path(args.out, args.fixed_order)
+    out_path = _resolve_out_path(args.out, args.fixed_order, args.rank)
     write_json_atomic(out_path, output, indent=2)
     print(f"Saved -> {out_path}")
     for row in output["summary_by_k"]:

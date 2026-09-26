@@ -137,6 +137,8 @@ def _compute_widths_multi_ci(npz_path, methods, ci_levels=(0.80, 0.90, 0.95)):
     actual = data["actual"]
     predicted = data["predicted"]
     fold_id = data["fold_id"]
+    cell_id = (data["test_i"].astype(np.int64) * _RUN.M_FULL.shape[1]
+               + data["test_j"].astype(np.int64))
     uncertainty_keys = {
         "disagreement": "disagreement_uncertainty",
         "structural_support": "structural_support_uncertainty",
@@ -147,7 +149,7 @@ def _compute_widths_multi_ci(npz_path, methods, ci_levels=(0.80, 0.90, 0.95)):
         unc = data[uncertainty_keys[name]]
         out[name] = {}
         for ci in ci_levels:
-            lo, hi, _ = _RUN._conformal_interval(actual, predicted, unc, fold_id, ci=ci)
+            lo, hi, _ = _RUN._conformal_interval(actual, predicted, unc, fold_id, cell_id, ci=ci)
             cw = _RUN._coverage_width(actual, lo, hi)
             out[name][ci] = {
                 "coverage": cw["coverage"],

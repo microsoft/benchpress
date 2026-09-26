@@ -33,7 +33,7 @@ do not run it on the local Mac.
 
 - May JSON: expected to build an `84 x 133` matrix with `2,604` observed cells.
 - August JSON: expected to build a `129 x 253` matrix with `4,905` observed cells.
-- Probe orderings: `../optimal_probe/all_known/probe_orderings.json`.
+- Probe orderings: `../optimal_probe/all_known/probe_orderings.json` (`medae_any`, `medae_low_cost`, and the most-reported-first baselines `coverage_any`, `coverage_low_cost`). Each fixed-order unit also records `logit_model_mean_fixed_order`, the logit-space model mean fit on the same appended matrix and scored on the same hidden cells.
 
 ## Outputs
 

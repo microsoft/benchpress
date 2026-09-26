@@ -27,7 +27,7 @@ The current script runs all ranks serially in one CPU job. If this becomes a bot
 - `benchpress.evaluation_harness.load_folds`
 - `benchpress.methods.completers.complete_soft_impute`
 - Fold setting in `run.py`: 10 seeds × 3 folds, base seed 42, `min_scores=1`
-- Rank sweep: 1 through 10
+- Rank sweep: 1 through 10 for Soft-Impute; 0 through 10 for logit-space Bias ALS (`lambda=0.1`, the BenchPress family; rank 0 = offsets only), run with `python run.py --methods logit_bias_als` and stored under `results.json["logit_bias_als"]`
 
 ## Outputs
 `results.json` contains:

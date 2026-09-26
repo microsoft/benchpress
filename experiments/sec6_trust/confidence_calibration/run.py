@@ -251,6 +251,8 @@ def build_confidence_scores(ensemble_transform="logit",
         print(f"Running fold shard {fold_shard_index}/{num_fold_shards}: "
               f"{[int(f) for f in folds_to_run]}", flush=True)
 
+    cell_id = (arrays["test_i"].astype(np.int64) * M_FULL.shape[1]
+               + arrays["test_j"].astype(np.int64))
     disagreement_feature_names = sorted(disagreement_features)
     structural_feature_names = sorted(structural_features)
     combined_feature_names = sorted(combined_features)
@@ -259,7 +261,7 @@ def build_confidence_scores(ensemble_transform="logit",
     if "disagreement" in risk_methods:
         disagreement_uncertainty, disagreement_feature_names, selected = (
             leave_fold_mlp_error_calibrator(
-                arrays["actual"], arrays["predicted"], arrays["fold_id"],
+                arrays["actual"], arrays["predicted"], arrays["fold_id"], cell_id,
                 disagreement_features, folds_to_run=folds_to_run,
                 label="disagreement")
         )
@@ -269,7 +271,7 @@ def build_confidence_scores(ensemble_transform="logit",
     if "structural_support" in risk_methods:
         structural_uncertainty, structural_feature_names, selected = (
             leave_fold_mlp_error_calibrator(
-                arrays["actual"], arrays["predicted"], arrays["fold_id"],
+                arrays["actual"], arrays["predicted"], arrays["fold_id"], cell_id,
                 structural_features, folds_to_run=folds_to_run,
                 label="structural_support")
         )
@@ -279,7 +281,7 @@ def build_confidence_scores(ensemble_transform="logit",
     if "combined_risk_model" in risk_methods:
         combined_uncertainty, combined_feature_names, selected = (
             leave_fold_mlp_error_calibrator(
-                arrays["actual"], arrays["predicted"], arrays["fold_id"],
+                arrays["actual"], arrays["predicted"], arrays["fold_id"], cell_id,
                 combined_features, folds_to_run=folds_to_run,
                 label="combined_risk_model")
         )
@@ -346,6 +348,8 @@ def summarize(arrays, metadata, scores_path=SCORES_PATH, results_path=RESULTS_PA
     actual = arrays["actual"]
     predicted = arrays["predicted"]
     fold_id = arrays["fold_id"]
+    cell_id = (arrays["test_i"].astype(np.int64) * M_FULL.shape[1]
+               + arrays["test_j"].astype(np.int64))
 
     methods = {}
     for key in arrays:
@@ -355,7 +359,7 @@ def summarize(arrays, metadata, scores_path=SCORES_PATH, results_path=RESULTS_PA
         lower = arrays.get(f"{name}_lower")
         upper = arrays.get(f"{name}_upper")
         method_name, payload = summarize_confidence_method(
-            name, actual, predicted, fold_id, arrays[key], lower=lower, upper=upper)
+            name, actual, predicted, fold_id, cell_id, arrays[key], lower=lower, upper=upper)
         methods[method_name] = payload
 
     point_metrics = compute_prediction_error(actual, predicted)

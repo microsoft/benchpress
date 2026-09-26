@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
-"""Rank sweep for Soft-Impute SVD in raw and logit score spaces.
+"""Rank sweep for Soft-Impute SVD in raw and logit score spaces, and for the
+BenchPress predictor family (logit-space Bias ALS, lambda=0.1).
 
-This is the main-body Sec. 3.3 prediction evidence: no BenchPress blend
-reference, only Soft-Impute over raw and transformed benchmark scores.
+Soft-Impute is the main-body Sec. 3.3 prediction evidence. The Bias ALS sweep
+starts at rank 0 (global level plus model and benchmark offsets only), so it
+measures what the residual interaction adds beyond the offsets.
 """
-import os, sys, warnings, numpy as np
+import argparse, os, sys, warnings, numpy as np
 from json import JSONDecodeError
 warnings.filterwarnings('ignore')
 
@@ -13,11 +15,12 @@ ROOT = os.path.abspath(os.path.join(HERE, '..', '..', '..', '..'))
 sys.path.insert(0, ROOT)
 
 from benchpress.evaluation_harness import (
-    M_FULL, OBSERVED, N_MODELS, N_BENCH, MODEL_IDS, BENCH_IDS,
+    M_FULL, OBSERVED, N_MODELS, N_BENCH, MODEL_IDS, BENCH_IDS, BENCH_METRICS,
     compute_prediction_error, load_folds, make_score_predictor
 )
 from benchpress.io_utils import load_json, write_json
 from benchpress.methods.completers import (
+    complete_bias_als,
     complete_soft_impute,
 )
 
@@ -26,18 +29,30 @@ N_SEEDS = 10
 N_FOLDS = 3
 MIN_SCORES = 1
 RANKS = list(range(1, 11))  # 1..10
+BIAS_ALS_RANKS = list(range(0, 11))  # 0..10; rank 0 = offsets only
 
 METHODS = {
     'identity_svd': {
         'predict_fn': complete_soft_impute,
         'extra_kwargs': {},
         'label': 'Raw-space Soft-Impute',
+        'ranks': RANKS,
     },
     'logit_svd': {
         'predict_fn': lambda M_train, rank: make_score_predictor(
             complete_soft_impute, 'logit', rank=rank, normalize=False)(M_train),
         'extra_kwargs': {},
         'label': 'Logit-space Soft-Impute',
+        'ranks': RANKS,
+    },
+    'logit_bias_als': {
+        'predict_fn': lambda M_train, rank: make_score_predictor(
+            lambda M, **kw: complete_bias_als(M, normalize=False, **kw),
+            'logit', metric=BENCH_METRICS, benchmark_ids=BENCH_IDS,
+            rank=rank, lam=0.1)(M_train),
+        'extra_kwargs': {},
+        'label': 'Logit-space Bias ALS (lambda=0.1)',
+        'ranks': BIAS_ALS_RANKS,
     },
 }
 
@@ -91,12 +106,17 @@ def load_current_folds():
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--methods', nargs='+', choices=list(METHODS),
+                        default=list(METHODS))
+    args = parser.parse_args()
     np.random.seed(SEED)
     folds = load_current_folds()
     print(f"Matrix: {N_MODELS} models × {N_BENCH} benchmarks; {len(folds)} folds")
 
     results = {
         'ranks': RANKS,
+        'bias_als_ranks': BIAS_ALS_RANKS,
         'methods': list(METHODS.keys()),
         'matrix': {
             'n_models': int(N_MODELS),
@@ -138,11 +158,12 @@ def main():
             print(f"Could not resume from {out}: {exc}")
 
     # Sweep each method × each rank, saving after every entry for resumability
-    for key, spec in METHODS.items():
+    for key in args.methods:
+        spec = METHODS[key]
         predict_fn = spec['predict_fn']
         extra = spec['extra_kwargs']
         label = spec['label']
-        for r in RANKS:
+        for r in spec['ranks']:
             r_key = str(r)
             if r_key in results[key]:
                 cached = results[key][r_key]

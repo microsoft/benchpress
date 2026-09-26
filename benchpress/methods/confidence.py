@@ -103,16 +103,21 @@ def coverage_width(actual, lower, upper):
     }
 
 
-def conformal_interval(actual, predicted, uncertainty, fold_id, ci=0.90):
-    """Leave-fold-out conformal scaling for raw uncertainty scores."""
+def conformal_interval(actual, predicted, uncertainty, fold_id, cell_id, ci=0.90):
+    """Leave-fold-out conformal scaling for raw uncertainty scores.
+
+    `cell_id` identifies the (model, benchmark) cell of each row; rows of the
+    same cell from other seeds are excluded from the evaluated fold's calibration.
+    """
     actual = np.asarray(actual, dtype=float)
     predicted = np.asarray(predicted, dtype=float)
     uncertainty = np.asarray(uncertainty, dtype=float)
     fold_id = np.asarray(fold_id, dtype=int)
+    cell_id = np.asarray(cell_id, dtype=np.int64)
     scale = np.full_like(predicted, np.nan, dtype=float)
     eps = 1e-8
     for fold in np.unique(fold_id):
-        cal = fold_id != fold
+        cal = (fold_id != fold) & ~np.isin(cell_id, cell_id[fold_id == fold])
         valid = (cal & np.isfinite(actual) & np.isfinite(predicted)
                  & np.isfinite(uncertainty) & (uncertainty > eps))
         if valid.sum() < 5:
@@ -357,14 +362,14 @@ def fit_mlp_model(X_train, y_train, hidden_layers, seed):
     return fit_risk_model(X_train, y_train, ("mlp", tuple(hidden_layers)), seed)
 
 
-def select_risk_model_config(X, y, fold_id, train_mask,
+def select_risk_model_config(X, y, cell_id, train_mask,
                              model_grid=DEFAULT_RISK_MODEL_GRID, seed=SEED):
-    """Choose the reliability risk model using training-fold validation."""
-    inner_train = train_mask & ((fold_id % 5) != 0)
-    inner_val = train_mask & ((fold_id % 5) == 0)
+    """Choose the reliability risk model on a cell-disjoint split of the training rows."""
+    inner_train = train_mask & ((cell_id % 5) != 0)
+    inner_val = train_mask & ((cell_id % 5) == 0)
     if inner_val.sum() < 50 or inner_train.sum() < X.shape[1] + 50:
-        inner_train = train_mask & ((fold_id % 3) != 0)
-        inner_val = train_mask & ((fold_id % 3) == 0)
+        inner_train = train_mask & ((cell_id % 3) != 0)
+        inner_val = train_mask & ((cell_id % 3) == 0)
     if inner_val.sum() < 50 or inner_train.sum() < X.shape[1] + 50:
         return model_grid[0]
 
@@ -379,20 +384,26 @@ def select_risk_model_config(X, y, fold_id, train_mask,
     return scores[0][1]
 
 
-def select_mlp_config(X, y, fold_id, train_mask, hidden_grid, seed=SEED):
-    """Choose the confidence MLP width/depth using training-fold validation."""
+def select_mlp_config(X, y, cell_id, train_mask, hidden_grid, seed=SEED):
+    """Choose the confidence MLP width/depth on a cell-disjoint training split."""
     model_grid = [("mlp", tuple(hidden_layers)) for hidden_layers in hidden_grid]
     _, hidden_layers = select_risk_model_config(
-        X, y, fold_id, train_mask, model_grid=model_grid, seed=seed)
+        X, y, cell_id, train_mask, model_grid=model_grid, seed=seed)
     return hidden_layers
 
 
-def leave_fold_mlp_error_calibrator(actual, predicted, fold_id, feature_dict,
+def leave_fold_mlp_error_calibrator(actual, predicted, fold_id, cell_id, feature_dict,
                                     folds_to_run=None, label="mlp", seed=SEED):
-    """Cross-fit a risk model that predicts log absolute error from features."""
+    """Cross-fit a risk model that predicts log absolute error from features.
+
+    `cell_id` identifies the (model, benchmark) cell of each row. The model for a
+    held-out fold is trained only on rows of other folds whose cells do not occur
+    in that fold, so repeated seeds never place a test cell's error in training.
+    """
     actual = np.asarray(actual, dtype=float)
     predicted = np.asarray(predicted, dtype=float)
     fold_id = np.asarray(fold_id, dtype=int)
+    cell_id = np.asarray(cell_id, dtype=np.int64)
     X, feature_names = feature_matrix(feature_dict)
     y = np.log1p(np.abs(predicted - actual))
     out = np.full(len(y), np.nan, dtype=float)
@@ -406,12 +417,13 @@ def leave_fold_mlp_error_calibrator(actual, predicted, fold_id, feature_dict,
         folds = np.asarray([f for f in folds if int(f) in folds_to_run], dtype=int)
     for fold in folds:
         print(f"[{label}] fold {int(fold)} start", flush=True)
-        train = (fold_id != fold) & valid_all
         test = (fold_id == fold) & np.all(np.isfinite(X), axis=1)
+        train = ((fold_id != fold) & ~np.isin(cell_id, cell_id[fold_id == fold])
+                 & valid_all)
         if train.sum() < X.shape[1] + 50 or test.sum() == 0:
             continue
         config = select_risk_model_config(
-            X, y, fold_id, train, model_grid=model_grid, seed=seed)
+            X, y, cell_id, train, model_grid=model_grid, seed=seed)
         selected[str(int(fold))] = risk_model_config_metadata(config)
         pred = fit_risk_model_predict(
             X[train], y[train], X[test],
@@ -661,14 +673,14 @@ def _training_records(M, folds, metric=None, benchmark_ids=None):
     }
 
 
-def _fit_final_confidence_model(actual, predicted, fold_id, feature_dict,
+def _fit_final_confidence_model(actual, predicted, cell_id, feature_dict,
                                 crossfit_uncertainty, seed=SEED, ci=0.90):
     X, feature_names = feature_matrix(feature_dict)
     y = np.log1p(np.abs(np.asarray(predicted, dtype=float)
                         - np.asarray(actual, dtype=float)))
     valid = np.isfinite(y) & np.all(np.isfinite(X), axis=1)
     config = select_risk_model_config(
-        X, y, np.asarray(fold_id, dtype=int), valid,
+        X, y, np.asarray(cell_id, dtype=np.int64), valid,
         model_grid=DEFAULT_RISK_MODEL_GRID, seed=seed)
     scaler, model = fit_risk_model(X[valid], y[valid], config, seed=seed + 2000)
     unc = np.asarray(crossfit_uncertainty, dtype=float)
@@ -700,6 +712,8 @@ def fit_default_confidence_calibrator(
     crossfit_uncertainty = (
         {} if crossfit_uncertainty is None else crossfit_uncertainty)
     crossfit_selected = {} if crossfit_selected is None else crossfit_selected
+    cell_id = (np.asarray(records["test_i"], dtype=np.int64) * matrix.shape[1]
+               + np.asarray(records["test_j"], dtype=np.int64))
     calibrators = {}
     for method in methods:
         if method not in records["feature_sets"]:
@@ -711,6 +725,7 @@ def fit_default_confidence_calibrator(
                 records["actual"],
                 records["predicted"],
                 records["fold_id"],
+                cell_id,
                 records["feature_sets"][method],
                 label=method,
                 seed=seed,
@@ -727,7 +742,7 @@ def fit_default_confidence_calibrator(
         calibrators[method] = _fit_final_confidence_model(
             records["actual"],
             records["predicted"],
-            records["fold_id"],
+            cell_id,
             records["feature_sets"][method],
             uncertainty,
             seed=seed,
@@ -885,7 +900,7 @@ def predict_confidence_intervals(M_train, M_pred=None, artifact=None,
     }
 
 
-def summarize_confidence_method(name, actual, predicted, fold_id, uncertainty,
+def summarize_confidence_method(name, actual, predicted, fold_id, cell_id, uncertainty,
                                 lower=None, upper=None):
     """Aggregate risk ranking and interval metrics for a confidence method."""
     out = {
@@ -900,7 +915,7 @@ def summarize_confidence_method(name, actual, predicted, fold_id, uncertainty,
     out["normal_90_interval"] = coverage_width(actual, raw_lower, raw_upper)
 
     conf_lower, conf_upper, scale = conformal_interval(
-        actual, predicted, uncertainty, fold_id, ci=0.90)
+        actual, predicted, uncertainty, fold_id, cell_id, ci=0.90)
     out["conformal_90_interval"] = coverage_width(actual, conf_lower, conf_upper)
     out["conformal_90_scale_median"] = (
         float(np.nanmedian(scale)) if np.any(np.isfinite(scale)) else float("nan")

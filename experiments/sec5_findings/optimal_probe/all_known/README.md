@@ -48,6 +48,11 @@ python evaluate_order.py \
 
 # Same command with --fixed-order medape_any / medape_low_cost and
 # --out fixed_order_medape_{any,low_cost}_hidden_only.json.gz for the MedAPE orderings.
+
+# Probe baselines on the same hidden cells:
+# --fixed-order coverage_any / coverage_low_cost (most-reported benchmarks first);
+# --fixed-order medae_any --rank 0 (offsets-only Bias ALS: model level from the probes,
+# no interaction term); default output fixed_order_<key>[_rank<r>]_hidden_only.json.gz.
 ```
 
 Plot from existing results:
@@ -114,5 +119,6 @@ Hidden-only evaluation (unrevealed cells only; CHTC jobs 6307236/6307237/6307249
 ICLR figure: `plot.py --compare --hidden-only --metric medape --all-in fixed_order_medape_any_hidden_only.json.gz --cheap-in fixed_order_medape_low_cost_hidden_only.json.gz --random-in random_medape_hero_all_known.json.gz --out bp_probe_evaluation_cost_aware` writes `overleaf/iclr2027/figures/bp_probe_evaluation_cost_aware.pdf`.
 
 `probe_orderings.json` stores the four top-10 prefixes from
-`tab:probe_sets`. Its unrestricted k=5 prefix matches the brute-force diagnostic
+`tab:probe_sets` and two most-reported-first baselines (`coverage_any`,
+`coverage_low_cost`; construction and counts recorded per ordering). Its unrestricted k=5 prefix matches the brute-force diagnostic
 set `gpqa_diamond, hle, codeforces_rating, mmlu_pro, arc_agi_1` up to ordering.

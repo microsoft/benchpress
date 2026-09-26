@@ -112,6 +112,88 @@
         "tau^2-bench Airline",
         "IFBench"
       ]
+    },
+    "coverage_any": {
+      "label": "Most-reported first, any benchmark",
+      "candidate_pool": "any benchmark",
+      "construction": "benchmarks sorted by number of models with an observed score in the May 2026 matrix (84 x 133), descending; ties broken by benchmark id",
+      "benchmark_ids": [
+        "gpqa_diamond",
+        "gpqa_main",
+        "livecodebench",
+        "mmlu_pro",
+        "swe_bench_verified",
+        "ifeval",
+        "aime_2025",
+        "hle",
+        "arc_agi_2",
+        "hle_text"
+      ],
+      "display_names": [
+        "GPQA Diamond",
+        "GPQA Main (full set)",
+        "LiveCodeBench",
+        "MMLU-Pro",
+        "SWE-bench Verified",
+        "IFEval",
+        "AIME 2025",
+        "HLE (Humanity's Last Exam)",
+        "ARC-AGI-2",
+        "HLE Text"
+      ],
+      "observed_counts": [
+        82,
+        71,
+        61,
+        58,
+        54,
+        50,
+        47,
+        46,
+        41,
+        39
+      ]
+    },
+    "coverage_low_cost": {
+      "label": "Most-reported first, low-cost benchmarks",
+      "candidate_pool": "low-cost benchmarks",
+      "construction": "benchmarks sorted by number of models with an observed score in the May 2026 matrix (84 x 133), descending; ties broken by benchmark id",
+      "benchmark_ids": [
+        "gpqa_diamond",
+        "mmlu_pro",
+        "aime_2025",
+        "hmmt_feb_2025",
+        "aider_polyglot_diff",
+        "math_500",
+        "arena_hard",
+        "tau2_bench_telecom",
+        "bullshit_pushback",
+        "ifbench"
+      ],
+      "display_names": [
+        "GPQA Diamond",
+        "MMLU-Pro",
+        "AIME 2025",
+        "HMMT Feb 2025",
+        "Aider Polyglot (diff mode)",
+        "MATH-500",
+        "Arena-Hard Auto",
+        "τ²-bench Telecom",
+        "Bullshit-Bench (Clear Pushback)",
+        "IFBench"
+      ],
+      "observed_counts": [
+        82,
+        58,
+        47,
+        34,
+        32,
+        32,
+        30,
+        27,
+        23,
+        23
+      ]
     }
   }
 }

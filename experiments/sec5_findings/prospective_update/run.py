@@ -18,6 +18,7 @@ DEFAULT_ORDER_PATH = os.path.abspath(os.path.join(
     HERE, "..", "optimal_probe", "all_known", "probe_orderings.json",
 ))
 PROTOCOL = "prospective_update_may_to_august_v1"
+FIXED_ORDERING_KEYS = ("medae_any", "medae_low_cost", "coverage_any", "coverage_low_cost")
 
 
 def parse_args():
@@ -273,14 +274,14 @@ def observed_aug_values_for_may_benchmarks(aug, model_id, may_benchmark_ids):
     return values
 
 
-def append_target_and_predict(may, aug_values, probe_ids, predict_benchpress_scores):
+def append_target_and_predict(may, aug_values, probe_ids, predict_scores):
     target_row = np.full((1, len(may["benchmark_ids"])), np.nan, dtype=float)
     bench_idx = {bid: idx for idx, bid in enumerate(may["benchmark_ids"])}
     for bid in probe_ids:
         if bid in aug_values and bid in bench_idx:
             target_row[0, bench_idx[bid]] = aug_values[bid]
     train = np.vstack([may["matrix"], target_row])
-    pred = predict_benchpress_scores(
+    pred = predict_scores(
         train,
         metric=may["benchmark_metrics"],
         benchmark_ids=may["benchmark_ids"],
@@ -321,6 +322,13 @@ def part_ii_new_models(may, aug, bp, args, orderings, out):
     predict_benchpress_scores = bp["predict_benchpress_scores"]
     predict_benchmark_median_scores = bp["predict_benchmark_median_scores"]
     compute_prediction_error = bp["compute_prediction_error"]
+
+    def predict_logit_model_mean(M_train, metric, benchmark_ids):
+        return bp["make_score_predictor"](
+            bp["complete_model_mean"], "logit",
+            metric=metric, benchmark_ids=benchmark_ids,
+        )(M_train)
+
     k_values = [1, 3, 5, 10]
     new_models = [mid for mid in aug["model_ids"] if mid not in set(may["model_ids"])]
     raw = []
@@ -335,7 +343,7 @@ def part_ii_new_models(may, aug, bp, args, orderings, out):
                 "benchmark_median", None, [], median_row,
             )
 
-    for ordering_key in ("medae_any", "medae_low_cost"):
+    for ordering_key in FIXED_ORDERING_KEYS:
         order_ids = orderings[ordering_key]["benchmark_ids"]
         for k in k_values:
             prefix = order_ids[:k]
@@ -353,6 +361,13 @@ def part_ii_new_models(may, aug, bp, args, orderings, out):
                 add_part_ii_rows(
                     raw, may, aug, mid, "benchpress_fixed_order", k,
                     ordering_key, None, prefix, pred_row,
+                )
+                model_mean_row = append_target_and_predict(
+                    may, observed_values, prefix, predict_logit_model_mean,
+                )
+                add_part_ii_rows(
+                    raw, may, aug, mid, "logit_model_mean_fixed_order", k,
+                    ordering_key, None, prefix, model_mean_row,
                 )
 
     for seed_idx in range(int(args.n_random_seeds)):
@@ -427,7 +442,7 @@ def main():
     order_payload = load_json_file(args.probe_order_json)
     orderings = order_payload["orderings"]
     missing = [
-        bid for key in ("medae_any", "medae_low_cost")
+        bid for key in FIXED_ORDERING_KEYS
         for bid in orderings[key]["benchmark_ids"]
         if bid not in may["benchmark_ids"]
     ]
@@ -456,6 +471,8 @@ def main():
         ),
         "probe_order_source": order_payload.get("source"),
         "predictor": "predict_benchpress_scores (Logit Bias ALS, rank=2, lambda=0.1)",
+        "part_ii_fixed_orderings": list(FIXED_ORDERING_KEYS),
+        "part_ii_same_cell_baseline": "logit_model_mean_fixed_order: logit-space model mean fit on the same appended matrix (May matrix plus the target's revealed probes), scored on the same hidden cells as benchpress_fixed_order",
         "part_i": "Predict August-observed cells for May models and May benchmarks that were missing in May.",
         "part_ii": "Append one August-only target model at a time to the May matrix with only probe cells revealed.",
         "inclusion_rule_part_ii": "k>0 requires >=1 observed probe cell in the prefix and >=5 hidden observed May-benchmark cells; k=0 benchmark-median baseline requires >=5 observed May-benchmark cells.",

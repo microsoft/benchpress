@@ -181,6 +181,8 @@ def confidence_metrics(records, label):
     actual = np.asarray([row["actual"] for row in records], dtype=float)
     predicted = np.asarray([row["predicted"] for row in records], dtype=float)
     fold_ids = np.asarray([row["fold_id"] for row in records], dtype=int)
+    _, cell_ids = np.unique(
+        [row["target_key"] for row in records], return_inverse=True)
     feature_names = sorted(records[0]["structural_features"])
     features = {
         name: np.asarray([
@@ -193,13 +195,14 @@ def confidence_metrics(records, label):
             actual,
             predicted,
             fold_ids,
+            cell_ids,
             features,
             label=label,
             seed=BASE_SEED,
         )
     )
     lower, upper, scale = conformal_interval(
-        actual, predicted, uncertainty, fold_ids, ci=0.90)
+        actual, predicted, uncertainty, fold_ids, cell_ids, ci=0.90)
     metrics = coverage_width(actual, lower, upper)
     metrics.update({
         "feature_names": selected_features,
