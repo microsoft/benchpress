@@ -26,6 +26,7 @@ if REPO_ROOT not in sys.path:
 from benchpress.build_benchmark_matrix import MODELS
 from benchpress.evaluation_harness import (
     BENCH_IDS,
+    BENCH_METRICS,
     BENCH_NAMES,
     M_FULL,
     MODEL_IDS,
@@ -35,9 +36,11 @@ from benchpress.evaluation_harness import (
     N_MODELS,
     OBSERVED,
     compute_prediction_error,
+    make_score_predictor,
     matrix_identity_sha256,
 )
 from benchpress.io_utils import load_json, safe_token, write_json, write_json_atomic
+from benchpress.methods.completers import complete_model_mean
 from benchpress.methods.predictors import predict_benchpress_scores
 from benchpress.shard_utils import short_text_hash
 
@@ -269,6 +272,10 @@ def run_shard(family_key: str, k: int, seed: int, out_path: Optional[str] = None
         raise RuntimeError(f"{family_key} k={k} seed={seed}: fewer than 3 observed cells")
 
     M_pred = predict_benchpress_scores(M_train)
+    # Same-cell baseline: logit-space model mean fit on the same training matrix.
+    M_model_mean = make_score_predictor(
+        complete_model_mean, "logit", metric=BENCH_METRICS, benchmark_ids=BENCH_IDS,
+    )(M_train)
     metric_cells = [
         (i, j, is_revealed)
         for i, j, is_revealed in eval_cells
@@ -305,6 +312,7 @@ def run_shard(family_key: str, k: int, seed: int, out_path: Optional[str] = None
             "benchmark_name": BENCH_NAMES[BENCH_IDS[j]],
             "actual": float(M_FULL[i, j]),
             "pred": pred,
+            "model_mean_pred": None if is_revealed else _finite_float(M_model_mean[i, j]),
             "is_revealed": bool(is_revealed),
             "is_metric_cell": bool(is_revealed or pred is not None),
             "prediction_source": (

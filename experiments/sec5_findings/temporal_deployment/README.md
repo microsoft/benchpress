@@ -52,7 +52,7 @@ The independent unit is `(target, k, seed)`: 27 hard-rule targets x 3 k values x
 
 ## Outputs
 
-- `results/shards/*.json.gz`: one shard per `(target, k, seed)`, including the target/training model IDs, revealed benchmark IDs, per-cell raw rows for all observed target cells, and shard metrics. Raw rows include `is_revealed`, `is_metric_cell`, and `prediction_source`; revealed cells have `pred=actual`, while non-predictable hidden cells have `pred=null`.
+- `results/shards/*.json.gz`: one shard per `(target, k, seed)`, including the target/training model IDs, revealed benchmark IDs, per-cell raw rows for all observed target cells, and shard metrics. Raw rows include `is_revealed`, `is_metric_cell`, and `prediction_source`; revealed cells have `pred=actual`, while non-predictable hidden cells have `pred=null`. Hidden rows also carry `model_mean_pred`, the logit-space model mean fit on the same training matrix, as a same-cell baseline.
 - `results.json`: merged canonical payload with config, hard-rule target definitions, raw predictions, and paper-facing summaries.
 - `results.json` also includes `summary_hidden_only_by_k` and
   `summary_hidden_only_by_family`: hidden-cell-only pooled MedAE/MedAPE,
