@@ -30,7 +30,10 @@ from benchpress.evaluation_harness import (
     matrix_identity_sha256,
 )
 from benchpress.io_utils import load_json, write_json_atomic
-from benchpress.methods.predictors import predict_logit_bias_als_scores
+from benchpress.methods.predictors import (
+    predict_logit_bias_als_scores,
+    predict_logit_model_mean_scores,
+)
 
 RESULTS_DIR = os.path.join(SCRIPT_DIR, "results")
 DEFAULT_ORDER_JSON = os.path.join(SCRIPT_DIR, "probe_orderings.json")
@@ -80,15 +83,34 @@ def _error_summary(rows, total_cells):
     }
 
 
+def _predictor_for_config(predictor_name, rank):
+    if predictor_name == "benchpress":
+        return (
+            functools.partial(
+                predict_logit_bias_als_scores, rank=rank, lam=0.1,
+                metric=BENCH_METRICS, benchmark_ids=BENCH_IDS),
+            f"predict_logit_bias_als_scores (Logit Bias ALS, rank={rank}, lambda=0.1)",
+            "benchpress",
+        )
+    if predictor_name == "logit_model_mean":
+        return (
+            functools.partial(
+                predict_logit_model_mean_scores,
+                metric=BENCH_METRICS, benchmark_ids=BENCH_IDS),
+            "predict_logit_model_mean_scores (logit-space model mean)",
+            "logit_space_model_mean",
+        )
+    raise ValueError(f"unknown predictor: {predictor_name!r}")
+
+
 def _evaluate_k(args):
-    k, order_indices, rank = args
+    k, order_indices, rank, predictor_name = args
     prefix = order_indices[:k]
     probe_set = set(prefix)
+    predict_fn, _, source_name = _predictor_for_config(predictor_name, rank)
     predictions, _, _ = evaluate_probe_set(
         prefix,
-        functools.partial(
-            predict_logit_bias_als_scores, rank=rank, lam=0.1,
-            metric=BENCH_METRICS, benchmark_ids=BENCH_IDS),
+        predict_fn,
         metric="medae",
     )
     rows = []
@@ -105,7 +127,7 @@ def _evaluate_k(args):
             "actual": float(actual),
             "pred": _finite_or_none(pred),
             "is_revealed": bool(is_revealed),
-            "prediction_source": "revealed" if is_revealed else "benchpress",
+            "prediction_source": "revealed" if is_revealed else source_name,
         })
     hidden_rows = [row for row in rows if not row["is_revealed"]]
     return {
@@ -131,10 +153,14 @@ def _load_order(path, key):
     return payload, order
 
 
-def _resolve_out_path(out_arg, fixed_order, rank):
+def _resolve_out_path(out_arg, fixed_order, rank, predictor_name):
     if out_arg is None:
-        rank_tag = "" if rank == 2 else f"_rank{rank}"
-        out_arg = f"fixed_order_{fixed_order}{rank_tag}_hidden_only.json.gz"
+        predictor_tag = "" if predictor_name == "benchpress" else f"_{predictor_name}"
+        rank_tag = "" if rank == 2 or predictor_name != "benchpress" else f"_rank{rank}"
+        out_arg = (
+            f"fixed_order_{fixed_order}{rank_tag}{predictor_tag}"
+            "_hidden_only.json.gz"
+        )
     if os.path.isabs(out_arg):
         return out_arg
     return os.path.join(RESULTS_DIR, out_arg)
@@ -148,6 +174,8 @@ def main():
     parser.add_argument("--k-max", type=int, default=None)
     parser.add_argument("--rank", type=int, default=2,
                         help="Bias ALS rank; 2 is the BenchPress default, 0 keeps only offsets.")
+    parser.add_argument("--predictor", choices=["benchpress", "logit_model_mean"],
+                        default="benchpress")
     parser.add_argument("--workers", type=int, default=1)
     parser.add_argument("--out", default=None)
     args = parser.parse_args()
@@ -158,7 +186,10 @@ def main():
         raise SystemExit(f"--k-max must be in [1, {len(order['benchmark_ids'])}]")
 
     order_indices = [BENCH_IDS.index(bid) for bid in order["benchmark_ids"]]
-    units = [(k, order_indices, args.rank) for k in range(1, k_max + 1)]
+    units = [
+        (k, order_indices, args.rank, args.predictor)
+        for k in range(1, k_max + 1)
+    ]
     if args.workers <= 1:
         evaluated = [_evaluate_k(unit) for unit in units]
     else:
@@ -197,7 +228,12 @@ def main():
         "raw_predictions": raw_predictions,
     }
 
-    out_path = _resolve_out_path(args.out, args.fixed_order, args.rank)
+    _, prediction_engine, _ = _predictor_for_config(args.predictor, args.rank)
+    output["config"]["predictor"] = args.predictor
+    output["config"]["prediction_engine"] = prediction_engine
+
+    out_path = _resolve_out_path(
+        args.out, args.fixed_order, args.rank, args.predictor)
     write_json_atomic(out_path, output, indent=2)
     print(f"Saved -> {out_path}")
     for row in output["summary_by_k"]:

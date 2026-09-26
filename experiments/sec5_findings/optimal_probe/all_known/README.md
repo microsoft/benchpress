@@ -53,6 +53,8 @@ python evaluate_order.py \
 # --fixed-order coverage_any / coverage_low_cost (most-reported benchmarks first);
 # --fixed-order medae_any --rank 0 (offsets-only Bias ALS: model level from the probes,
 # no interaction term); default output fixed_order_<key>[_rank<r>]_hidden_only.json.gz.
+# Use --predictor logit_model_mean to score the same fixed-order hidden cells
+# with the logit-space model mean baseline.
 
 python run_coverage_matched_random.py \
   --k-values 1 3 5 10 \

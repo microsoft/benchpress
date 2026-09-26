@@ -218,6 +218,49 @@ def _vector_pool_metrics(actual, predicted):
     return {'n': int(len(actual)), 'medape': medape, 'medae': medae}
 
 
+def compute_prediction_tail_metrics(actual, predicted, abs_error_threshold=10.0):
+    """Pool prediction-error metrics plus tail diagnostics for 1-D arrays."""
+    actual = np.asarray(actual, dtype=float)
+    predicted = np.asarray(predicted, dtype=float)
+    metrics = compute_prediction_error(actual, predicted, aggregation='pool')
+    valid = np.isfinite(actual) & np.isfinite(predicted)
+    abs_err = np.abs(predicted[valid] - actual[valid])
+    return {
+        'n': int(metrics['n']),
+        'medae': float(metrics['medae']) if np.isfinite(metrics['medae']) else float('nan'),
+        'medape': float(metrics['medape']) if np.isfinite(metrics['medape']) else float('nan'),
+        'p90_abs_error': float(np.percentile(abs_err, 90)) if len(abs_err) else float('nan'),
+        'frac_abs_error_gt_threshold': (
+            float(np.mean(abs_err > float(abs_error_threshold)))
+            if len(abs_err) else float('nan')
+        ),
+        'abs_error_threshold': float(abs_error_threshold),
+    }
+
+
+def percentage_benchmark_mask(benchmark_indices, matrix=None, metric=None,
+                              benchmark_ids=None):
+    """Return which benchmark indices use percentage-scale scores."""
+    from benchpress.methods.transforms import _is_pct_bench
+
+    matrix = M_FULL if matrix is None else matrix
+    metric = BENCH_METRICS if metric is None else metric
+    benchmark_ids = BENCH_IDS if benchmark_ids is None else benchmark_ids
+    mask = []
+    for value in benchmark_indices:
+        try:
+            j = int(value)
+        except (TypeError, ValueError):
+            mask.append(False)
+            continue
+        if j < 0 or j >= len(benchmark_ids):
+            mask.append(False)
+        else:
+            mask.append(bool(_is_pct_bench(
+                j, matrix, metric=metric, benchmark_ids=benchmark_ids)))
+    return np.asarray(mask, dtype=bool)
+
+
 def _matrix_pool_metrics(M_actual, M_pred, test_set):
     """Matrix-mode pool: gather test cells and compute prediction error."""
     a_list, p_list = [], []

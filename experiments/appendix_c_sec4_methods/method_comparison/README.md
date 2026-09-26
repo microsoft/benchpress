@@ -7,7 +7,7 @@
 
 ## Purpose
 
-This directory generates the validation-error and outer-test-error leaderboards for Appendix C.2. It is a read-only derivative of the main §4.2 method comparison run.
+This directory generates the validation-error and outer-test-error leaderboards for Appendix C.2. It is a read-only derivative of the main §4.2 method comparison run. It also hosts the unit-scale and tail-error audit for the ICLR response, which reuses raw prediction rows from the method-comparison, probe-selection, and prospective experiments.
 
 ## Inputs
 
@@ -18,6 +18,7 @@ This directory generates the validation-error and outer-test-error leaderboards 
 ## Outputs
 
 - stdout: LaTeX `longtable` for `tab:full_grid`, or the Top-15 validation leaderboard for `tab:model_selection`.
+- `unit_tail_metrics_summary.json`: summary of all-cell and percentage-only MedAE/MedAPE, P90 absolute error, and the fraction of cells with absolute error above 10 points for the headline BenchPress results and the logit-space model mean on the same cells.
 
 ## Run
 
@@ -32,9 +33,16 @@ or:
 bash run.sh
 ```
 
+Unit-scale and tail metrics:
+
+```bash
+BENCHPRESS_DATA=/path/to/may.json PYTHONPATH=$PWD \
+  python experiments/appendix_c_sec4_methods/method_comparison/summarize_unit_tail_metrics.py
+```
+
 ## Resume / rerun
 
-No experiment runs here. Regenerate `tab:model_selection` after `inner_scores/*.npz` or `manifest.json` changes; regenerate `tab:full_grid` after `results_nested.json` changes.
+No experiment runs here. Regenerate `tab:model_selection` after `inner_scores/*.npz` or `manifest.json` changes; regenerate `tab:full_grid` after `results_nested.json` changes. Regenerate `unit_tail_metrics_summary.json` after any raw prediction file used by the method-comparison, all-known probe, or prospective experiment changes.
 
 ## Last valid result
 
