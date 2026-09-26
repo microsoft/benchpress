@@ -1,0 +1,11 @@
+{
+  "paper_mapping": "Section 5.3 / Appendix D.3 prospective snapshot diagnostic",
+  "train_snapshot": "May 2026 matrix",
+  "eval_snapshot": "August 26, 2026 matrix",
+  "expected_train_shape": [84, 133],
+  "expected_train_observed": 2604,
+  "k_values": [1, 3, 5, 10],
+  "n_random_seeds_default": 10,
+  "base_seed_default": 42,
+  "probe_order_json": "../optimal_probe/all_known/probe_orderings.json"
+}

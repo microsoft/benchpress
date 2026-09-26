@@ -13,6 +13,8 @@ over all cells or any benchmark subset.
 import argparse
 import os
 import random
+import subprocess
+import sys
 import time
 
 os.environ.setdefault("OMP_NUM_THREADS", "1")
@@ -22,17 +24,26 @@ os.environ.setdefault("NUMEXPR_NUM_THREADS", "1")
 
 import numpy as np
 
-from benchpress.all_methods import predict_benchpress_scores
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+REPO_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "..", "..", ".."))
+if REPO_ROOT not in sys.path:
+    sys.path.insert(0, REPO_ROOT)
+
 from benchpress.evaluation_harness import (
     BENCH_IDS,
+    M_FULL,
     MODEL_IDS,
     N_BENCH,
     N_MODELS,
     OBSERVED,
+    compute_prediction_error,
     evaluate_probe_set,
+    matrix_identity_sha256,
     observed_benchmarks_by_model,
     random_global_probe_set,
 )
+from benchpress.io_utils import write_json_atomic
+from benchpress.methods.predictors import predict_benchpress_scores
 from benchpress.shard_utils import (
     default_k_seed_shard_name,
     merge_prediction_shards,
@@ -41,7 +52,6 @@ from benchpress.shard_utils import (
     write_prediction_result,
 )
 
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 RESULTS_DIR = os.path.join(SCRIPT_DIR, "results")
 RESULTS_PATH = os.path.join(RESULTS_DIR, "random_medape_hero_all_known.json.gz")
 DEFAULT_SHARD_DIR = os.path.join(RESULTS_DIR, "random_medape_hero_all_known_nested_shards")
@@ -57,6 +67,92 @@ random.seed(BASE_SEED)
 
 def _probe_set_for(k, seed_idx):
     return random_global_probe_set(k, seed_idx, base_seed=BASE_SEED)
+
+
+def _git_commit():
+    try:
+        return subprocess.check_output(
+            ["git", "rev-parse", "HEAD"],
+            cwd=os.path.abspath(os.path.join(SCRIPT_DIR, "..", "..", "..", "..")),
+            text=True,
+        ).strip()
+    except Exception:
+        return None
+
+
+def _manifest():
+    return {
+        "git_commit": _git_commit(),
+        "matrix_identity_sha256": matrix_identity_sha256(M_FULL),
+        "matrix_shape": [int(N_MODELS), int(N_BENCH)],
+        "n_observed": int(OBSERVED.sum()),
+    }
+
+
+def _hidden_cell_count(k, seed_idx, model_limit=None):
+    probe_set = _probe_set_for(k, seed_idx)
+    observed = OBSERVED if model_limit is None else OBSERVED[: min(N_MODELS, int(model_limit))]
+    hidden = np.array(observed, copy=True)
+    if probe_set:
+        hidden[:, [int(j) for j in probe_set]] = False
+    return int(hidden.sum())
+
+
+def _non_probe_summary_by_k_seed(raw_predictions, model_limit=None):
+    grouped = {}
+    for row in raw_predictions:
+        k = int(row["k"])
+        seed_idx = int(row["seed"])
+        if int(row["bench"]) in _probe_set_for(k, seed_idx):
+            continue
+        key = (k, seed_idx)
+        grouped.setdefault(key, {"actual": [], "pred": []})
+        grouped[key]["actual"].append(float(row["actual"]))
+        grouped[key]["pred"].append(float(row["pred"]))
+
+    rows = []
+    for k, seed_idx in sorted(grouped):
+        vals = grouped[(k, seed_idx)]
+        actual = np.array(vals["actual"], dtype=float)
+        pred = np.array(vals["pred"], dtype=float)
+        metrics = compute_prediction_error(actual, pred, aggregation="pool")
+        hidden_total = _hidden_cell_count(k, seed_idx, model_limit=model_limit)
+        abs_err = np.abs(pred - actual)
+        rows.append({
+            "k": int(k),
+            "seed": int(seed_idx),
+            "n": int(metrics["n"]),
+            "hidden_cells": int(hidden_total),
+            "coverage": float(metrics["n"]) / float(hidden_total) if hidden_total else None,
+            "medape": float(metrics["medape"]) if np.isfinite(metrics["medape"]) else None,
+            "medae": float(metrics["medae"]) if np.isfinite(metrics["medae"]) else None,
+            "p90_abs_error": float(np.percentile(abs_err, 90)) if len(abs_err) else None,
+        })
+    return rows
+
+
+def _non_probe_summary_by_k(summary_by_k_seed):
+    def median_present(rows, field):
+        vals = [row[field] for row in rows if row[field] is not None]
+        return float(np.median(vals)) if vals else None
+
+    by_k = {}
+    for row in summary_by_k_seed:
+        by_k.setdefault(int(row["k"]), []).append(row)
+    output = []
+    for k in sorted(by_k):
+        rows = by_k[k]
+        output.append({
+            "k": int(k),
+            "n_seeds": len(rows),
+            "n_median": float(np.median([row["n"] for row in rows])),
+            "hidden_cells_median": float(np.median([row["hidden_cells"] for row in rows])),
+            "coverage_median": median_present(rows, "coverage"),
+            "medape_median": median_present(rows, "medape"),
+            "medae_median": median_present(rows, "medae"),
+            "p90_abs_error_median": median_present(rows, "p90_abs_error"),
+        })
+    return output
 
 
 def run_one(k, seed_idx, model_limit=None):
@@ -119,12 +215,17 @@ def _result_config(k_max=K_MAX, n_seeds=N_SEEDS, model_limit=None):
 
 
 def write_random_probe_result(raw, output_path, k_max=K_MAX, n_seeds=N_SEEDS, model_limit=None):
-    write_prediction_result(
+    output = write_prediction_result(
         raw,
         output_path,
         _result_config(k_max=k_max, n_seeds=n_seeds, model_limit=model_limit),
         include_summary_by_k_seed=True,
     )
+    non_probe = _non_probe_summary_by_k_seed(raw, model_limit=model_limit)
+    output["manifest"] = _manifest()
+    output["summary_non_probe_by_k_seed"] = non_probe
+    output["summary_non_probe_by_k"] = _non_probe_summary_by_k(non_probe)
+    write_json_atomic(output_path, output)
 
 
 def _expected_shard_name(k, seed_idx, model_limit):

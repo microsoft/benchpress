@@ -11,6 +11,7 @@ scores, but not the other held-out model rows.
 import argparse
 import os
 import random
+import subprocess
 import sys
 import time
 from concurrent.futures import ProcessPoolExecutor, as_completed
@@ -22,10 +23,10 @@ REPO_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, '..', '..', '..', '..'))
 if REPO_ROOT not in sys.path:
     sys.path.insert(0, REPO_ROOT)
 
-from benchpress.all_methods import predict_benchpress_scores
 from benchpress.evaluation_harness import (
     BENCH_IDS,
     BENCH_NAMES,
+    M_FULL,
     MODEL_IDS,
     MODEL_NAMES,
     N_BENCH,
@@ -35,12 +36,14 @@ from benchpress.evaluation_harness import (
     evaluate_probe_set,
     evaluate_probe_set_on_heldout_models,
     load_benchmark_allowlist,
+    matrix_identity_sha256,
     pack_probe_predictions,
     probe_candidate_cache_path,
     split_models_for_probe_validation,
     target_by_model_from_models,
 )
 from benchpress.io_utils import load_json, safe_token, write_json_atomic
+from benchpress.methods.predictors import predict_benchpress_scores
 from benchpress.shard_utils import short_text_hash
 
 SEED = 42
@@ -190,6 +193,26 @@ def _model_name_payload(indices):
     return {
         MODEL_IDS[int(i)]: MODEL_NAMES.get(MODEL_IDS[int(i)], MODEL_IDS[int(i)])
         for i in indices
+    }
+
+
+def _git_commit():
+    try:
+        return subprocess.check_output(
+            ['git', 'rev-parse', 'HEAD'],
+            cwd=REPO_ROOT,
+            text=True,
+        ).strip()
+    except Exception:
+        return None
+
+
+def _manifest():
+    return {
+        'git_commit': _git_commit(),
+        'matrix_identity_sha256': matrix_identity_sha256(M_FULL),
+        'matrix_shape': [int(N_MODELS), int(N_BENCH)],
+        'n_observed': int(OBSERVED.sum()),
     }
 
 
@@ -429,6 +452,7 @@ def main():
                     'workers': args.workers,
                     'candidate_cache_dir': os.path.relpath(cache_root, SCRIPT_DIR),
                 },
+                'manifest': _manifest(),
                 'split': {
                     'train_model_ids': train_model_ids,
                     'validation_model_ids': validation_model_ids,

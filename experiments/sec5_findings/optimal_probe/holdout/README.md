@@ -29,6 +29,24 @@ CANDIDATE_ALLOWLIST=../candidate_allowlists/user_cheap_20260505.json \
 python run_model_split_random.py --k-max 10 --n-seeds 10 --workers 48
 ```
 
+CHTC-clean checkout commands with the May matrix:
+
+```bash
+cd "$REPO/experiments/sec5_findings/optimal_probe/holdout"
+
+BENCHPRESS_DATA="$DATA/may.json" \
+  METRIC=medae OUT=model_split_validation_medae_train70_all.json.gz \
+  MAX_STEPS=10 WORKERS="$NCPU" ./run_model_split_validation.sh
+
+BENCHPRESS_DATA="$DATA/may.json" \
+  CANDIDATE_ALLOWLIST=../candidate_allowlists/user_cheap_20260505.json \
+  METRIC=medae OUT=model_split_validation_medae_train70_usercheap.json.gz \
+  MAX_STEPS=10 WORKERS="$NCPU" ./run_model_split_validation.sh
+
+BENCHPRESS_DATA="$DATA/may.json" \
+  python run_model_split_random.py --k-max 10 --n-seeds 10 --workers "$NCPU"
+```
+
 Smoke test:
 
 ```bash
@@ -67,3 +85,12 @@ Model-split MedAE validation:
 
 - Any-benchmark k=5 held-out non-probe MedAE: 5.31; k=10: 4.38.
 - Low-cost k=5 held-out non-probe MedAE: 5.60; k=10: 5.66.
+
+On the May `84 x 133` matrix, predictor-fit counts are:
+
+- Any-benchmark greedy validation: `76,315` fits (`1,285` candidate prefixes x
+  `59` train models, plus `500` validation fits).
+- Low-cost greedy validation: `12,595` fits (`205` candidate prefixes x `59`
+  train models, plus `500` validation fits).
+- Random baseline: `2,500` fits (`10` k values x `10` seeds x `25` validation
+  models).

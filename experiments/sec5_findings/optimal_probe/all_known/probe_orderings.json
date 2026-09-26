@@ -1,0 +1,61 @@
+{
+  "source": "overleaf/iclr2027/appendix.tex tab:probe_sets MedAE-objective rows",
+  "orderings": {
+    "medae_any": {
+      "label": "MedAE objective, any benchmark",
+      "candidate_pool": "any benchmark",
+      "benchmark_ids": [
+        "gpqa_diamond",
+        "hle",
+        "codeforces_rating",
+        "mmlu_pro",
+        "arc_agi_1",
+        "terminal_bench",
+        "math_500",
+        "hle_text",
+        "aime_2025",
+        "gdpval_aa_elo"
+      ],
+      "display_names": [
+        "GPQA Diamond",
+        "HLE",
+        "Codeforces Rating",
+        "MMLU-Pro",
+        "ARC-AGI-1",
+        "Terminal-Bench 2.0",
+        "MATH-500",
+        "HLE Text",
+        "AIME 2025",
+        "GDPval (Artificial Analysis ELO)"
+      ]
+    },
+    "medae_low_cost": {
+      "label": "MedAE objective, low-cost benchmarks",
+      "candidate_pool": "low-cost benchmarks",
+      "benchmark_ids": [
+        "gpqa_diamond",
+        "mmlu_pro",
+        "aider_polyglot_diff",
+        "math_500",
+        "aime_2026",
+        "aime_2025",
+        "bullshit_pushback",
+        "arena_hard",
+        "tau2_bench_airline",
+        "ifbench"
+      ],
+      "display_names": [
+        "GPQA Diamond",
+        "MMLU-Pro",
+        "Aider Polyglot (diff mode)",
+        "MATH-500",
+        "AIME 2026",
+        "AIME 2025",
+        "Bullshit-Bench (Clear Pushback)",
+        "Arena-Hard Auto",
+        "tau^2-bench Airline",
+        "IFBench"
+      ]
+    }
+  }
+}

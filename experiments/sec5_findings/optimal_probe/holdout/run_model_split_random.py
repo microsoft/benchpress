@@ -9,6 +9,7 @@ protocol as run_model_split_validation.py.
 import argparse
 import os
 import random
+import subprocess
 import sys
 import time
 
@@ -19,20 +20,22 @@ REPO_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, '..', '..', '..', '..'))
 if REPO_ROOT not in sys.path:
     sys.path.insert(0, REPO_ROOT)
 
-from benchpress.all_methods import predict_benchpress_scores
 from benchpress.evaluation_harness import (
     BENCH_IDS,
+    M_FULL,
     MODEL_IDS,
     MODEL_NAMES,
     N_BENCH,
     N_MODELS,
     OBSERVED,
     evaluate_probe_set_on_heldout_models,
+    matrix_identity_sha256,
     pack_probe_predictions,
     random_global_probe_set,
     split_models_for_probe_validation,
 )
 from benchpress.io_utils import load_json, write_json_atomic
+from benchpress.methods.predictors import predict_benchpress_scores
 from benchpress.shard_utils import (
     default_k_seed_shard_name,
     merge_prediction_shards,
@@ -71,6 +74,26 @@ def _model_name_payload(indices):
     return {
         MODEL_IDS[int(i)]: MODEL_NAMES.get(MODEL_IDS[int(i)], MODEL_IDS[int(i)])
         for i in indices
+    }
+
+
+def _git_commit():
+    try:
+        return subprocess.check_output(
+            ['git', 'rev-parse', 'HEAD'],
+            cwd=REPO_ROOT,
+            text=True,
+        ).strip()
+    except Exception:
+        return None
+
+
+def _manifest():
+    return {
+        'git_commit': _git_commit(),
+        'matrix_identity_sha256': matrix_identity_sha256(M_FULL),
+        'matrix_shape': [int(N_MODELS), int(N_BENCH)],
+        'n_observed': int(OBSERVED.sum()),
     }
 
 
@@ -183,6 +206,7 @@ def write_random_split_result(raw_predictions, output_path, probe_sets,
         indent=indent,
     )
     output['probe_sets'] = probe_sets
+    output['manifest'] = _manifest()
     write_json_atomic(output_path, output, indent=indent)
     return output
 

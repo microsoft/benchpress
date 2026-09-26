@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import os
 import sys
+import argparse
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT = os.path.abspath(os.path.join(HERE, "..", "..", ".."))
@@ -12,7 +13,7 @@ if REPO_ROOT not in sys.path:
     sys.path.insert(0, REPO_ROOT)
 
 from benchpress.artifact_utils import ensure_artifacts
-from benchpress.io_utils import load_json
+from benchpress.io_utils import load_json, write_json
 
 RESULTS_PATH = os.path.join(HERE, "results.json")
 TABLE_PATH = os.path.join(HERE, "table.tex")
@@ -92,6 +93,13 @@ def _median(values):
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--hidden-summary-json",
+        default=None,
+        help="Optional JSON path for hidden-only summaries already computed by run.py --mode merge.",
+    )
+    args = parser.parse_args()
     ensure_artifacts(
         [RESULTS_PATH],
         ["{python}", os.path.join(HERE, "run.py"), "--mode", "merge"],
@@ -109,6 +117,12 @@ def main():
         f.write(table)
     print(table)
     print(f"Wrote {TABLE_PATH}")
+    if args.hidden_summary_json:
+        write_json(args.hidden_summary_json, {
+            "summary_hidden_only_by_k": payload.get("summary_hidden_only_by_k"),
+            "summary_hidden_only_by_family": payload.get("summary_hidden_only_by_family"),
+        }, indent=2, trailing_newline=True)
+        print(f"Wrote {args.hidden_summary_json}")
 
 
 if __name__ == "__main__":

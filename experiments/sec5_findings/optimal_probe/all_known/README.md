@@ -31,6 +31,20 @@ CANDIDATE_ALLOWLIST=../candidate_allowlists/user_cheap_20260505.json \
   MAX_STEPS=10 WORKERS=48 ./run.sh
 
 python run_random.py --k-max 30 --n-seeds 10 --workers 24
+
+python evaluate_order.py \
+  --fixed-order-json probe_orderings.json \
+  --fixed-order medae_any \
+  --k-max 10 \
+  --workers 10 \
+  --out fixed_order_medae_any_hidden_only.json.gz
+
+python evaluate_order.py \
+  --fixed-order-json probe_orderings.json \
+  --fixed-order medae_low_cost \
+  --k-max 10 \
+  --workers 10 \
+  --out fixed_order_medae_low_cost_hidden_only.json.gz
 ```
 
 Plot from existing results:
@@ -64,9 +78,13 @@ Results are under `results/`; figures are under `figures/`.
 - `results/greedy_medae_targets_tall_candidates_tall.json.gz`
 - `results/greedy_medae_targets_tall_candidates_usercheap.json.gz`
 - `results/random_medape_hero_all_known.json.gz`
+- `results/fixed_order_medae_any_hidden_only.json.gz`
+- `results/fixed_order_medae_low_cost_hidden_only.json.gz`
 
 Raw per-cell predictions are saved in every greedy candidate result and random
-baseline shard output.
+baseline shard output. Fixed-order evaluation stores raw per `(target, k, cell)`
+rows plus both with-probe-zero and hidden-only summaries. Random baseline output
+also includes `summary_non_probe_by_k_seed` and `summary_non_probe_by_k`.
 
 ## Resume / rerun
 
@@ -80,3 +98,7 @@ Full-matrix MedAE construction:
 
 - Any-benchmark k=5 MedAE: 3.93; k=10 MedAE: 3.07.
 - Low-cost k=5 MedAE: 4.55; k=10 MedAE: 3.80.
+
+`probe_orderings.json` stores the MedAE-objective top-10 prefixes from
+`tab:probe_sets`. Its unrestricted k=5 prefix matches the brute-force diagnostic
+set `gpqa_diamond, hle, codeforces_rating, mmlu_pro, arc_agi_1` up to ordering.

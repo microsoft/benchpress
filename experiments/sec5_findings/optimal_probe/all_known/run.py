@@ -37,6 +37,7 @@ CLI:
 import argparse
 import os
 import random
+import subprocess
 import sys
 import time
 from concurrent.futures import ProcessPoolExecutor, as_completed
@@ -49,13 +50,13 @@ if REPO_ROOT not in sys.path:
     sys.path.insert(0, REPO_ROOT)
 
 from benchpress.evaluation_harness import (
-    OBSERVED, N_MODELS, N_BENCH,
+    OBSERVED, M_FULL, N_MODELS, N_BENCH,
     BENCH_IDS, BENCH_NAMES, evaluate_probe_set,
     load_benchmark_allowlist, pack_probe_predictions,
-    probe_candidate_cache_path,
+    matrix_identity_sha256, probe_candidate_cache_path,
 )
-from benchpress.all_methods import predict_benchpress_scores
 from benchpress.io_utils import load_json, safe_token, write_json_atomic
+from benchpress.methods.predictors import predict_benchpress_scores
 from benchpress.shard_utils import short_text_hash
 
 SEED = 42
@@ -82,6 +83,26 @@ SCORE_UNIT = {
 def _init_worker(seed):
     np.random.seed(seed)
     random.seed(seed)
+
+
+def _git_commit():
+    try:
+        return subprocess.check_output(
+            ['git', 'rev-parse', 'HEAD'],
+            cwd=REPO_ROOT,
+            text=True,
+        ).strip()
+    except Exception:
+        return None
+
+
+def _manifest():
+    return {
+        'git_commit': _git_commit(),
+        'matrix_identity_sha256': matrix_identity_sha256(M_FULL),
+        'matrix_shape': [int(N_MODELS), int(N_BENCH)],
+        'n_observed': int(OBSERVED.sum()),
+    }
 
 
 def _eval_one(args):
@@ -347,6 +368,7 @@ def main():
                     'workers': args.workers,
                     'candidate_cache_dir': os.path.relpath(cache_root, SCRIPT_DIR),
                 },
+                'manifest': _manifest(),
                 'trajectory': trajectory,
             }
             write_json_atomic(out_path, output, indent=2)

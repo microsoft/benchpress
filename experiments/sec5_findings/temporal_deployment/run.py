@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import os
 import random
+import subprocess
 import sys
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from typing import Optional
@@ -34,6 +35,7 @@ from benchpress.evaluation_harness import (
     N_MODELS,
     OBSERVED,
     compute_prediction_error,
+    matrix_identity_sha256,
 )
 from benchpress.io_utils import load_json, safe_token, write_json, write_json_atomic
 from benchpress.methods.predictors import predict_benchpress_scores
@@ -188,6 +190,26 @@ def shard_config(landmark: dict, k: int, seed: int) -> dict:
 
 def _finite_float(value):
     return float(value) if np.isfinite(value) else None
+
+
+def git_commit():
+    try:
+        return subprocess.check_output(
+            ["git", "rev-parse", "HEAD"],
+            cwd=REPO_ROOT,
+            text=True,
+        ).strip()
+    except Exception:
+        return None
+
+
+def manifest():
+    return {
+        "git_commit": git_commit(),
+        "matrix_identity_sha256": matrix_identity_sha256(M_FULL),
+        "matrix_shape": [int(N_MODELS), int(N_BENCH)],
+        "n_observed": int(OBSERVED.sum()),
+    }
 
 
 def validate_shard(payload: dict, path: str, family_key: str, k: int, seed: int):
@@ -398,6 +420,47 @@ def aggregate_metric(values: list[float]) -> dict:
     }
 
 
+def hidden_only_metric(rows: list[dict]) -> dict:
+    hidden = [row for row in rows if not row.get("is_revealed")]
+    finite = [
+        row for row in hidden
+        if row.get("pred") is not None and np.isfinite(float(row["pred"]))
+    ]
+    actual = np.array([row["actual"] for row in finite], dtype=float)
+    pred = np.array([row["pred"] for row in finite], dtype=float)
+    metrics = compute_prediction_error(actual, pred, aggregation="pool")
+    return {
+        "n": int(metrics["n"]),
+        "hidden_cells": int(len(hidden)),
+        "coverage": float(metrics["n"]) / float(len(hidden)) if hidden else None,
+        "medape": _finite_float(metrics["medape"]),
+        "medae": _finite_float(metrics["medae"]),
+    }
+
+
+def hidden_only_summary_by_k(raw_predictions: list[dict], k_values: list[int]) -> dict:
+    return {
+        str(k): hidden_only_metric([
+            row for row in raw_predictions if int(row["k"]) == int(k)
+        ])
+        for k in k_values
+    }
+
+
+def hidden_only_summary_by_family(raw_predictions: list[dict], family_keys: list[str],
+                                  k_values: list[int]) -> dict:
+    summary = {}
+    for family_key in family_keys:
+        summary[family_key] = {}
+        for k in k_values:
+            rows = [
+                row for row in raw_predictions
+                if row["family_key"] == family_key and int(row["k"]) == int(k)
+            ]
+            summary[family_key][str(k)] = hidden_only_metric(rows)
+    return summary
+
+
 def merge_results(family_keys: list[str], k_values: list[int], n_seeds: int):
     raw_predictions = []
     shard_metrics = []
@@ -489,9 +552,14 @@ def merge_results(family_keys: list[str], k_values: list[int], n_seeds: int):
             "evaluation_universe": "all observed cells for active target models are recorded; metrics use revealed cells plus hidden cells with finite BenchPress predictions",
             "aggregation": "paper-facing medians across seed-level MedAPE/MedAE",
         },
+        "manifest": manifest(),
         "landmarks": [landmarks[key] | {"family_key": key} for key in family_keys],
         "summary_by_family": summary,
         "summary_by_family_k_seed": shard_metrics,
+        "summary_hidden_only_by_k": hidden_only_summary_by_k(raw_predictions, k_values),
+        "summary_hidden_only_by_family": hidden_only_summary_by_family(
+            raw_predictions, family_keys, k_values,
+        ),
         "raw_predictions": sorted(
             raw_predictions,
             key=lambda row: (
