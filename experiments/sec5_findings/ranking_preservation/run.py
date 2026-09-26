@@ -10,6 +10,7 @@ scores same-benchmark pairs where at least one cell was held out.
 
 from __future__ import annotations
 
+import argparse
 import json
 import math
 import os
@@ -26,14 +27,46 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 GITHUB_ROOT = os.path.abspath(os.path.join(HERE, "..", "..", ".."))
 if GITHUB_ROOT not in sys.path:
     sys.path.insert(0, GITHUB_ROOT)
-from benchpress.artifact_utils import ensure_default_predictions  # noqa: E402
 from benchpress.io_utils import write_json_atomic  # noqa: E402
-SOURCE_REL = (
-    "experiments/sec4_building_benchpress/method_comparison/"
-    "predictions/0124__logit__bias_als__hp01_b16f05a66b.npz"
-)
-SOURCE_PATH = os.path.join(GITHUB_ROOT, SOURCE_REL)
-RESULTS_PATH = os.path.join(HERE, "results.json")
+
+PREDICTORS = {
+    "benchpress": {
+        "display_name": "BenchPress",
+        "source_rel": (
+            "experiments/sec4_building_benchpress/method_comparison/"
+            "predictions/0124__logit__bias_als__hp01_b16f05a66b.npz"
+        ),
+        "method_comparison_shard_index": 124,
+        "transform": "logit",
+        "method": "Bias ALS",
+        "hp": {"rank": 2, "lam": 0.1},
+        "default_output": "results.json",
+    },
+    "logit_model_mean": {
+        "display_name": "logit-space model mean",
+        "source_rel": (
+            "experiments/sec4_building_benchpress/method_comparison/"
+            "predictions/0095__logit__model_mean__hp00_bf21a9e8fb.npz"
+        ),
+        "method_comparison_shard_index": 95,
+        "transform": "logit",
+        "method": "Model Mean",
+        "hp": {},
+        "default_output": "results_logit_model_mean.json",
+    },
+    "logit_benchmark_mean": {
+        "display_name": "logit-space benchmark mean",
+        "source_rel": (
+            "experiments/sec4_building_benchpress/method_comparison/"
+            "predictions/0094__logit__benchmark_mean__hp00_bf21a9e8fb.npz"
+        ),
+        "method_comparison_shard_index": 94,
+        "transform": "logit",
+        "method": "Benchmark Mean",
+        "hp": {},
+        "default_output": "results_logit_benchmark_mean.json",
+    },
+}
 
 MARGINS = [0.0, 1.0, 2.0, 5.0]
 TOP_FRACTIONS = [0.10, 0.20, 0.30]
@@ -216,18 +249,73 @@ def _summarize_top(rows: list[dict[str, Any]]) -> dict[str, Any]:
     return summary
 
 
-def main() -> None:
-    if not os.path.exists(SOURCE_PATH):
-        ensure_default_predictions()
+def _output_path(predictor_key: str, out_name: str | None) -> str:
+    if out_name is None:
+        out_name = PREDICTORS[predictor_key]["default_output"]
+    if os.path.isabs(out_name):
+        return out_name
+    return os.path.join(HERE, out_name)
+
+
+def _load_prediction_cache(predictor_key: str) -> tuple[dict[str, Any], dict[str, np.ndarray]]:
+    config = PREDICTORS[predictor_key]
+    source_path = os.path.join(GITHUB_ROOT, config["source_rel"])
+    if not os.path.exists(source_path):
+        raise FileNotFoundError(
+            f"Missing prediction cache for {config['display_name']}: "
+            f"{config['source_rel']}. Generate it with "
+            f"`python experiments/sec4_building_benchpress/method_comparison/run.py "
+            f"--shard-index {config['method_comparison_shard_index']}` "
+            "before running this lightweight ranking aggregation."
+        )
 
     bench_ids, bench_names, bench_cats, M_full = _load_benchmark_metadata()
 
-    with np.load(SOURCE_PATH, allow_pickle=False) as data:
-        fold_id = data["fold_id"].astype(int)
-        test_i = data["test_i"].astype(int)
-        test_j = data["test_j"].astype(int)
-        predicted_all = data["predicted"].astype(float)
+    with np.load(source_path, allow_pickle=False) as data:
+        arrays = {
+            "fold_id": data["fold_id"].astype(int),
+            "test_i": data["test_i"].astype(int),
+            "test_j": data["test_j"].astype(int),
+            "predicted": data["predicted"].astype(float),
+        }
         source_metadata = json.loads(str(data["metadata_json"]))
+    return {
+        "bench_ids": bench_ids,
+        "bench_names": bench_names,
+        "bench_cats": bench_cats,
+        "M_full": M_full,
+        "source_metadata": source_metadata,
+        "source_rel": config["source_rel"],
+    }, arrays
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Score pairwise ranking preservation from an existing prediction cache."
+    )
+    parser.add_argument(
+        "--predictor",
+        choices=sorted(PREDICTORS),
+        default="benchpress",
+        help="Existing Section 4.2 prediction shard to aggregate.",
+    )
+    parser.add_argument(
+        "--out",
+        default=None,
+        help="Output JSON name/path. Defaults to a predictor-specific file.",
+    )
+    args = parser.parse_args()
+
+    predictor_config = PREDICTORS[args.predictor]
+    metadata, arrays = _load_prediction_cache(args.predictor)
+    bench_ids = metadata["bench_ids"]
+    bench_names = metadata["bench_names"]
+    bench_cats = metadata["bench_cats"]
+    M_full = metadata["M_full"]
+    fold_id = arrays["fold_id"]
+    test_i = arrays["test_i"]
+    test_j = arrays["test_j"]
+    predicted_all = arrays["predicted"]
 
     pairwise_rows: list[dict[str, Any]] = []
     top_rows: list[dict[str, Any]] = []
@@ -271,15 +359,25 @@ def main() -> None:
     output = {
         "metadata": {
             "experiment": "sec5_findings/ranking_preservation",
-            "source_prediction_cache": SOURCE_REL,
-            "source_metadata": source_metadata,
+            "predictor_key": args.predictor,
+            "predictor": {
+                "display_name": predictor_config["display_name"],
+                "transform": predictor_config["transform"],
+                "method": predictor_config["method"],
+                "hp": predictor_config["hp"],
+                "method_comparison_shard_index": (
+                    predictor_config["method_comparison_shard_index"]
+                ),
+            },
+            "source_prediction_cache": metadata["source_rel"],
+            "source_metadata": metadata["source_metadata"],
             "margins": MARGINS,
             "top_fractions": TOP_FRACTIONS,
             "metric_definitions": {
                 "pairwise_accuracy": (
                     "for each fold and benchmark, complete the benchmark leaderboard "
-                    "by using true observed scores for seen cells and BenchPress "
-                    "predictions for held-out cells; among all same-benchmark model "
+                    "by using true observed scores for seen cells and the selected "
+                    "predictor's predictions for held-out cells; among all same-benchmark model "
                     "pairs, discard pairs where both cells were seen and score the "
                     "remaining pairs whose true score gap clears the margin; summary "
                     "accuracy is the median across benchmarks"
@@ -287,8 +385,8 @@ def main() -> None:
                 "margin": "minimum absolute true score gap required for a pair",
                 "top_fraction_recovery": (
                     "for each fold and benchmark, complete the full observed "
-                    "leaderboard by using true scores for seen cells and BenchPress "
-                    "predictions for held-out cells; compare the true and completed "
+                    "leaderboard by using true scores for seen cells and the selected "
+                    "predictor's predictions for held-out cells; compare the true and completed "
                     "top-k model sets on that full observed leaderboard; summary "
                     "recovery is the median across benchmarks"
                 ),
@@ -302,11 +400,12 @@ def main() -> None:
         },
     }
 
+    out_path = _output_path(args.predictor, args.out)
     write_json_atomic(
-        RESULTS_PATH, _json_safe(output),
+        out_path, _json_safe(output),
         indent=2, sort_keys=True, trailing_newline=True,
     )
-    print(f"Wrote {RESULTS_PATH}")
+    print(f"Wrote {out_path}")
     print(json.dumps(output["summary"], indent=2, sort_keys=True))
 
 
