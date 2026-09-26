@@ -1,6 +1,62 @@
 {
-  "source": "overleaf/iclr2027/appendix.tex tab:probe_sets MedAE-objective rows",
+  "source": "overleaf/iclr2027/appendix.tex tab:probe_sets",
   "orderings": {
+    "medape_any": {
+      "label": "MedAPE objective, any benchmark",
+      "candidate_pool": "any benchmark",
+      "benchmark_ids": [
+        "gpqa_diamond",
+        "hle",
+        "aime_2024",
+        "mmlu_pro",
+        "arc_agi_1",
+        "arc_agi_2",
+        "aider_polyglot_diff",
+        "livecodebench",
+        "terminal_bench",
+        "swe_bench_verified"
+      ],
+      "display_names": [
+        "GPQA Diamond",
+        "HLE",
+        "AIME 2024",
+        "MMLU-Pro",
+        "ARC-AGI-1",
+        "ARC-AGI-2",
+        "Aider Polyglot (diff mode)",
+        "LiveCodeBench",
+        "Terminal-Bench 2.0",
+        "SWE-bench Verified"
+      ]
+    },
+    "medape_low_cost": {
+      "label": "MedAPE objective, low-cost benchmarks",
+      "candidate_pool": "low-cost benchmarks",
+      "benchmark_ids": [
+        "gpqa_diamond",
+        "mmlu_pro",
+        "aider_polyglot_diff",
+        "matharena_apex_2025",
+        "hmmt_nov_2025",
+        "bullshit_pushback",
+        "math_500",
+        "aime_2025",
+        "arena_hard",
+        "ifbench"
+      ],
+      "display_names": [
+        "GPQA Diamond",
+        "MMLU-Pro",
+        "Aider Polyglot (diff mode)",
+        "MathArena Apex 2025",
+        "HMMT Nov 2025",
+        "Bullshit-Bench (Clear Pushback)",
+        "MATH-500",
+        "AIME 2025",
+        "Arena-Hard Auto",
+        "IFBench"
+      ]
+    },
     "medae_any": {
       "label": "MedAE objective, any benchmark",
       "candidate_pool": "any benchmark",
