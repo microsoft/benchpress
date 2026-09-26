@@ -63,12 +63,12 @@ This renders and verifies the canonical current arXiv assets:
 ### ICLR 2027 panel A (target-hidden)
 ```bash
 python run_target_cells.py --score-json <may.json> --output results/target_cells_may_2026.json \
-  --target claude-opus-4.7:hle --target phi-4-reasoning-plus:gpqa_diamond --target deepseek-v4-pro:terminal_bench
+  --target phi-4-reasoning-plus:gpqa_diamond --target deepseek-v4-pro:terminal_bench
 python run_target_cells.py --score-json <aug.json> --output results/target_cells_aug_2026.json \
-  --target gpt-5.6-sol:browsecomp
+  --target gpt-5.6-sol:browsecomp --target claude-opus-5:hle
 python plot.py --hidden-target-panel-a   # -> overleaf/iclr2027/figures/bp_hero_panel_a_examples.pdf
 ```
-For each target cell and each (k, seed), the target model keeps k scores sampled from its other observed benchmarks; the target cell is never revealed. k=0 is the benchmark median over the other models. GPT-5.6 Sol (released July 2026) uses the August 26, 2026 snapshot; the other three cells use the May 2026 snapshot. Phi-4 Reasoning Plus has 11 observed paper benchmarks (below the 15-benchmark row threshold), so it is appended to the May matrix as an extra row. `run_target_cells.py` rewrites its output after each target and skips finished targets on restart; a config mismatch fails fast.
+For each target cell and each (k, seed), the target model keeps k scores sampled from its other observed benchmarks; the target cell is never revealed. k=0 is the benchmark median over the other models. GPT-5.6 Sol and Claude Opus 5 (both released July 2026) use the August 26, 2026 snapshot; the other two cells use the May 2026 snapshot. Phi-4 Reasoning Plus has 11 observed paper benchmarks (below the 15-benchmark row threshold), so it is appended to the May matrix as an extra row. `run_target_cells.py` rewrites its output after each target and skips finished targets on restart; a config mismatch fails fast.
 
 ## Resume / rerun
 - `run.py --k K` skips shard files in `--shard-dir` whose size is >100 bytes.

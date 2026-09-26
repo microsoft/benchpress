@@ -97,7 +97,7 @@ PICKS = [
 ]
 HIDDEN_TARGET_PICKS = [
     ("gpt-5.6-sol", "browsecomp"),
-    ("claude-opus-4.7", "hle"),
+    ("claude-opus-5", "hle"),
     ("phi-4-reasoning-plus", "gpqa_diamond"),
     ("deepseek-v4-pro", "terminal_bench"),
 ]
@@ -105,6 +105,7 @@ DISPLAY = {
     ("gpt-5.5", "browsecomp"): ("GPT-5.5", "BrowseComp"),
     ("gpt-5.6-sol", "browsecomp"): ("GPT-5.6 Sol", "BrowseComp"),
     ("claude-opus-4.7", "hle"): ("Claude Opus 4.7", "HLE"),
+    ("claude-opus-5", "hle"): ("Claude Opus 5", "HLE"),
     ("phi-4-reasoning-plus", "gpqa_diamond"): (
         "Phi-4 Reasoning Plus",
         "GPQA Diamond",
@@ -402,6 +403,10 @@ def apply_style() -> None:
 def render_panel_a(selected, output_path: Path | None = None) -> Path:
     fig_a, axes_a = plt.subplots(2, 2, figsize=(6.0, 5.7))
     axes_a = axes_a.ravel()
+    y_top = max(30.0, 1.08 * max(
+        max(float(item["baseline_ae"]), *(float(v["q3"]) for v in item["random"]))
+        for item in selected
+    ))
     for idx, (ax, item) in enumerate(zip(axes_a, selected)):
         line_color = PANEL_A_COLORS[idx % len(PANEL_A_COLORS)]
         pair = (item["model_id"], item["bench_id"])
@@ -435,7 +440,8 @@ def render_panel_a(selected, output_path: Path | None = None) -> Path:
         ax.axhline(2, color=MUTED, ls=":", lw=1.45, alpha=0.88)
         ax.set_xlim(-0.45, 10.45)
         ax.set_xticks(list(range(0, 11)))
-        ax.set_ylim(0, 30)
+        ax.set_ylim(0, y_top)
+        ax.set_yticks([0, 10, 20, 30])
         ax.text(
             0.22, 5, "5", fontsize=12.0, color=CHARCOAL, ha="left", va="center",
             bbox=dict(
