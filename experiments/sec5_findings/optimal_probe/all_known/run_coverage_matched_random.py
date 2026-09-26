@@ -109,6 +109,9 @@ def _draw_matched_subsets(
                 "pool": pool_key,
                 "k": int(k),
                 "subset_id": f"{pool_key}_k{k}_s{len(accepted):03d}",
+                "unique_subset_id": f"{pool_key}_k{k}_u{len(accepted):03d}",
+                "is_reused_subset": False,
+                "replicate_index": 0,
                 "seed": int(seed),
                 "draw_index": int(draws),
                 "probe_indices": [int(j) for j in sample],
@@ -123,10 +126,21 @@ def _draw_matched_subsets(
                 "tolerance_high": int(upper),
             })
     if len(accepted) < n_subsets:
-        raise RuntimeError(
-            f"Accepted only {len(accepted)} {pool_key} k={k} subsets after {draws} draws; "
-            f"target={target_revealed_cells}, band=[{lower}, {upper}]"
-        )
+        if not accepted:
+            raise RuntimeError(
+                f"Accepted 0 {pool_key} k={k} subsets after {draws} draws; "
+                f"target={target_revealed_cells}, band=[{lower}, {upper}]"
+            )
+        unique = list(accepted)
+        next_idx = len(accepted)
+        while len(accepted) < n_subsets:
+            source = unique[(len(accepted) - len(unique)) % len(unique)]
+            clone = dict(source)
+            clone["subset_id"] = f"{pool_key}_k{k}_s{next_idx:03d}"
+            clone["is_reused_subset"] = True
+            clone["replicate_index"] = 1 + (len(accepted) - len(unique)) // len(unique)
+            accepted.append(clone)
+            next_idx += 1
     return accepted, draws, len(seen)
 
 
@@ -157,6 +171,9 @@ def _evaluate_subset(unit):
         "pool": subset["pool"],
         "k": int(subset["k"]),
         "subset_id": subset["subset_id"],
+        "unique_subset_id": subset["unique_subset_id"],
+        "is_reused_subset": bool(subset["is_reused_subset"]),
+        "replicate_index": int(subset["replicate_index"]),
         "seed": int(subset["seed"]),
         "draw_index": int(subset["draw_index"]),
         "probe_ids": subset["probe_ids"],
@@ -173,6 +190,8 @@ def _evaluate_subset(unit):
     for row in raw_predictions:
         row["pool"] = subset["pool"]
         row["subset_id"] = subset["subset_id"]
+        row["unique_subset_id"] = subset["unique_subset_id"]
+        row["is_reused_subset"] = bool(subset["is_reused_subset"])
         row["seed"] = int(subset["seed"])
     return summary, raw_predictions
 
@@ -273,6 +292,8 @@ def main():
                 "draws": int(draws),
                 "unique_draws": int(unique_draws),
                 "accepted": len(accepted),
+                "unique_accepted": len({row["unique_subset_id"] for row in accepted}),
+                "reused_to_reach_n_subsets": any(row["is_reused_subset"] for row in accepted),
             })
 
     units = [(subset, args.rank) for subset in subsets]
@@ -328,7 +349,10 @@ def main():
                 "For each pool and k, draw uniform random k-subsets without replacement "
                 "from the candidate pool and keep unique subsets whose observed probe "
                 "cells are within +/- tolerance_fraction of the corresponding MedAE "
-                "greedy prefix's observed probe cells."
+                "greedy prefix's observed probe cells. If fewer than n_subsets unique "
+                "matches exist after max_draws_per_k, reuse the matched subsets with "
+                "is_reused_subset=true so every pool-k has the same reported replicate "
+                "count without hiding the unique-subset count."
             ),
             "eval_scope": "hidden_only excludes revealed probe cells; with_probe_zero keeps them as exact",
         },
