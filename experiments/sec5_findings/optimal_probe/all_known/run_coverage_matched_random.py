@@ -2,9 +2,10 @@
 """Coverage-matched random probe subsets for the all-known hidden-only protocol."""
 
 import argparse
+import copy
 import os
 import sys
-from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import ProcessPoolExecutor, as_completed
 
 os.environ.setdefault("OMP_NUM_THREADS", "1")
 os.environ.setdefault("MKL_NUM_THREADS", "1")
@@ -205,6 +206,21 @@ def _evaluate_subset(unit):
     return summary, raw_predictions
 
 
+def _clone_evaluation(summary, raw_predictions, subset):
+    """Copy one unique-subset evaluation onto one reported subset replicate."""
+    cloned_summary = copy.deepcopy(summary)
+    cloned_summary["subset_id"] = subset["subset_id"]
+    cloned_summary["is_reused_subset"] = bool(subset["is_reused_subset"])
+    cloned_summary["replicate_index"] = int(subset["replicate_index"])
+    cloned_raw = []
+    for row in raw_predictions:
+        new_row = dict(row)
+        new_row["subset_id"] = subset["subset_id"]
+        new_row["is_reused_subset"] = bool(subset["is_reused_subset"])
+        cloned_raw.append(new_row)
+    return cloned_summary, cloned_raw
+
+
 def _aggregate_by_pool_k(summaries):
     """Aggregate subset summaries by pool and k using medians and IQRs."""
     grouped = {}
@@ -312,18 +328,36 @@ def main():
                 "reused_to_reach_n_subsets": any(row["is_reused_subset"] for row in accepted),
             })
 
-    units = [(subset, args.rank) for subset in subsets]
+    unique_subsets = {}
+    for subset in subsets:
+        unique_subsets.setdefault(subset["unique_subset_id"], subset)
+    print(
+        f"Prepared {len(subsets)} reported subsets from {len(unique_subsets)} unique subsets",
+        flush=True,
+    )
+
+    unique_units = [(subset, args.rank) for subset in unique_subsets.values()]
+    evaluated_by_unique = {}
     if args.workers <= 1:
-        evaluated = [_evaluate_subset(unit) for unit in units]
+        for idx, unit in enumerate(unique_units, start=1):
+            summary, raw = _evaluate_subset(unit)
+            evaluated_by_unique[summary["unique_subset_id"]] = (summary, raw)
+            print(f"Evaluated {idx}/{len(unique_units)} unique subsets", flush=True)
     else:
-        with ProcessPoolExecutor(max_workers=min(args.workers, len(units))) as pool:
-            evaluated = list(pool.map(_evaluate_subset, units))
+        with ProcessPoolExecutor(max_workers=min(args.workers, len(unique_units))) as pool:
+            futures = [pool.submit(_evaluate_subset, unit) for unit in unique_units]
+            for idx, future in enumerate(as_completed(futures), start=1):
+                summary, raw = future.result()
+                evaluated_by_unique[summary["unique_subset_id"]] = (summary, raw)
+                print(f"Evaluated {idx}/{len(unique_units)} unique subsets", flush=True)
 
     subset_summaries = []
     raw_predictions = []
-    for summary, raw in evaluated:
-        subset_summaries.append(summary)
-        raw_predictions.extend(raw)
+    for subset in subsets:
+        summary, raw = evaluated_by_unique[subset["unique_subset_id"]]
+        cloned_summary, cloned_raw = _clone_evaluation(summary, raw, subset)
+        subset_summaries.append(cloned_summary)
+        raw_predictions.extend(cloned_raw)
     subset_summaries.sort(key=lambda row: (row["pool"], row["k"], row["subset_id"]))
     raw_predictions.sort(key=lambda row: (
         row["pool"], row["k"], row["subset_id"],
