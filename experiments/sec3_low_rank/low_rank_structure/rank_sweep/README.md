@@ -75,3 +75,17 @@ models. It reuses the shared harness (`load_folds`, `compute_prediction_error`,
 `complete_soft_impute`). Result in `rank_sweep_holdout_models.json`; figure via
 `plot_holdout_models.py` -> `bp_rank_ucurve_holdout_models.pdf` (Fig. app:rank_geometry).
 Logit-space minimum stays at rank 2; raw-space ranks 1-3 overlap within CIs.
+
+## BenchPress rank sweep (app:rank_geometry)
+
+`python run.py --methods logit_bias_als` sweeps logit-space Bias ALS
+(`lambda=0.1`) over ranks 0-10 on the same 30 folds. The ICLR run (CHTC CPU job
+6307628, github commit `9ac9963`, May matrix) is stored locally as
+`results_logit_bias_als.json` (gitignored; mirror `CHTC:bp_iclr/out_e3_rank.tar.gz`),
+because its Soft-Impute entries are empty and it must not replace `results.json`.
+`python bias_als_rank_bootstrap.py --results results_logit_bias_als.json` writes
+`bias_als_rank_bootstrap.json`: pooled MedAE per rank and 95% model-cluster
+bootstrap intervals (1,000 resamples, seed 0) for the MedAE difference against
+rank 2. Pooled MedAE is 5.17 / 4.80 / 4.59 / 4.53 / 4.54 / 4.60 at ranks 0-5 and
+5.11 at rank 10; rank 2 beats rank 0 by 0.58 [0.43, 0.72] and rank 1 by
+0.21 [0.11, 0.31], while the intervals for ranks 3-6 against rank 2 contain zero.

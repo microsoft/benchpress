@@ -1,0 +1,112 @@
+{
+  "config": {
+    "results": "results_logit_bias_als.json",
+    "reference_rank": 2,
+    "n_boot": 1000,
+    "seed": 0,
+    "bootstrap_unit": "model",
+    "n_models": 84,
+    "n_predictions": 26040
+  },
+  "by_rank": {
+    "0": {
+      "pooled_medae": 5.174673481664502,
+      "pooled_medape": 8.624280854837389,
+      "medae_minus_reference": 0.5819670626315236,
+      "medae_minus_reference_ci95": [
+        0.42594397910464343,
+        0.714969856705179
+      ]
+    },
+    "1": {
+      "pooled_medae": 4.800841685964734,
+      "pooled_medape": 8.076316135723822,
+      "medae_minus_reference": 0.20813526693175533,
+      "medae_minus_reference_ci95": [
+        0.1091890898610731,
+        0.3068244453481558
+      ]
+    },
+    "2": {
+      "pooled_medae": 4.592706419032979,
+      "pooled_medape": 7.797126007915397,
+      "medae_minus_reference": 0.0,
+      "medae_minus_reference_ci95": [
+        0.0,
+        0.0
+      ]
+    },
+    "3": {
+      "pooled_medae": 4.528817444106856,
+      "pooled_medape": 7.772796637167146,
+      "medae_minus_reference": -0.06388897492612244,
+      "medae_minus_reference_ci95": [
+        -0.1496547033677123,
+        0.02133474746832977
+      ]
+    },
+    "4": {
+      "pooled_medae": 4.540197873258272,
+      "pooled_medape": 7.7546954630858105,
+      "medae_minus_reference": -0.05250854577470676,
+      "medae_minus_reference_ci95": [
+        -0.16541136341027668,
+        0.06141998366998971
+      ]
+    },
+    "5": {
+      "pooled_medae": 4.600790378100257,
+      "pooled_medape": 7.7504021796741895,
+      "medae_minus_reference": 0.008083959067278101,
+      "medae_minus_reference_ci95": [
+        -0.11346190504749758,
+        0.14364701843052666
+      ]
+    },
+    "6": {
+      "pooled_medae": 4.6237903066599415,
+      "pooled_medape": 7.978120169451795,
+      "medae_minus_reference": 0.03108388762696279,
+      "medae_minus_reference_ci95": [
+        -0.09512806283456605,
+        0.17321323651760764
+      ]
+    },
+    "7": {
+      "pooled_medae": 4.825883108685275,
+      "pooled_medape": 8.209251015219698,
+      "medae_minus_reference": 0.23317668965229643,
+      "medae_minus_reference_ci95": [
+        0.10701513252600119,
+        0.3865908371622226
+      ]
+    },
+    "8": {
+      "pooled_medae": 4.955284691774047,
+      "pooled_medape": 8.360500398995342,
+      "medae_minus_reference": 0.362578272741068,
+      "medae_minus_reference_ci95": [
+        0.20336675211963598,
+        0.5190482538160186
+      ]
+    },
+    "9": {
+      "pooled_medae": 5.0092942515548415,
+      "pooled_medape": 8.459875433605916,
+      "medae_minus_reference": 0.4165878325218628,
+      "medae_minus_reference_ci95": [
+        0.24587751748436953,
+        0.5593074905038451
+      ]
+    },
+    "10": {
+      "pooled_medae": 5.11453587913023,
+      "pooled_medape": 8.51961935779548,
+      "medae_minus_reference": 0.5218294600972513,
+      "medae_minus_reference_ci95": [
+        0.35501085928968407,
+        0.7141686495609397
+      ]
+    }
+  }
+}
