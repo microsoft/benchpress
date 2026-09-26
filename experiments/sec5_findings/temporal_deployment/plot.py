@@ -35,14 +35,15 @@ EXPECTED_PROTOCOL = "temporal_deployment_hard_rule_v4"
 K_COLORS = [VANILLA_BLUE, MEMENTO_MAGENTA, ANSWER_VIOLET]
 
 
-def _apply_style():
+def _apply_style(hidden_only: bool):
+    font_scale = 1.6 if hidden_only else 1.0
     plt.rcParams.update({
         "font.family": "serif",
-        "font.size": 7.5,
-        "axes.titlesize": 8.5,
-        "axes.labelsize": 8,
-        "xtick.labelsize": 8,
-        "ytick.labelsize": 8,
+        "font.size": 7.5 * font_scale,
+        "axes.titlesize": 8.5 * font_scale,
+        "axes.labelsize": 8 * font_scale,
+        "xtick.labelsize": 8 * font_scale,
+        "ytick.labelsize": 8 * font_scale,
         "figure.dpi": 150,
         "savefig.dpi": 300,
         "savefig.bbox": "tight",
@@ -103,7 +104,7 @@ def _plot_metric(ax, values: list[list[float]], ylabel: str):
                 f"{med:.1f}",
                 ha="center",
                 va="bottom",
-                fontsize=7.5,
+                fontsize=plt.rcParams["font.size"],
                 color=CHARCOAL,
                 fontweight="bold",
             )
@@ -144,7 +145,7 @@ def main():
             f"{RESULTS_PATH} has protocol {protocol!r}; expected {EXPECTED_PROTOCOL!r}. "
             "Run `python run.py --mode run-all` and `python run.py --mode merge` first."
         )
-    _apply_style()
+    _apply_style(hidden_only=args.hidden_only)
     fig, axes = plt.subplots(1, 2, figsize=(3.9, 2.05), sharex=True)
     _plot_metric(axes[0], _metric_values(payload, "medae", args.hidden_only), "MedAE")
     _plot_metric(axes[1], _metric_values(payload, "medape", args.hidden_only), "MedAPE (%)")
