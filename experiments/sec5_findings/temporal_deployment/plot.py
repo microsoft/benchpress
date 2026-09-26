@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import argparse
 import os
 import sys
 
@@ -14,7 +15,6 @@ REPO_ROOT = os.path.abspath(os.path.join(HERE, "..", "..", ".."))
 if REPO_ROOT not in sys.path:
     sys.path.insert(0, REPO_ROOT)
 
-from benchpress.artifact_utils import ensure_artifacts
 from benchpress.io_utils import load_json
 from benchpress.plot_helpers.visual_identity import (
     ANSWER_VIOLET,
@@ -24,8 +24,12 @@ from benchpress.plot_helpers.visual_identity import (
     VANILLA_BLUE,
     save_fig,
 )
+from summary_utils import temporal_overall_medians, temporal_values_by_k
 
 RESULTS_PATH = os.path.join(HERE, "results.json")
+OVERLEAF_FIGURES_DIR = os.path.abspath(os.path.join(
+    REPO_ROOT, "..", "overleaf", "iclr2027", "figures",
+))
 DISPLAY_K = [1, 5, 10]
 EXPECTED_PROTOCOL = "temporal_deployment_hard_rule_v4"
 K_COLORS = [VANILLA_BLUE, MEMENTO_MAGENTA, ANSWER_VIOLET]
@@ -48,17 +52,17 @@ def _apply_style():
     })
 
 
-def _metric_values(payload: dict, metric: str) -> list[list[float]]:
-    values = []
-    for k in DISPLAY_K:
-        k_values = []
-        for landmark in payload["landmarks"]:
-            summary = payload["summary_by_family"][landmark["family_key"]]
-            value = summary["by_k"][str(k)][metric]["median"]
-            if value is not None and np.isfinite(float(value)):
-                k_values.append(float(value))
-        values.append(k_values)
-    return values
+def _metric_values(payload: dict, metric: str, hidden_only: bool) -> list[list[float]]:
+    if hidden_only:
+        return temporal_values_by_k(payload, metric, hidden_only=True)
+    return [
+        [
+            float(payload["summary_by_family"][landmark["family_key"]]["by_k"][str(k)][metric]["median"])
+            for landmark in payload["landmarks"]
+            if payload["summary_by_family"][landmark["family_key"]]["by_k"][str(k)][metric]["median"] is not None
+        ]
+        for k in DISPLAY_K
+    ]
 
 
 def _plot_metric(ax, values: list[list[float]], ylabel: str):
@@ -110,12 +114,29 @@ def _plot_metric(ax, values: list[list[float]], ylabel: str):
     ax.grid(axis="y", color=GRAY, alpha=0.25, linewidth=0.8)
 
 
+def _save_temporal_figure(hidden_only: bool, out_pdf: str | None):
+    if hidden_only:
+        out_pdf = out_pdf or os.path.join(
+            OVERLEAF_FIGURES_DIR, "bp_temporal_deployment_boxplot.pdf",
+        )
+        os.makedirs(os.path.dirname(out_pdf), exist_ok=True)
+        plt.savefig(out_pdf, bbox_inches="tight")
+        plt.close()
+        print(f"  -> {out_pdf}")
+        return
+    save_fig("bp_temporal_deployment_boxplot")
+
+
 def main():
-    ensure_artifacts(
-        [RESULTS_PATH],
-        ["{python}", os.path.join(HERE, "run.py"), "--mode", "merge"],
-        description="Section 5.3 temporal-deployment hard-rule results",
-    )
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--hidden-only", action="store_true",
+                        help="Plot non-revealed cells only, using merged raw rows.")
+    parser.add_argument("--out-pdf", default=None,
+                        help="PDF output path. Hidden-only defaults to the ICLR Overleaf figures directory.")
+    args = parser.parse_args()
+
+    if not os.path.exists(RESULTS_PATH):
+        raise FileNotFoundError(f"Missing merged results JSON: {RESULTS_PATH}")
     payload = load_json(RESULTS_PATH)
     protocol = payload.get("config", {}).get("protocol_version")
     if protocol != EXPECTED_PROTOCOL:
@@ -123,16 +144,22 @@ def main():
             f"{RESULTS_PATH} has protocol {protocol!r}; expected {EXPECTED_PROTOCOL!r}. "
             "Run `python run.py --mode run-all` and `python run.py --mode merge` first."
         )
-    n_targets = len(payload["landmarks"])
-
     _apply_style()
     fig, axes = plt.subplots(1, 2, figsize=(3.9, 2.05), sharex=True)
-    _plot_metric(axes[0], _metric_values(payload, "medae"), "MedAE")
-    _plot_metric(axes[1], _metric_values(payload, "medape"), "MedAPE (%)")
+    _plot_metric(axes[0], _metric_values(payload, "medae", args.hidden_only), "MedAE")
+    _plot_metric(axes[1], _metric_values(payload, "medape", args.hidden_only), "MedAPE (%)")
     for ax in axes:
         ax.set_xlabel(r"Seed scores $k$", labelpad=1)
     fig.tight_layout(w_pad=1.4, pad=0.25)
-    save_fig("bp_temporal_deployment_boxplot")
+    _save_temporal_figure(args.hidden_only, args.out_pdf)
+
+    medians = temporal_overall_medians(payload, hidden_only=args.hidden_only)
+    label = "hidden-only" if args.hidden_only else "with-probe-zero"
+    print(f"{label} temporal medians:")
+    for metric in ("medae", "medape"):
+        print("  " + metric + " " + " ".join(
+            f"k={k}:{medians[metric][k]:.2f}" for k in DISPLAY_K
+        ))
 
 
 if __name__ == "__main__":

@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+import argparse
+import sys
 import warnings
 from collections import defaultdict
 from pathlib import Path
@@ -13,6 +15,11 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.lines import Line2D
+
+HERE = Path(__file__).resolve().parent
+REPO_ROOT = HERE.parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 from benchpress.io_utils import load_json
 from benchpress.plot_helpers.visual_identity import (
@@ -27,8 +34,6 @@ from benchpress.plot_helpers.visual_identity import (
     VANILLA_BLUE as BLUE,
 )
 
-
-HERE = Path(__file__).resolve().parent
 RESULTS_DIR = HERE / "results"
 FIGURES_DIR = HERE / "figures"
 
@@ -46,6 +51,17 @@ GREEDY_MEDAE_COST_AWARE_PATH = (
     HERE / ".." / ".." / "sec5_findings" / "optimal_probe" / "all_known" / "results"
     / "greedy_medae_targets_tall_candidates_usercheap.json.gz"
 ).resolve()
+FIXED_MEDAE_HIDDEN_PATH = (
+    HERE / ".." / ".." / "sec5_findings" / "optimal_probe" / "all_known" / "results"
+    / "fixed_order_medae_any_hidden_only.json.gz"
+).resolve()
+FIXED_MEDAE_COST_AWARE_HIDDEN_PATH = (
+    HERE / ".." / ".." / "sec5_findings" / "optimal_probe" / "all_known" / "results"
+    / "fixed_order_medae_low_cost_hidden_only.json.gz"
+).resolve()
+OVERLEAF_FIGURES_DIR = (
+    HERE.parents[3] / "overleaf" / "iclr2027" / "figures"
+)
 MODEL_SPLIT_MEDAE_PATH = (
     HERE / ".." / ".." / "sec5_findings" / "optimal_probe" / "holdout" / "results"
     / "model_split_validation_medae_train70_all.json.gz"
@@ -244,6 +260,72 @@ def probe_policy_curves():
     }
 
 
+def hidden_probe_policy_curves(allow_missing_random=False):
+    greedy = load_json(FIXED_MEDAE_HIDDEN_PATH)
+    greedy_cost_aware = load_json(FIXED_MEDAE_COST_AWARE_HIDDEN_PATH)
+
+    def fixed_curve(payload):
+        rows = [
+            row for row in payload["summary_by_k"]
+            if 1 <= int(row["k"]) <= 10
+        ]
+        rows.sort(key=lambda row: int(row["k"]))
+        return (
+            np.array([int(row["k"]) for row in rows]),
+            np.array([float(row["hidden_only"]["medae"]) for row in rows]),
+            [
+                {"added_benchmark_name": name}
+                for name in payload["config"]["display_names"][:len(rows)]
+            ],
+        )
+
+    greedy_k, greedy_medae, greedy_trajectory = fixed_curve(greedy)
+    cost_k, cost_medae, cost_trajectory = fixed_curve(greedy_cost_aware)
+
+    random_k = random_medae = random_q1 = random_q3 = None
+    if RANDOM_PATH.exists():
+        random = load_json(RANDOM_PATH)
+        random_by_k = defaultdict(list)
+        for row in random.get("summary_non_probe_by_k_seed", []):
+            k = int(row["k"])
+            if 1 <= k <= 10 and row.get("medae") is not None:
+                random_by_k[k].append(float(row["medae"]))
+        if random_by_k:
+            random_k = np.array(sorted(random_by_k))
+            random_medae = np.array([np.median(random_by_k[k]) for k in random_k])
+            random_q1 = np.array([np.percentile(random_by_k[k], 25) for k in random_k])
+            random_q3 = np.array([np.percentile(random_by_k[k], 75) for k in random_k])
+        else:
+            rows = [
+                row for row in random.get("summary_non_probe_by_k", [])
+                if 1 <= int(row["k"]) <= 10
+            ]
+            rows.sort(key=lambda row: int(row["k"]))
+            random_k = np.array([int(row["k"]) for row in rows])
+            random_medae = np.array([float(row["medae_median"]) for row in rows])
+            random_q1 = random_medae.copy()
+            random_q3 = random_medae.copy()
+    elif not allow_missing_random:
+        raise FileNotFoundError(
+            f"Missing hidden-only random result: {RANDOM_PATH}. "
+            "Use --allow-missing-random for a greedy-only dry run."
+        )
+
+    return {
+        "random_k": random_k,
+        "random_medae": random_medae,
+        "random_q1": random_q1,
+        "random_q3": random_q3,
+        "baseline_medae": None,
+        "greedy_k": greedy_k,
+        "greedy_medae": greedy_medae,
+        "greedy_cost_aware_k": cost_k,
+        "greedy_cost_aware_medae": cost_medae,
+        "greedy_trajectory": greedy_trajectory,
+        "greedy_cost_aware_trajectory": cost_trajectory,
+    }
+
+
 def ranking_data_from_raw(raw_predictions, margin=5.0, k_max=10):
     grouped = defaultdict(list)
     for row in raw_predictions:
@@ -362,39 +444,74 @@ def render_panel_a(selected) -> Path:
     return output
 
 
-def render_panel_b(curves) -> Path:
+def print_panel_b_values(curves) -> None:
+    print("panel-b MedAE values:")
+    print("  cost-unaware " + " ".join(
+        f"k={int(k)}:{float(v):.3f}"
+        for k, v in zip(curves["greedy_k"], curves["greedy_medae"])
+    ))
+    print("  cost-aware   " + " ".join(
+        f"k={int(k)}:{float(v):.3f}"
+        for k, v in zip(curves["greedy_cost_aware_k"], curves["greedy_cost_aware_medae"])
+    ))
+    if curves.get("random_k") is not None:
+        print("  random       " + " ".join(
+            f"k={int(k)}:{float(v):.3f}"
+            for k, v in zip(curves["random_k"], curves["random_medae"])
+        ))
+    else:
+        print("  random       <missing>")
+
+
+def render_panel_b(curves, output_path: Path | None = None, dry_run: bool = False) -> Path | None:
     fig_b, ax = plt.subplots(1, 1, figsize=(7.6, 7.2))
-    base = float(curves["baseline_medae"])
+    base = curves.get("baseline_medae")
 
-    random_x = np.concatenate([[0], curves["random_k"]])
-    random_y = np.concatenate([[base], curves["random_medae"]])
-    random_q1 = np.concatenate([[base], curves["random_q1"]])
-    random_q3 = np.concatenate([[base], curves["random_q3"]])
-    greedy_x = np.concatenate([[0], curves["greedy_k"]])
-    greedy_y = np.concatenate([[base], curves["greedy_medae"]])
-    cost_x = np.concatenate([[0], curves["greedy_cost_aware_k"]])
-    cost_y = np.concatenate([[base], curves["greedy_cost_aware_medae"]])
+    if curves.get("random_k") is not None:
+        if base is None:
+            random_x = curves["random_k"]
+            random_y = curves["random_medae"]
+            random_q1 = curves["random_q1"]
+            random_q3 = curves["random_q3"]
+        else:
+            base_value = float(base)
+            random_x = np.concatenate([[0], curves["random_k"]])
+            random_y = np.concatenate([[base_value], curves["random_medae"]])
+            random_q1 = np.concatenate([[base_value], curves["random_q1"]])
+            random_q3 = np.concatenate([[base_value], curves["random_q3"]])
+        ax.fill_between(random_x, random_q1, random_q3, color=GRAY, alpha=0.14, lw=0)
+        ax.plot(random_x, random_y, color=GRAY, lw=2.3, ls="--", marker="o", ms=5.5)
 
-    ax.fill_between(random_x, random_q1, random_q3, color=GRAY, alpha=0.14, lw=0)
-    ax.plot(random_x, random_y, color=GRAY, lw=2.3, ls="--", marker="o", ms=5.5)
+    if base is None:
+        greedy_x = curves["greedy_k"]
+        greedy_y = curves["greedy_medae"]
+        cost_x = curves["greedy_cost_aware_k"]
+        cost_y = curves["greedy_cost_aware_medae"]
+    else:
+        base_value = float(base)
+        greedy_x = np.concatenate([[0], curves["greedy_k"]])
+        greedy_y = np.concatenate([[base_value], curves["greedy_medae"]])
+        cost_x = np.concatenate([[0], curves["greedy_cost_aware_k"]])
+        cost_y = np.concatenate([[base_value], curves["greedy_cost_aware_medae"]])
     ax.plot(greedy_x, greedy_y, color=MAGENTA, lw=2.5, ls="-", marker="o", ms=5.5)
     ax.plot(cost_x, cost_y, color=BLUE, lw=2.5, ls="-", marker="s", ms=5.2)
-    ax.plot(
-        [0], [base], marker="D", color="white", markeredgecolor=CHARCOAL,
-        markeredgewidth=1.0, ms=5.6, zorder=5,
-    )
-    ax.annotate(
-        "Benchmark median", (0, base), xytext=(8, -2),
-        textcoords="offset points", fontsize=12.0, color=CHARCOAL,
-        ha="left", va="top",
-        bbox=dict(
-            boxstyle="round,pad=0.18", facecolor="white",
-            edgecolor="none", alpha=0.92,
-        ),
-        arrowprops=dict(
-            arrowstyle="-", color=CHARCOAL, lw=0.9, shrinkA=0, shrinkB=3,
-        ),
-    )
+    if base is not None:
+        ax.plot(
+            [0], [base], marker="D", color="white", markeredgecolor=CHARCOAL,
+            markeredgewidth=1.0, ms=5.6, zorder=5,
+        )
+        ax.annotate(
+            "Benchmark median", (0, base), xytext=(8, -2),
+            textcoords="offset points", fontsize=12.0, color=CHARCOAL,
+            ha="left", va="top",
+            bbox=dict(
+                boxstyle="round,pad=0.18", facecolor="white",
+                edgecolor="none", alpha=0.92,
+            ),
+            arrowprops=dict(
+                arrowstyle="-", color=CHARCOAL, lw=0.9, shrinkA=0, shrinkB=3,
+            ),
+        )
 
     SHORT = {
         "HLE (Humanity's Last Exam)": "HLE",
@@ -435,8 +552,12 @@ def render_panel_b(curves) -> Path:
             ),
         )
 
-    ax.set_xlim(-0.45, 10.45)
-    ax.set_xticks(list(range(0, 11)))
+    if base is None:
+        ax.set_xlim(0.55, 10.45)
+        ax.set_xticks(list(range(1, 11)))
+    else:
+        ax.set_xlim(-0.45, 10.45)
+        ax.set_xticks(list(range(0, 11)))
     ax.set_ylim(bottom=1.5)
     ax.set_xlabel("# Top benchmarks", fontsize=18.0, labelpad=1.5)
     ax.set_ylabel("Median Absolute Error", fontsize=18.0)
@@ -444,11 +565,13 @@ def render_panel_b(curves) -> Path:
     ax.grid(axis="y", color=GRID, alpha=0.55, lw=0.6)
     ax.tick_params(labelsize=16.0, pad=1.5)
 
-    handles = [
-        Line2D([0], [0], color=GRAY, lw=1.55, linestyle="--", marker="o", markersize=5.2, label="Random benchmark set"),
+    handles = []
+    if curves.get("random_k") is not None:
+        handles.append(Line2D([0], [0], color=GRAY, lw=1.55, linestyle="--", marker="o", markersize=5.2, label="Random benchmark set"))
+    handles.extend([
         Line2D([0], [0], color=MAGENTA, lw=1.75, linestyle="-", marker="o", markersize=5.2, label="Most predictive benchmarks"),
         Line2D([0], [0], color=BLUE, lw=1.75, linestyle="-", marker="s", markersize=5.0, label="Low-cost benchmarks"),
-    ]
+    ])
     fig_b.legend(
         handles=handles, loc="lower center", ncol=2, frameon=False,
         fontsize=14.0, bbox_to_anchor=(0.5, 0.012),
@@ -456,7 +579,11 @@ def render_panel_b(curves) -> Path:
         labelspacing=0.25, handletextpad=0.45,
     )
     fig_b.subplots_adjust(left=0.105, right=0.99, top=0.905, bottom=0.205)
-    output = FIGURES_DIR / "bp_hero_panel_b_overall.pdf"
+    output = output_path or (FIGURES_DIR / "bp_hero_panel_b_overall.pdf")
+    if dry_run:
+        plt.close(fig_b)
+        return None
+    output.parent.mkdir(parents=True, exist_ok=True)
     save_pdf(fig_b, output)
     return output
 
@@ -491,16 +618,45 @@ def render_ranking_preservation_overall(curves) -> Path:
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--hidden-only-panel-b", action="store_true",
+                        help="Render Figure 1 panel B from hidden-only probe summaries.")
+    parser.add_argument("--panel-b-only", action="store_true",
+                        help="Render only Figure 1 panel B.")
+    parser.add_argument("--allow-missing-random", action="store_true",
+                        help="Allow hidden-only panel B to omit the random curve while the CHTC job is still running.")
+    parser.add_argument("--dry-run", action="store_true",
+                        help="Print plotted values without writing the panel-B PDF.")
+    args = parser.parse_args()
+
     apply_style()
+    if args.hidden_only_panel_b:
+        curves = hidden_probe_policy_curves(
+            allow_missing_random=args.allow_missing_random,
+        )
+        print_panel_b_values(curves)
+        output = render_panel_b(
+            curves,
+            output_path=OVERLEAF_FIGURES_DIR / "bp_hero_panel_b_overall.pdf",
+            dry_run=args.dry_run,
+        )
+        if output is not None:
+            print(f"  -> {output}")
+        return
+
     selected = selected_examples()
     curves = probe_policy_curves()
-    outputs = [
-        render_panel_a(selected),
-        render_panel_b(curves),
-        render_ranking_preservation_overall(curves),
-    ]
+    if args.panel_b_only:
+        outputs = [render_panel_b(curves, dry_run=args.dry_run)]
+    else:
+        outputs = [
+            render_panel_a(selected),
+            render_panel_b(curves, dry_run=args.dry_run),
+            render_ranking_preservation_overall(curves),
+        ]
     for output in outputs:
-        print(f"  -> {output.relative_to(HERE)}")
+        if output is not None:
+            print(f"  -> {output.relative_to(HERE)}")
 
 
 if __name__ == "__main__":
