@@ -114,6 +114,9 @@ Hidden-only evaluation (unrevealed cells only; CHTC jobs 6307236/6307237/6307249
 - MedAE orderings, k=5 / k=10 MedAE: any 4.745 / 4.345; low-cost 5.318 / 4.919.
 - MedAPE orderings, k=5 / k=10 MedAPE: any 7.873% / 7.329%; low-cost 8.851% / 8.375%.
 - Random prefixes, median over 10 seeds, k=5 / k=10 MedAE: 7.503 / 6.120.
+- Probe-choice and rank baselines (CHTC jobs 6307629-6307632, commit `9ac9963`), hidden-only MedAE at k=1 / 3 / 5 / 10:
+  most-reported-first any 6.27 / 6.18 / 5.73 / 5.17 and low-cost 6.27 / 5.94 / 5.50 / 4.99 (BenchPress rank 2);
+  offsets only (`--rank 0`) on the MedAE orderings, any 5.92 / 5.53 / 5.41 / 5.18 and low-cost 5.92 / 5.82 / 5.81 / 5.73.
 - The with-probe-zero MedAE of the any ordering is 3.955 at k=5, above the arXiv 3.93 because commit `f4319af` made default predictions metric-aware for non-percentage metrics; the low-cost value reproduces 4.55.
 
 ICLR figure: `plot.py --compare --hidden-only --metric medape --all-in fixed_order_medape_any_hidden_only.json.gz --cheap-in fixed_order_medape_low_cost_hidden_only.json.gz --random-in random_medape_hero_all_known.json.gz --out bp_probe_evaluation_cost_aware` writes `overleaf/iclr2027/figures/bp_probe_evaluation_cost_aware.pdf`.
