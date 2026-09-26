@@ -20,6 +20,7 @@ bash run.sh
 ## Outputs
 - `figures/bp_matrix_clean_white.pdf`
 - `figures/bp_matrix_clean_white.png`
+- `python plot.py --compact` writes `figures/bp_matrix_clean_white_compact.pdf` with a smaller canvas and larger relative fonts; the ICLR 2027 draft uses this copy in `overleaf/iclr2027/figures/`.
 
 ## Resume / rerun
 No expensive computation. Rerun `bash run.sh` after matrix changes. The paper uses `bp_matrix_clean_white.pdf`; missing cells are white and observed cells use the BenchPress blue.

@@ -56,6 +56,7 @@ The current script runs all ranks serially in one CPU job. If this becomes a bot
 ```
 
 `plot.py` reads `results.json` and writes `figures/bp_rank_ucurve_raw_logit.pdf` and `.png`. Each curve uses pooled held-out MedAPE and marks the best rank with a red star.
+`plot.py --compact` writes `figures/bp_rank_ucurve_raw_logit_compact.pdf` with a smaller canvas and larger relative fonts; the ICLR 2027 draft uses this copy in `overleaf/iclr2027/figures/`.
 
 ## Resume / rerun
 The script resumes per method/rank. A cached entry is only reused if it contains `medape`, `medae`, and `raw_predictions`; older aggregate-only entries are intentionally rerun so the bottleneck held-out predictions are preserved. The script never regenerates shared folds; if fold loading fails, fix the shared fold artifact before rerunning this experiment.

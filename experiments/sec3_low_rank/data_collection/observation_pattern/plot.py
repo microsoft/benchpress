@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Plot: bp_matrix_clean_white"""
+"""Plot: bp_matrix_clean_white.
+
+`--compact` produces bp_matrix_clean_white_compact.pdf for a minipage about 0.3 of the text width.
+"""
+import argparse
 import numpy as np
 import matplotlib
 matplotlib.use('Agg')
@@ -22,8 +26,9 @@ from benchpress.plot_helpers.style import *
 # just visualizes what the harness loads.
 
 
-def fig_matrix_clean():
-    print("[2] bp_matrix_clean_white")
+def fig_matrix_clean(compact):
+    name = 'bp_matrix_clean_white_compact' if compact else 'bp_matrix_clean_white'
+    print(f"[2] {name}")
     S.apply_single()
     sub = OBSERVED
     n_models_kept, n_bench_kept = sub.shape
@@ -37,7 +42,7 @@ def fig_matrix_clean():
     n_rows, n_cols = obs_sorted.shape
 
     # Models on Y (rows), benchmarks on X (columns)
-    fig, ax = plt.subplots(figsize=(8, 5))
+    fig, ax = plt.subplots(figsize=(4.4, 2.75) if compact else (8, 5))
     cmap = mcolors.ListedColormap(['white', S.VANILLA_BLUE])
     ax.imshow(obs_sorted, cmap=cmap, interpolation='nearest', aspect='auto')
     ax.set_xticks([]); ax.set_yticks([])
@@ -46,7 +51,10 @@ def fig_matrix_clean():
     ax.set_xlabel(f'{n_bench_kept} benchmarks')
     ax.set_ylabel(f'{n_models_kept} models')
     # Title removed — redundant with caption
-    S.save_fig('bp_matrix_clean_white')
+    S.save_fig(name)
 
 if __name__ == "__main__":
-    fig_matrix_clean()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--compact', action='store_true',
+                        help='Smaller canvas with larger relative fonts for a minipage about 0.3 of the text width.')
+    fig_matrix_clean(parser.parse_args().compact)
