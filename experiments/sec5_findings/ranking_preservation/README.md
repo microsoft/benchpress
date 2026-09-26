@@ -60,7 +60,7 @@ The script is deterministic and cheap. Re-run `run.sh` to overwrite `results.jso
 ## Last valid result
 
 Regenerated the same-cell baselines as lightweight post-processing using the cached logit-space model mean and logit-space benchmark mean prediction shards.
-Latest baseline regeneration: CHTC job `6307691`, tag `rk_rank_base`, commit `2f6f56d9be25c4afce19ecaf60a5da9ae20eabca`, May 2026 matrix `84 x 133`, 10 seeds x 3 folds.
+Latest baseline regeneration: CHTC job `6307703`, tag `rk_rank_bases`, commit `c54ce04d07cd82c7b4bfc098ec33a9e5ac52da1e`, May 2026 matrix `84 x 133`, 10 seeds x 3 folds.
 The BenchPress column below reports the paper-current numbers from `results.json` / `tab:ranking_preservation`.
 
 Key aggregate results:
