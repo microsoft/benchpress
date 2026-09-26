@@ -39,7 +39,7 @@ def _apply_style(hidden_only: bool):
     font_scale = 1.6 if hidden_only else 1.0
     plt.rcParams.update({
         "font.family": "serif",
-        "font.size": 7.5 * font_scale,
+        "font.size": 10.5 if hidden_only else 7.5,
         "axes.titlesize": 8.5 * font_scale,
         "axes.labelsize": 8 * font_scale,
         "xtick.labelsize": 8 * font_scale,
