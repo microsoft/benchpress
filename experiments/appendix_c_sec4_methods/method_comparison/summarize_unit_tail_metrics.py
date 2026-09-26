@@ -43,10 +43,15 @@ def _finite_or_none(value):
 
 
 def _round_metrics(metrics):
-    return {
-        key: (_finite_or_none(value) if isinstance(value, (int, float)) else value)
-        for key, value in metrics.items()
-    }
+    out = {}
+    for key, value in metrics.items():
+        if isinstance(value, int):
+            out[key] = int(value)
+        elif isinstance(value, float):
+            out[key] = _finite_or_none(value)
+        else:
+            out[key] = value
+    return out
 
 
 def _group_median_metrics(actual, predicted, groups, abs_error_threshold):
@@ -99,6 +104,7 @@ def _summarize_arrays(actual, predicted, benchmark_indices, *, groups=None,
     table = {
         "medae_all": paper_all["medae"],
         "medae_pct_only": paper_pct["medae"],
+        "medape_all": paper_all["medape"],
         "medape_pct_only": paper_pct["medape"],
         "p90_abs_err_all": pooled_all["p90_abs_error"],
         "p90_abs_err_pct_only": pooled_pct["p90_abs_error"],
@@ -148,6 +154,7 @@ def _load_method_arrays(method_dir, transform, method):
 
 
 def summarize_method_comparison(method_dir, abs_error_threshold):
+    results = _load_json_auto(os.path.join(method_dir, "results.json"))
     configs = [
         ("method_comparison", "\\benchpress{}", "logit", "Bias ALS"),
         ("method_comparison", "logit-space model mean", "logit", "Model Mean"),
@@ -167,6 +174,13 @@ def summarize_method_comparison(method_dir, abs_error_threshold):
         summary = _summarize_arrays(
             arrays["actual"], arrays["predicted"], arrays["benchmark_indices"],
             groups=arrays["fold_id"], abs_error_threshold=abs_error_threshold)
+        headline = results[transform][method]
+        summary["headline_paper_all"] = {
+            "medae": float(headline["medae_median"]),
+            "medape": float(headline["medape_median"]),
+        }
+        summary["table"]["medae_all"] = float(headline["medae_median"])
+        summary["table"]["medape_all"] = float(headline["medape_median"])
         entries.append({
             "setting": setting,
             "method": label,

@@ -129,6 +129,8 @@ Hidden-only evaluation (unrevealed cells only; CHTC jobs 6307236/6307237/6307249
   most-reported-first any 6.27 / 6.18 / 5.73 / 5.17 and low-cost 6.27 / 5.94 / 5.50 / 4.99 (BenchPress rank 2);
   offsets only (`--rank 0`) on the MedAE orderings, any 5.92 / 5.53 / 5.41 / 5.18 and low-cost 5.92 / 5.82 / 5.81 / 5.73.
 - Coverage-matched random baseline (CHTC job 6307756, tag `mr_covrand4`, commit `b1c9bf2`): 10 random k-sets per pool whose revealed-cell count is within 10% of the greedy MedAE ordering's (any: 82/155/250/419 cells at k=1/3/5/10; low-cost: 82/172/219/356). Median hidden-only MedAE (IQR) at k=3 / 5 / 10: any 6.15 (5.61-6.34) / 5.71 (5.60-5.94) / 5.18 (5.01-5.37); low-cost 5.87 (5.79-5.97) / 5.58 (5.47-5.76) / 5.25 (5.17-5.32). Median P90 absolute error at k=5: any 22.91, low-cost 22.85. k=1 has a single coverage-matched benchmark per pool (reused draws), so it is not informative.
+- Same-cell logit-space model mean baseline (CHTC job 6307838, commit `f2ce6da`), hidden-only k=5 MedAE:
+  any 7.52 and low-cost 7.77, using the same target cells as the fixed MedAE orderings.
 - The with-probe-zero MedAE of the any ordering is 3.955 at k=5, above the arXiv 3.93 because commit `f4319af` made default predictions metric-aware for non-percentage metrics; the low-cost value reproduces 4.55.
 
 ICLR figure: `plot.py --compare --hidden-only --metric medape --all-in fixed_order_medape_any_hidden_only.json.gz --cheap-in fixed_order_medape_low_cost_hidden_only.json.gz --random-in random_medape_hero_all_known.json.gz --out bp_probe_evaluation_cost_aware` writes `overleaf/iclr2027/figures/bp_probe_evaluation_cost_aware.pdf`.

@@ -1,0 +1,435 @@
+{
+  "metric_definitions": {
+    "medae": "median absolute error in original score units; method comparison uses the paper's median over the 30 held-out folds",
+    "medape": "median absolute percentage error; true scores with |score| <= 1e-6 are omitted from APE before taking medians",
+    "pct_only": "cells whose benchmark metadata declares a percentage scale or [0,100] range via benchpress.methods.transforms._is_pct_bench",
+    "p90_abs_error": "90th percentile of absolute error pooled over the same prediction rows",
+    "frac_abs_err_gt_10": "fraction of finite predictions with absolute error greater than 10 score points"
+  },
+  "matrix": {
+    "shape": [
+      84,
+      133
+    ],
+    "n_observed": 2604,
+    "n_benchmarks": 133
+  },
+  "entries": [
+    {
+      "setting": "method_comparison",
+      "method": "\\benchpress{}",
+      "source_path": "experiments/sec4_building_benchpress/method_comparison/predictions/0124__logit__bias_als__hp01_b16f05a66b.npz",
+      "same_cell_key_sha256": "5bb70ecfa8555b728e2c459a52ecdb98911b35d900df27048ca1efdd53dabd6b",
+      "aggregation_for_medae_medape": "median over groups",
+      "table": {
+        "medae_all": 4.628924721355029,
+        "medae_pct_only": 4.369837150353323,
+        "medape_all": 7.774965504940833,
+        "medape_pct_only": 7.8031980164720895,
+        "p90_abs_err_all": 19.731658441468543,
+        "p90_abs_err_pct_only": 17.0677749892197,
+        "frac_abs_err_gt_10_all": 0.24873271889400922,
+        "frac_abs_err_gt_10_pct_only": 0.22584951456310678,
+        "n_cells_all": 26040,
+        "n_cells_pct_only": 24720
+      },
+      "pooled_all": {
+        "n": 26040,
+        "medae": 4.592706419032979,
+        "medape": 7.797126007915396,
+        "p90_abs_error": 19.731658441468543,
+        "frac_abs_error_gt_threshold": 0.24873271889400922,
+        "abs_error_threshold": 10.0
+      },
+      "pooled_pct_only": {
+        "n": 24720,
+        "medae": 4.358594172568601,
+        "medape": 7.748243413440457,
+        "p90_abs_error": 17.0677749892197,
+        "frac_abs_error_gt_threshold": 0.22584951456310678,
+        "abs_error_threshold": 10.0
+      },
+      "paper_aggregation_all": {
+        "n": 26040,
+        "medae": 4.606229570829861,
+        "medape": 7.8226127611999665,
+        "p90_abs_error": 19.579528721765556,
+        "frac_abs_error_gt_threshold": 0.2508896797153025,
+        "abs_error_threshold": 10.0
+      },
+      "paper_aggregation_pct_only": {
+        "n": 24720,
+        "medae": 4.369837150353323,
+        "medape": 7.8031980164720895,
+        "p90_abs_error": 16.959070078821224,
+        "frac_abs_error_gt_threshold": 0.22661806431273646,
+        "abs_error_threshold": 10.0
+      },
+      "headline_paper_all": {
+        "medae": 4.628924721355029,
+        "medape": 7.774965504940833
+      }
+    },
+    {
+      "setting": "method_comparison",
+      "method": "logit-space model mean",
+      "source_path": "experiments/sec4_building_benchpress/method_comparison/predictions/0095__logit__model_mean__hp00_bf21a9e8fb.npz",
+      "same_cell_key_sha256": "5bb70ecfa8555b728e2c459a52ecdb98911b35d900df27048ca1efdd53dabd6b",
+      "aggregation_for_medae_medape": "median over groups",
+      "table": {
+        "medae_all": 7.218874123528634,
+        "medae_pct_only": 6.970025327029855,
+        "medape_all": 11.826112051685852,
+        "medape_pct_only": 11.923750555914914,
+        "p90_abs_err_all": 27.691107696910887,
+        "p90_abs_err_pct_only": 24.57482557144711,
+        "frac_abs_err_gt_10_all": 0.3953917050691244,
+        "frac_abs_err_gt_10_pct_only": 0.37973300970873786,
+        "n_cells_all": 26040,
+        "n_cells_pct_only": 24720
+      },
+      "pooled_all": {
+        "n": 26040,
+        "medae": 7.255843027255067,
+        "medape": 11.83074197013679,
+        "p90_abs_error": 27.691107696910887,
+        "frac_abs_error_gt_threshold": 0.3953917050691244,
+        "abs_error_threshold": 10.0
+      },
+      "pooled_pct_only": {
+        "n": 24720,
+        "medae": 6.978206979048984,
+        "medape": 11.98902814249205,
+        "p90_abs_error": 24.57482557144711,
+        "frac_abs_error_gt_threshold": 0.37973300970873786,
+        "abs_error_threshold": 10.0
+      },
+      "paper_aggregation_all": {
+        "n": 26040,
+        "medae": 7.226835448959097,
+        "medape": 11.798315624790312,
+        "p90_abs_error": 27.70618011806146,
+        "frac_abs_error_gt_threshold": 0.3944246737841044,
+        "abs_error_threshold": 10.0
+      },
+      "paper_aggregation_pct_only": {
+        "n": 24720,
+        "medae": 6.970025327029855,
+        "medape": 11.923750555914914,
+        "p90_abs_error": 24.516833724203195,
+        "frac_abs_error_gt_threshold": 0.38160330277157173,
+        "abs_error_threshold": 10.0
+      },
+      "headline_paper_all": {
+        "medae": 7.218874123528634,
+        "medape": 11.826112051685852
+      }
+    },
+    {
+      "setting": "probe_selection_in_sample_cost_unaware",
+      "method": "\\benchpress{}",
+      "source_path": "experiments/sec5_findings/optimal_probe/all_known/results/fixed_order_medae_any_hidden_only.json.gz",
+      "same_cell_key_sha256": "044dbb0d7ad2360812c2e245070870d2206dd19cf2d5679af33739efc13e248c",
+      "aggregation_for_medae_medape": "pooled",
+      "table": {
+        "medae_all": 4.744581311576809,
+        "medae_pct_only": 4.517544253309625,
+        "medape_all": 7.98076270818925,
+        "medape_pct_only": 7.926908827418208,
+        "p90_abs_err_all": 19.72697518129283,
+        "p90_abs_err_pct_only": 17.83397236034679,
+        "frac_abs_err_gt_10_all": 0.25573491928632114,
+        "frac_abs_err_gt_10_pct_only": 0.23921742996887504,
+        "n_cells_all": 2354,
+        "n_cells_pct_only": 2249
+      },
+      "pooled_all": {
+        "n": 2354,
+        "medae": 4.744581311576809,
+        "medape": 7.98076270818925,
+        "p90_abs_error": 19.72697518129283,
+        "frac_abs_error_gt_threshold": 0.25573491928632114,
+        "abs_error_threshold": 10.0
+      },
+      "pooled_pct_only": {
+        "n": 2249,
+        "medae": 4.517544253309625,
+        "medape": 7.926908827418208,
+        "p90_abs_error": 17.83397236034679,
+        "frac_abs_error_gt_threshold": 0.23921742996887504,
+        "abs_error_threshold": 10.0
+      },
+      "paper_aggregation_all": {
+        "n": 2354,
+        "medae": 4.744581311576809,
+        "medape": 7.98076270818925,
+        "p90_abs_error": 19.72697518129283,
+        "frac_abs_error_gt_threshold": 0.25573491928632114,
+        "abs_error_threshold": 10.0
+      },
+      "paper_aggregation_pct_only": {
+        "n": 2249,
+        "medae": 4.517544253309625,
+        "medape": 7.926908827418208,
+        "p90_abs_error": 17.83397236034679,
+        "frac_abs_error_gt_threshold": 0.23921742996887504,
+        "abs_error_threshold": 10.0
+      }
+    },
+    {
+      "setting": "probe_selection_in_sample_cost_unaware",
+      "method": "logit-space model mean",
+      "source_path": "experiments/sec5_findings/optimal_probe/all_known/results/fixed_order_medae_any_logit_model_mean_hidden_only.json.gz",
+      "same_cell_key_sha256": "044dbb0d7ad2360812c2e245070870d2206dd19cf2d5679af33739efc13e248c",
+      "aggregation_for_medae_medape": "pooled",
+      "table": {
+        "medae_all": 7.5212898968707655,
+        "medae_pct_only": 7.360355981628402,
+        "medape_all": 13.085825790150027,
+        "medape_pct_only": 13.402515444760821,
+        "p90_abs_err_all": 27.638873313141104,
+        "p90_abs_err_pct_only": 25.958882196242314,
+        "frac_abs_err_gt_10_all": 0.4056924384027188,
+        "frac_abs_err_gt_10_pct_only": 0.39528679413072476,
+        "n_cells_all": 2354,
+        "n_cells_pct_only": 2249
+      },
+      "pooled_all": {
+        "n": 2354,
+        "medae": 7.5212898968707655,
+        "medape": 13.085825790150027,
+        "p90_abs_error": 27.638873313141104,
+        "frac_abs_error_gt_threshold": 0.4056924384027188,
+        "abs_error_threshold": 10.0
+      },
+      "pooled_pct_only": {
+        "n": 2249,
+        "medae": 7.360355981628402,
+        "medape": 13.402515444760821,
+        "p90_abs_error": 25.958882196242314,
+        "frac_abs_error_gt_threshold": 0.39528679413072476,
+        "abs_error_threshold": 10.0
+      },
+      "paper_aggregation_all": {
+        "n": 2354,
+        "medae": 7.5212898968707655,
+        "medape": 13.085825790150027,
+        "p90_abs_error": 27.638873313141104,
+        "frac_abs_error_gt_threshold": 0.4056924384027188,
+        "abs_error_threshold": 10.0
+      },
+      "paper_aggregation_pct_only": {
+        "n": 2249,
+        "medae": 7.360355981628402,
+        "medape": 13.402515444760821,
+        "p90_abs_error": 25.958882196242314,
+        "frac_abs_error_gt_threshold": 0.39528679413072476,
+        "abs_error_threshold": 10.0
+      }
+    },
+    {
+      "setting": "probe_selection_in_sample_cost_aware",
+      "method": "\\benchpress{}",
+      "source_path": "experiments/sec5_findings/optimal_probe/all_known/results/fixed_order_medae_low_cost_hidden_only.json.gz",
+      "same_cell_key_sha256": "06add342a348aba216c86599e734b11faebc19d1d96086cac57cc0fe4eeafc71",
+      "aggregation_for_medae_medape": "pooled",
+      "table": {
+        "medae_all": 5.318363028966047,
+        "medae_pct_only": 4.9760578002328515,
+        "medape_all": 9.163440542114499,
+        "medape_pct_only": 9.143941037177113,
+        "p90_abs_err_all": 22.059282231364957,
+        "p90_abs_err_pct_only": 18.88959247471862,
+        "frac_abs_err_gt_10_all": 0.2914046121593291,
+        "frac_abs_err_gt_10_pct_only": 0.26808699511762096,
+        "n_cells_all": 2385,
+        "n_cells_pct_only": 2253
+      },
+      "pooled_all": {
+        "n": 2385,
+        "medae": 5.318363028966047,
+        "medape": 9.163440542114499,
+        "p90_abs_error": 22.059282231364957,
+        "frac_abs_error_gt_threshold": 0.2914046121593291,
+        "abs_error_threshold": 10.0
+      },
+      "pooled_pct_only": {
+        "n": 2253,
+        "medae": 4.9760578002328515,
+        "medape": 9.143941037177113,
+        "p90_abs_error": 18.88959247471862,
+        "frac_abs_error_gt_threshold": 0.26808699511762096,
+        "abs_error_threshold": 10.0
+      },
+      "paper_aggregation_all": {
+        "n": 2385,
+        "medae": 5.318363028966047,
+        "medape": 9.163440542114499,
+        "p90_abs_error": 22.059282231364957,
+        "frac_abs_error_gt_threshold": 0.2914046121593291,
+        "abs_error_threshold": 10.0
+      },
+      "paper_aggregation_pct_only": {
+        "n": 2253,
+        "medae": 4.9760578002328515,
+        "medape": 9.143941037177113,
+        "p90_abs_error": 18.88959247471862,
+        "frac_abs_error_gt_threshold": 0.26808699511762096,
+        "abs_error_threshold": 10.0
+      }
+    },
+    {
+      "setting": "probe_selection_in_sample_cost_aware",
+      "method": "logit-space model mean",
+      "source_path": "experiments/sec5_findings/optimal_probe/all_known/results/fixed_order_medae_low_cost_logit_model_mean_hidden_only.json.gz",
+      "same_cell_key_sha256": "06add342a348aba216c86599e734b11faebc19d1d96086cac57cc0fe4eeafc71",
+      "aggregation_for_medae_medape": "pooled",
+      "table": {
+        "medae_all": 7.765689774099016,
+        "medae_pct_only": 7.507460917405439,
+        "medape_all": 12.93418968136599,
+        "medape_pct_only": 13.042402280003945,
+        "p90_abs_err_all": 30.542636038619367,
+        "p90_abs_err_pct_only": 26.127397550096806,
+        "frac_abs_err_gt_10_all": 0.4243186582809224,
+        "frac_abs_err_gt_10_pct_only": 0.40878828229027964,
+        "n_cells_all": 2385,
+        "n_cells_pct_only": 2253
+      },
+      "pooled_all": {
+        "n": 2385,
+        "medae": 7.765689774099016,
+        "medape": 12.93418968136599,
+        "p90_abs_error": 30.542636038619367,
+        "frac_abs_error_gt_threshold": 0.4243186582809224,
+        "abs_error_threshold": 10.0
+      },
+      "pooled_pct_only": {
+        "n": 2253,
+        "medae": 7.507460917405439,
+        "medape": 13.042402280003945,
+        "p90_abs_error": 26.127397550096806,
+        "frac_abs_error_gt_threshold": 0.40878828229027964,
+        "abs_error_threshold": 10.0
+      },
+      "paper_aggregation_all": {
+        "n": 2385,
+        "medae": 7.765689774099016,
+        "medape": 12.93418968136599,
+        "p90_abs_error": 30.542636038619367,
+        "frac_abs_error_gt_threshold": 0.4243186582809224,
+        "abs_error_threshold": 10.0
+      },
+      "paper_aggregation_pct_only": {
+        "n": 2253,
+        "medae": 7.507460917405439,
+        "medape": 13.042402280003945,
+        "p90_abs_error": 26.127397550096806,
+        "frac_abs_error_gt_threshold": 0.40878828229027964,
+        "abs_error_threshold": 10.0
+      }
+    },
+    {
+      "setting": "prospective_new_models",
+      "method": "\\benchpress{}",
+      "source_path": "experiments/sec5_findings/prospective_update/results/may_to_aug/raw_predictions.json.gz",
+      "same_cell_key_sha256": "4f36017ea9618340098bb840af09d2c5ba0e66c0c9814b7a983747b716362494",
+      "aggregation_for_medae_medape": "pooled",
+      "table": {
+        "medae_all": 6.878646747709254,
+        "medae_pct_only": 6.804297388982931,
+        "medape_all": 10.809494099921178,
+        "medape_pct_only": 10.73843736694535,
+        "p90_abs_err_all": 22.697410738682116,
+        "p90_abs_err_pct_only": 21.05240094149001,
+        "frac_abs_err_gt_10_all": 0.33826247689463956,
+        "frac_abs_err_gt_10_pct_only": 0.33140655105973027,
+        "n_cells_all": 541,
+        "n_cells_pct_only": 519
+      },
+      "pooled_all": {
+        "n": 541,
+        "medae": 6.878646747709254,
+        "medape": 10.809494099921178,
+        "p90_abs_error": 22.697410738682116,
+        "frac_abs_error_gt_threshold": 0.33826247689463956,
+        "abs_error_threshold": 10.0
+      },
+      "pooled_pct_only": {
+        "n": 519,
+        "medae": 6.804297388982931,
+        "medape": 10.73843736694535,
+        "p90_abs_error": 21.05240094149001,
+        "frac_abs_error_gt_threshold": 0.33140655105973027,
+        "abs_error_threshold": 10.0
+      },
+      "paper_aggregation_all": {
+        "n": 541,
+        "medae": 6.878646747709254,
+        "medape": 10.809494099921178,
+        "p90_abs_error": 22.697410738682116,
+        "frac_abs_error_gt_threshold": 0.33826247689463956,
+        "abs_error_threshold": 10.0
+      },
+      "paper_aggregation_pct_only": {
+        "n": 519,
+        "medae": 6.804297388982931,
+        "medape": 10.73843736694535,
+        "p90_abs_error": 21.05240094149001,
+        "frac_abs_error_gt_threshold": 0.33140655105973027,
+        "abs_error_threshold": 10.0
+      }
+    },
+    {
+      "setting": "prospective_new_models",
+      "method": "logit-space model mean",
+      "source_path": "experiments/sec5_findings/prospective_update/results/may_to_aug/raw_predictions.json.gz",
+      "same_cell_key_sha256": "4f36017ea9618340098bb840af09d2c5ba0e66c0c9814b7a983747b716362494",
+      "aggregation_for_medae_medape": "pooled",
+      "table": {
+        "medae_all": 6.953570054827722,
+        "medae_pct_only": 6.711648793978263,
+        "medape_all": 10.865831038086151,
+        "medape_pct_only": 11.134831100968508,
+        "p90_abs_err_all": 25.170464220972278,
+        "p90_abs_err_pct_only": 24.29668600867444,
+        "frac_abs_err_gt_10_all": 0.38632162661737524,
+        "frac_abs_err_gt_10_pct_only": 0.37764932562620424,
+        "n_cells_all": 541,
+        "n_cells_pct_only": 519
+      },
+      "pooled_all": {
+        "n": 541,
+        "medae": 6.953570054827722,
+        "medape": 10.865831038086151,
+        "p90_abs_error": 25.170464220972278,
+        "frac_abs_error_gt_threshold": 0.38632162661737524,
+        "abs_error_threshold": 10.0
+      },
+      "pooled_pct_only": {
+        "n": 519,
+        "medae": 6.711648793978263,
+        "medape": 11.134831100968508,
+        "p90_abs_error": 24.29668600867444,
+        "frac_abs_error_gt_threshold": 0.37764932562620424,
+        "abs_error_threshold": 10.0
+      },
+      "paper_aggregation_all": {
+        "n": 541,
+        "medae": 6.953570054827722,
+        "medape": 10.865831038086151,
+        "p90_abs_error": 25.170464220972278,
+        "frac_abs_error_gt_threshold": 0.38632162661737524,
+        "abs_error_threshold": 10.0
+      },
+      "paper_aggregation_pct_only": {
+        "n": 519,
+        "medae": 6.711648793978263,
+        "medape": 11.134831100968508,
+        "p90_abs_error": 24.29668600867444,
+        "frac_abs_error_gt_threshold": 0.37764932562620424,
+        "abs_error_threshold": 10.0
+      }
+    }
+  ]
+}
