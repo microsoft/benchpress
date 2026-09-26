@@ -52,8 +52,18 @@ the same deterministic seeds and matrix identities.
 
 ## Last valid result
 
-CHTC CPU job 6307243, github commit `2f1ca06`, 2 CPUs, `python:3.11` container. May matrix 84 x 133 / 2,604 observed (same content as `evaluation_harness.M_FULL`; the manifest hash differs only because `load_score_matrix` orders models differently); August matrix 129 x 253 / 4,905 observed. The 2,604 shared cells are 99.65% identical.
+CHTC CPU job 6307633 (`b3_mm`), github commit `9ac9963`, 2 CPUs, `python:3.11` container. It reproduces every BenchPress number of the earlier job 6307243 (commit `2f1ca06`) and adds the logit-space model mean and the most-reported-first orderings. May matrix 84 x 133 / 2,604 observed (same content as `evaluation_harness.M_FULL`; the manifest hash differs only because `load_score_matrix` orders models differently); August matrix 129 x 253 / 4,905 observed. The 2,604 shared cells are 99.65% identical.
 
-- Part (i), 178 August cells of May models on May benchmarks that were missing in May: BenchPress MedAE 4.44 (MedAPE 6.39%); logit model mean 4.86; logit benchmark mean 9.55.
-- Part (ii), 45 August-only models, pooled MedAE on unrevealed cells (targets / cells) with May benchmark medians on the same cells: `medae_any` k=5 6.88 (40 / 541) vs 10.15; k=10 6.38 (41 / 502) vs 9.30. `medae_low_cost` k=5 8.08 (37 / 517) vs 10.00; k=10 7.00 (37 / 485) vs 9.61. Random orderings pooled over 10 seeds: k=5 8.50 (2,935 cells) vs 10.80; k=10 7.29 (4,033 cells) vs 10.20.
-- Paper: ICLR `tab:prospective_new_models` in `app:temporal_deployment`.
+- Part (i), 178 August cells of May models on May benchmarks that were missing in May: BenchPress MedAE 4.44 (MedAPE 6.39%); logit model mean 4.86; logit benchmark mean 9.55. Signed error (pred minus actual): BenchPress median +2.48, over-predicts 65.2%; logit model mean +1.26, 58.4%; logit benchmark mean -4.76, 28.7%.
+- Part (ii), 45 August-only models, pooled MedAE on unrevealed cells, BenchPress / logit model mean / May benchmark median on the same cells (targets / cells):
+
+| Ordering | k=1 | k=3 | k=5 | k=10 |
+|---|---|---|---|---|
+| `medae_any` | 8.41 / 6.58 / 10.20 (29 / 483) | 6.81 / 6.19 / 10.30 (33 / 497) | 6.88 / 6.95 / 10.15 (40 / 541) | 6.38 / 6.13 / 9.30 (41 / 502) |
+| `medae_low_cost` | 8.41 / 6.58 / 10.20 (29 / 483) | 8.18 / 7.12 / 10.10 (36 / 529) | 8.08 / 7.70 / 10.00 (37 / 517) | 7.00 / 7.64 / 9.61 (37 / 485) |
+| `coverage_any` | 8.41 / 6.58 / 10.20 (29 / 483) | 8.58 / 6.90 / 9.95 (30 / 477) | 8.22 / 6.89 / 10.25 (39 / 520) | 6.69 / 5.72 / 9.61 (42 / 499) |
+| `coverage_low_cost` | 8.41 / 6.58 / 10.20 (29 / 483) | 8.20 / 7.52 / 9.87 (37 / 534) | 8.08 / 7.40 / 9.80 (37 / 533) | 7.71 / 7.08 / 9.61 (37 / 498) |
+
+  Random orderings, BenchPress pooled over 10 seeds: k=1 7.87 (1,227 cells), k=3 8.70 (2,522), k=5 8.50 (2,935), k=10 7.29 (4,033); benchmark medians 10.50 / 10.80 / 10.80 / 10.20.
+  Per target (median per-target MedAE), BenchPress is lower than the model mean on 42% to 59% of targets in each greedy row, and the target-bootstrap 95% interval (2,000 resamples) of the model-mean minus BenchPress difference contains zero in every greedy row.
+- Paper: ICLR `tab:prospective_new_models` and prospective paragraph in `app:temporal_deployment`; main-body prospective sentence in `sec:temporal_deployment`.

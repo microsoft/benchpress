@@ -81,10 +81,15 @@ caches are under `results/.candidate_cache/`.
 
 ## Last valid result
 
-Model-split MedAE validation:
+Split seed 42 (59 selection models, 25 held-out models), github commit `2f1ca06`, CHTC CPU jobs 6307250 (`b2_any`, any-benchmark, 16 CPUs, 10,552 s) and the earlier `b2_low` / `b2_rand` jobs (low-cost greedy, random baseline). Held-out non-probe MedAE:
 
-- Any-benchmark k=5 held-out non-probe MedAE: 5.31; k=10: 4.38.
-- Low-cost k=5 held-out non-probe MedAE: 5.60; k=10: 5.66.
+| k | Any-benchmark greedy | Low-cost greedy | Random (median of 10 seeds) |
+|---|---|---|---|
+| 1 | 6.59 | 6.59 | 10.37 |
+| 5 | 5.32 | 5.23 | 7.22 |
+| 10 | 4.26 | 5.54 | 5.91 |
+
+Both greedy searches are below the random median at every k from 1 to 10. Any-benchmark probes on the selection split: GPQA Diamond, Terminal-Bench 2.0, AIME 2024, LiveCodeBench, ARC-AGI-1, MMLU-Pro, Aider Polyglot (diff), HLE Text, BrowseComp, Codeforces Rating. Paper: ICLR App D.1 held-out paragraph and main-body transfer sentence in `sec:probe_selection`.
 
 On the May `84 x 133` matrix, predictor-fit counts are:
 
