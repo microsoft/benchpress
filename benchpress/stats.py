@@ -12,6 +12,38 @@ import numpy as np
 from scipy import stats as sp_stats
 
 
+def cluster_bootstrap_mean(values, clusters, *, n_resamples=2000, seed=42,
+                           confidence=0.95):
+    """Bootstrap a record-weighted mean by resampling whole dependence groups.
+
+    Values are finite paired metric deltas, with one cluster label per record.
+    Every sampled cluster contributes all its records, including repeats across
+    evaluation seeds. The percentile interval describes this grouped bootstrap,
+    not uncertainty from subsequent method selection or dataset curation.
+    """
+    values = np.asarray(values, dtype=float)
+    clusters = np.asarray(clusters)
+    if values.ndim != 1 or clusters.shape != values.shape or not np.isfinite(values).all():
+        raise ValueError("Finite values and matching 1-D cluster labels are required")
+    labels, inverse = np.unique(clusters, return_inverse=True)
+    if len(labels) < 2:
+        raise ValueError("Cluster bootstrap requires at least two clusters")
+    if not isinstance(n_resamples, (int, np.integer)) or n_resamples < 1:
+        raise ValueError("n_resamples must be a positive integer")
+    if not 0 < confidence < 1:
+        raise ValueError("confidence must be between zero and one")
+    sums = np.bincount(inverse, weights=values)
+    counts = np.bincount(inverse)
+    sampled = np.random.default_rng(seed).integers(
+        0, len(labels), size=(n_resamples, len(labels)))
+    means = sums[sampled].sum(axis=1) / counts[sampled].sum(axis=1)
+    lower, upper = np.quantile(means, [(1 - confidence) / 2, (1 + confidence) / 2])
+    return {"mean_delta": float(values.mean()), "ci_lower": float(lower),
+            "ci_upper": float(upper), "confidence": confidence,
+            "n_records": len(values), "n_clusters": len(labels),
+            "n_resamples": n_resamples, "seed": seed}
+
+
 def median_metric(entries, key="medape"):
     """Median finite metric value from a list of result dictionaries."""
     vals = [
