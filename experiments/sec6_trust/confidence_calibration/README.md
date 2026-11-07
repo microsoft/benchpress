@@ -137,3 +137,18 @@ split-conformal 80% intervals (plain absolute-error quantile, distinct from the
 learned-risk `conformal_interval` used by `run.py`). Result in
 `interval_width_by_observations.json`; the App E.2 table reports MedAE, empirical
 coverage, and median width. Width falls 32.3 -> 23.0 as k grows; coverage stays ~0.80.
+
+## Prospective coverage of the frozen May reliability model (`run_prospective_coverage.py`)
+
+Purpose (reviewer sCbk): check whether the hybrid reliability model trained once on the May matrix keeps its nominal coverage on later scores without retraining.
+
+Protocol. On the May matrix (harness `M_FULL`, asserted identical to `--may-json`) the script rebuilds the Section 6.2 hybrid training rows on the canonical 10-seed x 3-fold splits (`benchpress.methods.confidence.confidence_training_records`), cross-fits the leave-fold-out risk scores exactly as `run.py`, and freezes one deploy calibrator with `fit_default_confidence_calibrator`: risk model refit on all pooled held-out rows (architecture chosen on the `cell_id % 5` split, seed 42 / 2042) and conformal scales q at 80/90/95% = quantiles of |error| / cross-fit risk over all May held-out rows. Risk terciles use the May cross-fit risk cut points. The frozen calibrator is then applied unchanged (`predict_confidence_intervals`) to the cells of `sec5_findings/prospective_update`: (i) August cells of May models on May benchmarks that were missing in May, with features and the BenchPress prediction from the May matrix; (ii) each August-only model for each greedy ordering (`--orderings`, default `medae_any` and `medae_low_cost`) and k in {1, 3, 5, 10}, with features and prediction from the May matrix plus that model's revealed probes, scored on its remaining observed May-benchmark cells. Cell selection, inclusion rule, and predictions are imported from `prospective_update/run.py`.
+
+```bash
+cd experiments/sec6_trust/confidence_calibration
+python run_prospective_coverage.py \
+  --may-json "$DATA/may.json" --aug-json "$DATA/aug.json" \
+  --out-dir results/prospective_coverage --workers 32
+```
+
+Outputs under `results/prospective_coverage/`: `frozen_calibrator.pkl` and `may_crossfit.npz` (reused on rerun if they match the May matrix and seed), `raw_records.json.gz` (per cell: group, ordering, k, model, benchmark, actual, pred, risk, risk tercile, lower/upper/covered per level), `manifest.json` (git commit, matrix identity hashes, calibrator sha256, config), and `summary.json` (May leave-fold-out reproduction, which should match the hybrid row above, plus coverage, median width, miss direction, and risk-tercile breakdown per group). Run on a CHTC CPU node, not the local Mac.

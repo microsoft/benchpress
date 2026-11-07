@@ -274,13 +274,26 @@ def observed_aug_values_for_may_benchmarks(aug, model_id, may_benchmark_ids):
     return values
 
 
-def append_target_and_predict(may, aug_values, probe_ids, predict_scores):
+def probe_unit_included(observed_values, prefix):
+    """Inclusion rule for a k>0 unit: >=1 observed probe and >=5 hidden observed cells."""
+    prefix_set = set(prefix)
+    n_probe = sum(1 for bid in prefix if bid in observed_values)
+    n_hidden = sum(1 for bid in observed_values if bid not in prefix_set)
+    return n_probe >= 1 and n_hidden >= 5
+
+
+def append_target_row(may, aug_values, probe_ids):
+    """May matrix plus one appended target row holding only its revealed probe scores."""
     target_row = np.full((1, len(may["benchmark_ids"])), np.nan, dtype=float)
     bench_idx = {bid: idx for idx, bid in enumerate(may["benchmark_ids"])}
     for bid in probe_ids:
         if bid in aug_values and bid in bench_idx:
             target_row[0, bench_idx[bid]] = aug_values[bid]
-    train = np.vstack([may["matrix"], target_row])
+    return np.vstack([may["matrix"], target_row])
+
+
+def append_target_and_predict(may, aug_values, probe_ids, predict_scores):
+    train = append_target_row(may, aug_values, probe_ids)
     pred = predict_scores(
         train,
         metric=may["benchmark_metrics"],
@@ -346,9 +359,7 @@ def part_ii_new_models(may, aug, bp, args, orderings, out):
                 observed_values = observed_aug_values_for_may_benchmarks(
                     aug, mid, may["benchmark_ids"],
                 )
-                n_probe = sum(1 for bid in prefix if bid in observed_values)
-                n_hidden = sum(1 for bid in observed_values if bid not in set(prefix))
-                if n_probe < 1 or n_hidden < 5:
+                if not probe_unit_included(observed_values, prefix):
                     continue
                 pred_row = append_target_and_predict(
                     may, observed_values, prefix, predict_benchpress_scores,
@@ -369,14 +380,11 @@ def part_ii_new_models(may, aug, bp, args, orderings, out):
         order_ids = random_order(may["benchmark_ids"], seed_idx, args.base_seed)
         for k in k_values:
             prefix = order_ids[:k]
-            prefix_set = set(prefix)
             for mid in new_models:
                 observed_values = observed_aug_values_for_may_benchmarks(
                     aug, mid, may["benchmark_ids"],
                 )
-                n_probe = sum(1 for bid in prefix if bid in observed_values)
-                n_hidden = sum(1 for bid in observed_values if bid not in prefix_set)
-                if n_probe < 1 or n_hidden < 5:
+                if not probe_unit_included(observed_values, prefix):
                     continue
                 pred_row = append_target_and_predict(
                     may, observed_values, prefix, predict_benchpress_scores,

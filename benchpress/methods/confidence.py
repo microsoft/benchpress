@@ -29,6 +29,8 @@ from benchpress.methods.completers import (
 )
 
 SEED = 42
+CONFORMAL_EPS = 1e-8
+CONFORMAL_LEVELS = (0.80, 0.90, 0.95)
 DEFAULT_CONFIDENCE_METHODS = [
     "disagreement",
     "structural_support",
@@ -103,6 +105,15 @@ def coverage_width(actual, lower, upper):
     }
 
 
+def conformal_scale(abs_error, uncertainty, ci):
+    """Conformal multiplier q: the `ci` quantile of abs_error / uncertainty."""
+    abs_error = np.asarray(abs_error, dtype=float)
+    uncertainty = np.asarray(uncertainty, dtype=float)
+    valid = (np.isfinite(abs_error) & np.isfinite(uncertainty)
+             & (uncertainty > CONFORMAL_EPS))
+    return float(np.quantile(abs_error[valid] / uncertainty[valid], ci))
+
+
 def conformal_interval(actual, predicted, uncertainty, fold_id, cell_id, ci=0.90):
     """Leave-fold-out conformal scaling for raw uncertainty scores.
 
@@ -115,15 +126,15 @@ def conformal_interval(actual, predicted, uncertainty, fold_id, cell_id, ci=0.90
     fold_id = np.asarray(fold_id, dtype=int)
     cell_id = np.asarray(cell_id, dtype=np.int64)
     scale = np.full_like(predicted, np.nan, dtype=float)
-    eps = 1e-8
+    abs_error = np.abs(predicted - actual)
     for fold in np.unique(fold_id):
         cal = (fold_id != fold) & ~np.isin(cell_id, cell_id[fold_id == fold])
-        valid = (cal & np.isfinite(actual) & np.isfinite(predicted)
-                 & np.isfinite(uncertainty) & (uncertainty > eps))
+        valid = (cal & np.isfinite(abs_error) & np.isfinite(uncertainty)
+                 & (uncertainty > CONFORMAL_EPS))
         if valid.sum() < 5:
             continue
-        ratio = np.abs(predicted[valid] - actual[valid]) / uncertainty[valid]
-        scale[fold_id == fold] = float(np.quantile(ratio, ci))
+        scale[fold_id == fold] = conformal_scale(
+            abs_error[valid], uncertainty[valid], ci)
     lower = predicted - scale * uncertainty
     upper = predicted + scale * uncertainty
     return lower, upper, scale
@@ -629,17 +640,30 @@ def default_confidence_features(M_train, target_pred=None, cells=None,
         hp_features, strong_features, structural_features), cells
 
 
-def _training_records(M, folds, metric=None, benchmark_ids=None):
+def _fold_confidence_features(fold_task):
+    M_train, test_set, metric, benchmark_ids = fold_task
+    return default_confidence_features(
+        M_train,
+        cells=test_set,
+        metric=metric,
+        benchmark_ids=benchmark_ids,
+    )
+
+
+def confidence_training_records(M, folds, metric=None, benchmark_ids=None,
+                                map_fn=map):
+    """Held-out point predictions and confidence features for every fold cell.
+
+    `map_fn` maps the per-fold feature computation (e.g. an executor's map);
+    results are assembled in fold order.
+    """
     fold_ids, rows, cols, actual, predicted = [], [], [], [], []
     strong_parts = []
     structural_parts = []
-    for fold_id, (M_train, test_set) in enumerate(folds):
-        target_pred, feature_sets, cells = default_confidence_features(
-            M_train,
-            cells=test_set,
-            metric=metric,
-            benchmark_ids=benchmark_ids,
-        )
+    fold_outputs = map_fn(_fold_confidence_features, [
+        (M_train, test_set, metric, benchmark_ids) for M_train, test_set in folds
+    ])
+    for fold_id, (target_pred, feature_sets, cells) in enumerate(fold_outputs):
         cell_rows = np.asarray([i for i, _ in cells], dtype=int)
         cell_cols = np.asarray([j for _, j in cells], dtype=int)
         fold_ids.append(np.full(len(cells), fold_id, dtype=int))
@@ -684,9 +708,10 @@ def _fit_final_confidence_model(actual, predicted, cell_id, feature_dict,
         model_grid=DEFAULT_RISK_MODEL_GRID, seed=seed)
     scaler, model = fit_risk_model(X[valid], y[valid], config, seed=seed + 2000)
     unc = np.asarray(crossfit_uncertainty, dtype=float)
-    ratio_valid = valid & np.isfinite(unc) & (unc > 1e-8)
-    scale = float(np.quantile(np.abs(predicted[ratio_valid] - actual[ratio_valid])
-                              / unc[ratio_valid], ci))
+    abs_error = np.abs(np.asarray(predicted, dtype=float)
+                       - np.asarray(actual, dtype=float))
+    abs_error[~valid] = np.nan
+    scale = conformal_scale(abs_error, unc, ci)
     return {
         "feature_names": feature_names,
         "risk_model_config": risk_model_config_metadata(config),
@@ -695,6 +720,10 @@ def _fit_final_confidence_model(actual, predicted, cell_id, feature_dict,
         "model": model,
         "conformal_ci": float(ci),
         "conformal_scale": scale,
+        "conformal_scales": {
+            f"{level:.2f}": conformal_scale(abs_error, unc, level)
+            for level in CONFORMAL_LEVELS
+        },
         "trust_calibrator": fit_trust_calibrator(unc, actual, predicted),
     }
 
@@ -785,7 +814,7 @@ def train_default_confidence_calibrator(M=None, folds=None, methods=None,
         M = np.asarray(M, dtype=float)
     if folds is None:
         folds = load_folds(n_seeds=10, n_folds=3, base_seed=42, min_scores=1)
-    records = _training_records(
+    records = confidence_training_records(
         M, folds, metric=metric, benchmark_ids=benchmark_ids)
     return fit_default_confidence_calibrator(
         records,
