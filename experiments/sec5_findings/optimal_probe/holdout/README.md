@@ -107,6 +107,16 @@ Split seed 42 (59 selection models, 25 held-out models), github commit `2f1ca06`
 
 Both greedy searches are below the random median at every k from 1 to 10. Any-benchmark probes on the selection split: GPQA Diamond, Terminal-Bench 2.0, AIME 2024, LiveCodeBench, ARC-AGI-1, MMLU-Pro, Aider Polyglot (diff), HLE Text, BrowseComp, Codeforces Rating. Paper: ICLR App D.1 held-out paragraph and main-body transfer sentence in `sec:probe_selection`.
 
+
+Same-cell baselines (`score_heldout_baselines.py`, protocol `heldout_baselines_v2`, CHTC CPU job 7925132, github commit `7996392`; `results/heldout_baselines_s42.json.gz`). MedAE at k = 1 / 5 / 10, with the fraction of held-out models on which BenchPress has the lower per-target MedAE:
+
+| Ordering | BenchPress | Offsets only (rank 0) | Logit model mean |
+|---|---|---|---|
+| Any-benchmark greedy | 6.59 / 5.32 / 4.26 | 5.96 / 5.64 / 4.95 (24 / 48 / 64%) | 8.11 / 8.43 / 8.80 (76 / 84 / 96%) |
+| Low-cost greedy | 6.59 / 5.23 / 5.54 | 5.96 / 5.78 / 5.44 (24 / 40 / 52%) | 8.11 / 9.10 / 8.88 (76 / 80 / 84%) |
+
+Offsets only beats BenchPress at k = 1 and 2; on the any-benchmark ordering BenchPress is lower at every k from 3 to 10.
+
 On the May `84 x 133` matrix, predictor-fit counts are:
 
 - Any-benchmark greedy validation: `76,315` fits (`1,285` candidate prefixes x
