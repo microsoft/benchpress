@@ -117,6 +117,8 @@ Same-cell baselines (`score_heldout_baselines.py`, protocol `heldout_baselines_v
 
 Offsets only beats BenchPress at k = 1 and 2; on the any-benchmark ordering BenchPress is lower at every k from 3 to 10.
 
+Low-cost pool without MMLU-Pro (`candidate_allowlists/public_cost_le_30usd.json`, 24 benchmarks; CHTC job 7925234, tag `rb_e4h`, commit `7996392`; `results/model_split_validation_medae_train70_cost_le_30usd.json.gz`, `results/heldout_baselines_cost_le_30usd_s42.json.gz`). Same split; selection-split probes: GPQA Diamond, MATH-500, Aider Polyglot (diff), HMMT Feb 2026, Aider Polyglot (whole), AIME 2026, tau2-bench Retail, Arena-Hard Auto, SciCode, AIME 2025. Held-out non-probe MedAE at k = 1 / 5 / 10: 6.59 / 6.30 / 6.01 (with MMLU-Pro 6.59 / 5.23 / 5.54); below the random median at k = 1 to 9, above at k = 10 (6.01 vs 5.91). Offsets only on the same cells: 5.96 / 6.13 / 5.65; logit model mean 8.11 / 8.40 / 9.07.
+
 On the May `84 x 133` matrix, predictor-fit counts are:
 
 - Any-benchmark greedy validation: `76,315` fits (`1,285` candidate prefixes x
