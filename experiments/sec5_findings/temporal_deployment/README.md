@@ -64,7 +64,7 @@ The independent unit is `(target, k, seed)`: 27 hard-rule targets x 3 k values x
 
 ## Resume / rerun
 
-Existing shards are reused only if their config matches the requested `(target, k, seed)` and protocol version. Stale or incompatible shards are overwritten during `run-all`, while `--mode merge` refuses to merge incompatible or missing shards.
+Existing shards are reused only if their config matches the requested `(target, k, seed)`, protocol version, and `--report-date-filter`. Stale or incompatible shards are overwritten during `run-all`, while `--mode merge` refuses to merge incompatible or missing shards.
 
 ## Last valid result
 
@@ -74,4 +74,26 @@ ICLR 2027 hidden-only rerun (CHTC CPU job 6307239, github commit `2f1ca06`, May 
 
 Same-cell baseline (CHTC CPU job 6307635, github commit `7f415c2`, May matrix): BenchPress hidden-only predictions are unchanged (9.37 / 6.76 / 6.12). The logit-space model mean in `model_mean_pred`, scored with `summary_utils.temporal_overall_medians` after substituting it for `pred` on hidden rows, gives 8.59 / 7.49 / 7.69 MedAE (MedAPE 14.86 / 14.04 / 13.49%) at k = 1 / 5 / 10 on the same 23,996 hidden cells. BenchPress has lower per-target MedAE for 11 / 19 / 19 of the 27 targets; the 95% target-bootstrap interval of the model-mean minus BenchPress median is [-2.76, 1.42] / [-0.25, 2.14] / [0.26, 2.23].
 
-Training-cell date audit (May JSON and loader): the final 84 x 133 matrix has 2,604 observed cells, and all 84 final model rows have model release dates. No final observed cell has a non-audit source/report/publication/retrieval date in the primary score record or in its `candidates`; only 14 / 2,604 cells (0.54%) have `audited_at`, which records an audit timestamp rather than the score report date. The raw May JSON likewise has no non-audit score-date field (72 / 4,905 raw score rows have `audited_at`). Therefore this artifact supports release-clean training by model row, but not training-cell masking by score report date without adding external source-date metadata.
+Training-cell date audit (May JSON and loader): the final 84 x 133 matrix has 2,604 observed cells, and all 84 final model rows have model release dates. No final observed cell has a non-audit source/report/publication/retrieval date in the primary score record or in its `candidates`; only 14 / 2,604 cells (0.54%) have `audited_at`, which records an audit timestamp rather than the score report date. The raw May JSON likewise has no non-audit score-date field (72 / 4,905 raw score rows have `audited_at`). Therefore this artifact supports release-clean training by model row; training-cell masking by score report date uses the source-date rules below.
+
+## Report-date filter
+
+`report_dates.py` dates the document cited by each observed cell (`reference_url`) with an interval `[report_date_lower, report_date_upper]`, using only the URL, the score-matrix JSON, and the checked-in `report_date_sources.json`:
+
+- X status URL: post date decoded from the status ID (exact).
+- arXiv URL: a versioned link is dated by that version; an unversioned link gets `[v1 date, latest version date]` from the arXiv API table in `report_date_sources.json` (fetched once, with provenance; nothing is fetched at run time).
+- Official launch document of model L (announcement, system card, model card, technical report; curated in `report_date_sources.json` with the URL evidence): lower bound = L's release date in the matrix metadata. Announcements, system cards, and model cards are also bounded above by L's release date unless a verified score record citing the same URL belongs to a model released after L (a revised document). Technical reports get only the lower bound.
+- Leaderboards, aggregators, product pages, repositories, other undated pages, and missing URLs: no bound. No May URL carries a date in its path.
+
+Against a target cutoff T, a training cell is `after_target` if lower > T, `on_or_before_target` if upper <= T, and `undatable` otherwise. `run.py --report-date-filter verified_later` removes `after_target` training scores; `strict` keeps only `on_or_before_target` training scores. Only training-model rows are filtered, so target cells, revealed probes (seeded by target and seed), and the scored cell set are unchanged; shards record `n_train_scores`, `n_report_date_removed`, and the removed cells. `run.py --mode report-date-audit` regenerates the checked-in `report_date_audit.json` (per-document intervals, per-cell URLs, per-target class counts and removals); the May matrix gives 4,377 / 17,509 removed training scores over the 27 targets (median 160 / 644 per target, 14% / 62%) for `verified_later` / `strict`.
+
+```bash
+export BENCHPRESS_DATA=/path/to/may.json OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1
+for f in none verified_later strict; do
+  python run.py --mode run-all --report-date-filter $f --results-root report_date_filter/$f --workers 32
+  python run.py --mode merge --report-date-filter $f --results-root report_date_filter/$f
+done
+python report_date_summary.py
+```
+
+`report_date_summary.py` checks that all filters score identical cells with identical revealed probes and writes `report_date_filter/summary.json`: hidden-only median-over-targets MedAE / MedAPE at k = 1 / 5 / 10 for BenchPress and the logit model mean, on each filter's own finite cells and on the hidden cells finite under every filter and predictor, with per-target values, per-target changes vs `none`, and removal counts.

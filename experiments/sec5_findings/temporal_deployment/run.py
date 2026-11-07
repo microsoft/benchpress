@@ -9,6 +9,7 @@ the remaining observed target scores, and write every observed target cell.
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import random
 import subprocess
@@ -43,6 +44,14 @@ from benchpress.io_utils import load_json, safe_token, write_json, write_json_at
 from benchpress.methods.completers import complete_model_mean
 from benchpress.methods.predictors import predict_benchpress_scores
 from benchpress.shard_utils import short_text_hash
+from report_dates import (
+    REPORT_DATE_CLASSES,
+    REPORT_DATE_SOURCES_PATH,
+    file_sha256,
+    matrix_cell_report_dates,
+    report_date_class,
+    report_date_table_sha256,
+)
 
 PROTOCOL_VERSION = "temporal_deployment_hard_rule_v4"
 BASE_SEED = 42
@@ -51,10 +60,13 @@ N_SEEDS = 10
 SELECTION_START_DATE = "2025-01-20"
 SELECTION_END_DATE = "2025-11-13"
 MIN_OBSERVED_SCORES = 20
-
-RESULTS_DIR = os.path.join(HERE, "results")
-SHARD_DIR = os.path.join(RESULTS_DIR, "shards")
-RESULTS_PATH = os.path.join(HERE, "results.json")
+REPORT_DATE_AUDIT_PATH = os.path.join(HERE, "report_date_audit.json")
+# Training-score report-date classes removed by each --report-date-filter.
+REPORT_DATE_REMOVED_CLASSES = {
+    "none": (),
+    "verified_later": ("after_target",),
+    "strict": ("after_target", "undatable"),
+}
 
 
 MODEL_RELEASE_DATES = {
@@ -137,6 +149,16 @@ def train_model_ids(landmark: dict, target_ids: list[str]) -> list[str]:
     ]
 
 
+def training_cell_report_date_classes(train_ids: list[str], cutoff_date: str) -> dict[tuple[int, int], str]:
+    """Report-date class of every observed training cell against one target cutoff."""
+    cells = matrix_cell_report_dates()
+    return {
+        (MODEL_IDX[mid], int(j)): report_date_class(cells[(mid, BENCH_IDS[j])], cutoff_date)
+        for mid in train_ids
+        for j in np.where(OBSERVED[MODEL_IDX[mid]])[0]
+    }
+
+
 def target_candidate_benchmarks(target_ids: list[str]) -> list[int]:
     candidates = set()
     for mid in target_ids:
@@ -158,14 +180,14 @@ def sample_revealed_by_model(target_ids: list[str], k: int, rng: np.random.Rando
     return revealed_by_model
 
 
-def shard_path(family_key: str, k: int, seed: int) -> str:
+def shard_path(results_root: str, family_key: str, k: int, seed: int) -> str:
     return os.path.join(
-        SHARD_DIR,
+        results_root, "results", "shards",
         f"{safe_token(family_key)}__k{int(k)}__s{int(seed)}.json.gz",
     )
 
 
-def shard_config(landmark: dict, k: int, seed: int) -> dict:
+def shard_config(landmark: dict, k: int, seed: int, report_date_filter: str) -> dict:
     target_ids = target_model_ids(landmark)
     train_ids = train_model_ids(landmark, target_ids)
     return {
@@ -178,6 +200,8 @@ def shard_config(landmark: dict, k: int, seed: int) -> dict:
         "base_seed": BASE_SEED,
         "predictor": "predict_benchpress_scores",
         "train_rule": "models with release_date strictly before cutoff_date",
+        "report_date_filter": report_date_filter,
+        "report_date_removed_classes": list(REPORT_DATE_REMOVED_CLASSES[report_date_filter]),
         "selection_rule": landmark.get("selection_rule"),
         "probe_rule": "for each target model, randomly reveal k of that model's observed benchmark scores",
         "metric_rule": "pool observed target cells with finite predictions; revealed cells are exact zero-error predictions; non-predictable cells are recorded separately",
@@ -206,22 +230,30 @@ def git_commit():
         return None
 
 
-def manifest():
+def manifest(report_date_filter: str):
     return {
         "git_commit": git_commit(),
         "matrix_identity_sha256": matrix_identity_sha256(M_FULL),
         "matrix_shape": [int(N_MODELS), int(N_BENCH)],
         "n_observed": int(OBSERVED.sum()),
+        "report_date_filter": report_date_filter,
+        "report_date_sources_sha256": file_sha256(REPORT_DATE_SOURCES_PATH),
+        "report_date_table_sha256": (
+            None if report_date_filter == "none"
+            else report_date_table_sha256(matrix_cell_report_dates())
+        ),
     }
 
 
-def validate_shard(payload: dict, path: str, family_key: str, k: int, seed: int):
+def validate_shard(payload: dict, path: str, family_key: str, k: int, seed: int,
+                   report_date_filter: str):
     expected = {
         "protocol_version": PROTOCOL_VERSION,
         "family_key": family_key,
         "k": int(k),
         "seed": int(seed),
         "matrix_shape": [int(N_MODELS), int(N_BENCH)],
+        "report_date_filter": report_date_filter,
     }
     config = payload.get("config", {})
     actual = {key: config.get(key) for key in expected}
@@ -232,9 +264,10 @@ def validate_shard(payload: dict, path: str, family_key: str, k: int, seed: int)
             raise ValueError(f"{path} contains a raw row for the wrong unit: {row}")
 
 
-def run_shard(family_key: str, k: int, seed: int, out_path: Optional[str] = None) -> dict:
+def run_shard(family_key: str, k: int, seed: int, report_date_filter: str,
+              out_path: Optional[str] = None) -> dict:
     landmark = landmark_by_key(family_key)
-    config = shard_config(landmark, k, seed)
+    config = shard_config(landmark, k, seed, report_date_filter)
     target_ids = config["target_model_ids"]
     train_ids = config["train_model_ids"]
     if not target_ids:
@@ -256,6 +289,15 @@ def run_shard(family_key: str, k: int, seed: int, out_path: Optional[str] = None
     for mid in train_ids:
         i = MODEL_IDX[mid]
         M_train[i, :] = M_FULL[i, :]
+    n_train_scores = int(np.isfinite(M_train).sum())
+    report_date_removed_cells = []
+    if report_date_filter != "none":
+        removed_classes = REPORT_DATE_REMOVED_CLASSES[report_date_filter]
+        cell_classes = training_cell_report_date_classes(train_ids, landmark["cutoff_date"])
+        for (i, j), cell_class in sorted(cell_classes.items()):
+            if cell_class in removed_classes:
+                M_train[i, j] = np.nan
+                report_date_removed_cells.append([MODEL_IDS[i], BENCH_IDS[j], cell_class])
     for mid, revealed_js in revealed_by_model.items():
         i = MODEL_IDX[mid]
         for j in revealed_js:
@@ -343,6 +385,9 @@ def run_shard(family_key: str, k: int, seed: int, out_path: Optional[str] = None
             "n_hidden_cells": int(n_hidden_cells),
             "n_not_predictable_cells": int(n_not_predictable_cells),
             "n_raw_predictions": int(len(raw_predictions)),
+            "n_train_scores": n_train_scores,
+            "n_report_date_removed": len(report_date_removed_cells),
+            "report_date_removed_cells": report_date_removed_cells,
         },
         "metrics": {
             "n": int(metrics["n"]),
@@ -366,25 +411,29 @@ def expected_units(family_keys: list[str], k_values: list[int], n_seeds: int):
 
 
 def _run_or_reuse_unit(args):
-    family_key, k, seed = args
-    path = shard_path(family_key, k, seed)
+    results_root, report_date_filter, family_key, k, seed = args
+    path = shard_path(results_root, family_key, k, seed)
     if os.path.exists(path) and os.path.getsize(path) > 100:
         payload = load_json(path)
         try:
-            validate_shard(payload, path, family_key, k, seed)
+            validate_shard(payload, path, family_key, k, seed, report_date_filter)
             return family_key, k, seed, "cached"
         except ValueError:
             os.remove(path)
-    run_shard(family_key, k, seed, out_path=path)
+    run_shard(family_key, k, seed, report_date_filter, out_path=path)
     return family_key, k, seed, "ok"
 
 
-def run_all(family_keys: list[str], k_values: list[int], n_seeds: int, workers: int):
-    os.makedirs(SHARD_DIR, exist_ok=True)
-    units = expected_units(family_keys, k_values, n_seeds)
+def run_all(family_keys: list[str], k_values: list[int], n_seeds: int, workers: int,
+            results_root: str, report_date_filter: str):
+    units = [
+        (results_root, report_date_filter, *unit)
+        for unit in expected_units(family_keys, k_values, n_seeds)
+    ]
     print(
         f"Temporal deployment: {len(family_keys)} families, "
-        f"k={k_values}, seeds={n_seeds}, workers={workers}",
+        f"k={k_values}, seeds={n_seeds}, workers={workers}, "
+        f"report_date_filter={report_date_filter}, results_root={results_root}",
         flush=True,
     )
     if workers <= 1:
@@ -469,17 +518,18 @@ def hidden_only_summary_by_family(raw_predictions: list[dict], family_keys: list
     return summary
 
 
-def merge_results(family_keys: list[str], k_values: list[int], n_seeds: int):
+def merge_results(family_keys: list[str], k_values: list[int], n_seeds: int,
+                  results_root: str, report_date_filter: str):
     raw_predictions = []
     shard_metrics = []
     landmarks = {}
     seen_raw = set()
     for family_key, k, seed in expected_units(family_keys, k_values, n_seeds):
-        path = shard_path(family_key, k, seed)
+        path = shard_path(results_root, family_key, k, seed)
         if not os.path.exists(path):
             raise FileNotFoundError(f"Missing shard: {path}")
         payload = load_json(path)
-        validate_shard(payload, path, family_key, k, seed)
+        validate_shard(payload, path, family_key, k, seed, report_date_filter)
         cfg = payload["config"]
         landmarks[family_key] = {
             "family_name": cfg["family_name"],
@@ -489,6 +539,8 @@ def merge_results(family_keys: list[str], k_values: list[int], n_seeds: int):
             "train_model_ids": cfg["train_model_ids"],
             "n_target_models": len(cfg["target_model_ids"]),
             "n_train_models": len(cfg["train_model_ids"]),
+            "n_train_scores": int(cfg["n_train_scores"]),
+            "n_report_date_removed": int(cfg["n_report_date_removed"]),
         }
         shard_metrics.append({
             "family_key": family_key,
@@ -557,10 +609,12 @@ def merge_results(family_keys: list[str], k_values: list[int], n_seeds: int):
             },
             "matrix_shape": [int(N_MODELS), int(N_BENCH)],
             "predictor": "predict_benchpress_scores",
+            "report_date_filter": report_date_filter,
+            "report_date_removed_classes": list(REPORT_DATE_REMOVED_CLASSES[report_date_filter]),
             "evaluation_universe": "all observed cells for active target models are recorded; metrics use revealed cells plus hidden cells with finite BenchPress predictions",
             "aggregation": "paper-facing medians across seed-level MedAPE/MedAE",
         },
-        "manifest": manifest(),
+        "manifest": manifest(report_date_filter),
         "landmarks": [landmarks[key] | {"family_key": key} for key in family_keys],
         "summary_by_family": summary,
         "summary_by_family_k_seed": shard_metrics,
@@ -579,8 +633,76 @@ def merge_results(family_keys: list[str], k_values: list[int], n_seeds: int):
             ),
         ),
     }
-    write_json(RESULTS_PATH, payload, indent=2, trailing_newline=True)
-    print(f"Wrote {RESULTS_PATH} with {len(raw_predictions)} raw predictions")
+    results_path = os.path.join(results_root, "results.json")
+    write_json(results_path, payload, indent=2, trailing_newline=True)
+    print(f"Wrote {results_path} with {len(raw_predictions)} raw predictions")
+
+
+def write_report_date_audit(family_keys: list[str]):
+    """Write the per-cell report-date intervals and per-target filter counts."""
+    cells = matrix_cell_report_dates()
+    documents = {}
+    for cell in cells.values():
+        documents[cell["reference_url"] or ""] = {
+            key: value for key, value in cell.items()
+            if key not in ("model_id", "benchmark_id", "reference_url")
+        }
+    targets = []
+    for family_key in family_keys:
+        landmark = landmark_by_key(family_key)
+        train_ids = train_model_ids(landmark, target_model_ids(landmark))
+        classes = list(training_cell_report_date_classes(train_ids, landmark["cutoff_date"]).values())
+        class_counts = {name: classes.count(name) for name in REPORT_DATE_CLASSES}
+        targets.append({
+            "family_key": family_key,
+            "cutoff_date": landmark["cutoff_date"],
+            "n_train_models": len(train_ids),
+            "n_train_scores": len(classes),
+            "train_report_date_class_counts": class_counts,
+            "n_removed": {
+                name: sum(class_counts[c] for c in removed)
+                for name, removed in REPORT_DATE_REMOVED_CLASSES.items()
+            },
+        })
+    removal_summary = {
+        name: {
+            "total": int(sum(row["n_removed"][name] for row in targets)),
+            "median_per_target": float(np.median([row["n_removed"][name] for row in targets])),
+            "median_fraction_per_target": float(np.median([
+                row["n_removed"][name] / row["n_train_scores"] for row in targets
+            ])),
+        }
+        for name in REPORT_DATE_REMOVED_CLASSES
+    }
+    rule_counts = {}
+    for cell in cells.values():
+        rule_counts[cell["rule"]] = rule_counts.get(cell["rule"], 0) + 1
+    payload = {
+        "description": (
+            "Report-date intervals [report_date_lower, report_date_upper] of the document cited by "
+            "each observed matrix cell (rules in report_dates.py), and per-target counts of "
+            "training scores by class against the target cutoff: after_target if lower > cutoff, "
+            "on_or_before_target if upper <= cutoff, else undatable."
+        ),
+        "matrix_identity_sha256": matrix_identity_sha256(M_FULL),
+        "matrix_shape": [int(N_MODELS), int(N_BENCH)],
+        "report_date_sources_sha256": file_sha256(REPORT_DATE_SOURCES_PATH),
+        "report_date_table_sha256": report_date_table_sha256(cells),
+        "removed_classes": {name: list(c) for name, c in REPORT_DATE_REMOVED_CLASSES.items()},
+        "n_cells": len(cells),
+        "cell_rule_counts": dict(sorted(rule_counts.items())),
+        "removal_summary": removal_summary,
+        "targets": targets,
+        "documents": dict(sorted(documents.items())),
+        "cells": [
+            [cell["model_id"], cell["benchmark_id"], cell["reference_url"] or ""]
+            for _, cell in sorted(cells.items())
+        ],
+    }
+    write_json(REPORT_DATE_AUDIT_PATH, payload, indent=1, trailing_newline=True)
+    print(f"Wrote {REPORT_DATE_AUDIT_PATH}")
+    print(json.dumps({"cell_rule_counts": payload["cell_rule_counts"],
+                      "removal_summary": removal_summary}, indent=1))
 
 
 def parse_int_list(value: str) -> list[int]:
@@ -589,7 +711,8 @@ def parse_int_list(value: str) -> list[int]:
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--mode", choices=["describe", "shard", "run-all", "merge"], default="run-all")
+    parser.add_argument("--mode", choices=["describe", "shard", "run-all", "merge", "report-date-audit"],
+                        default="run-all")
     parser.add_argument("--family-key", choices=[x["family_key"] for x in LANDMARKS])
     parser.add_argument("--k", type=int)
     parser.add_argument("--seed", type=int)
@@ -598,7 +721,18 @@ def main():
     parser.add_argument("--n-seeds", type=int, default=N_SEEDS)
     parser.add_argument("--family-limit", type=int, default=None,
                         help="Debug/smoke only: keep the first N families.")
+    parser.add_argument("--report-date-filter", choices=sorted(REPORT_DATE_REMOVED_CLASSES), default="none",
+                        help="Remove training scores by report-date class against each target cutoff: "
+                             "verified_later drops after_target; strict also drops undatable.")
+    parser.add_argument("--results-root", default=None,
+                        help="Directory for results/shards and results.json. Default: this directory "
+                             "for --report-date-filter none, else report_date_filter/<filter>.")
     args = parser.parse_args()
+    results_root = os.path.abspath(
+        args.results_root if args.results_root is not None
+        else HERE if args.report_date_filter == "none"
+        else os.path.join(HERE, "report_date_filter", args.report_date_filter)
+    )
 
     np.random.seed(BASE_SEED)
     random.seed(BASE_SEED)
@@ -613,14 +747,15 @@ def main():
     elif args.mode == "shard":
         if args.family_key is None or args.k is None or args.seed is None:
             raise SystemExit("--mode shard requires --family-key, --k, and --seed")
-        os.makedirs(SHARD_DIR, exist_ok=True)
-        path = shard_path(args.family_key, args.k, args.seed)
-        run_shard(args.family_key, args.k, args.seed, out_path=path)
+        path = shard_path(results_root, args.family_key, args.k, args.seed)
+        run_shard(args.family_key, args.k, args.seed, args.report_date_filter, out_path=path)
         print(f"Wrote {path}")
     elif args.mode == "run-all":
-        run_all(family_keys, k_values, args.n_seeds, args.workers)
+        run_all(family_keys, k_values, args.n_seeds, args.workers, results_root, args.report_date_filter)
+    elif args.mode == "report-date-audit":
+        write_report_date_audit(family_keys)
     else:
-        merge_results(family_keys, k_values, args.n_seeds)
+        merge_results(family_keys, k_values, args.n_seeds, results_root, args.report_date_filter)
 
 
 if __name__ == "__main__":
