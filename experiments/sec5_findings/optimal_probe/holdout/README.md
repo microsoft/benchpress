@@ -27,6 +27,18 @@ CANDIDATE_ALLOWLIST=../candidate_allowlists/user_cheap_20260505.json \
   MAX_STEPS=10 WORKERS=48 ./run_model_split_validation.sh
 
 python run_model_split_random.py --k-max 10 --n-seeds 10 --workers 48
+
+# Baselines on the same held-out cells and the same probes: logit-space model
+# mean and offsets only (Logit Bias ALS rank 0).
+python score_heldout_baselines.py \
+  results/model_split_validation_medae_train70_all.json.gz \
+  results/model_split_validation_medae_train70_usercheap.json.gz \
+  --out results/heldout_baselines_s42.json.gz
+
+# Low-cost pool under the documented <= $30 public-cost rule (drops MMLU-Pro):
+CANDIDATE_ALLOWLIST=../candidate_allowlists/public_cost_le_30usd.json \
+  METRIC=medae OUT=model_split_validation_medae_train70_cost_le_30usd.json.gz \
+  MAX_STEPS=10 WORKERS=24 ./run_model_split_validation.sh
 ```
 
 CHTC-clean checkout commands with the May matrix:
@@ -68,6 +80,10 @@ Results are under `results/`.
 - `results/model_split_validation_medae_train70_all.json.gz`
 - `results/model_split_validation_medae_train70_usercheap.json.gz`
 - `results/model_split_random_medae_train70.json.gz`
+- `results/heldout_baselines_s42.json.gz`: per-cell BenchPress, model-mean and
+  offsets-only predictions on the stored `validation_non_probe` cells, with
+  per-k pooled MedAE/MedAPE and per-target win fractions.
+- `results/model_split_validation_medae_train70_cost_le_30usd.json.gz`
 
 Each validation result contains `trajectory[*].validation_non_probe` as the
 primary held-out metric and `trajectory[*].validation_with_probe_zero` for the

@@ -153,6 +153,25 @@ def _load_order(path, key):
     return payload, order
 
 
+def _load_greedy_order(path):
+    payload = load_json(path)
+    trajectory = payload.get("trajectory") or []
+    if not trajectory:
+        raise SystemExit(f"{path}: greedy result has no trajectory")
+    benchmark_ids = [step["added_benchmark"] for step in trajectory]
+    missing = [bid for bid in benchmark_ids if bid not in BENCH_IDS]
+    if missing:
+        raise SystemExit(f"{path}: greedy ordering contains benchmark ids not in this matrix: {missing}")
+    config = payload.get("config", {})
+    order = {
+        "label": f"greedy ordering from {os.path.basename(path)}",
+        "candidate_pool": config.get("candidate_allowlist_path") or "any benchmark",
+        "benchmark_ids": benchmark_ids,
+        "display_names": [BENCH_NAMES.get(bid, bid) for bid in benchmark_ids],
+    }
+    return {"source": os.path.basename(path)}, order
+
+
 def _resolve_out_path(out_arg, fixed_order, rank, predictor_name):
     if out_arg is None:
         predictor_tag = "" if predictor_name == "benchpress" else f"_{predictor_name}"
@@ -169,8 +188,11 @@ def _resolve_out_path(out_arg, fixed_order, rank, predictor_name):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--fixed-order-json", default=DEFAULT_ORDER_JSON)
-    parser.add_argument("--fixed-order", required=True,
-                        help="Key in --fixed-order-json, e.g. medae_any or medae_low_cost.")
+    order_source = parser.add_mutually_exclusive_group(required=True)
+    order_source.add_argument("--fixed-order",
+                              help="Key in --fixed-order-json, e.g. medae_any or medae_low_cost.")
+    order_source.add_argument("--greedy-result",
+                              help="Greedy run.py result; evaluates its trajectory order. Requires --out.")
     parser.add_argument("--k-max", type=int, default=None)
     parser.add_argument("--rank", type=int, default=2,
                         help="Bias ALS rank; 2 is the BenchPress default, 0 keeps only offsets.")
@@ -180,7 +202,12 @@ def main():
     parser.add_argument("--out", default=None)
     args = parser.parse_args()
 
-    order_payload, order = _load_order(args.fixed_order_json, args.fixed_order)
+    if args.greedy_result:
+        if args.out is None:
+            raise SystemExit("--greedy-result requires --out")
+        order_payload, order = _load_greedy_order(args.greedy_result)
+    else:
+        order_payload, order = _load_order(args.fixed_order_json, args.fixed_order)
     k_max = len(order["benchmark_ids"]) if args.k_max is None else int(args.k_max)
     if k_max < 1 or k_max > len(order["benchmark_ids"]):
         raise SystemExit(f"--k-max must be in [1, {len(order['benchmark_ids'])}]")
@@ -205,10 +232,11 @@ def main():
         "config": {
             "protocol": PROTOCOL,
             "fixed_order_key": args.fixed_order,
-            "fixed_order_json": os.path.relpath(
+            "fixed_order_json": None if args.greedy_result else os.path.relpath(
                 os.path.abspath(os.path.expanduser(args.fixed_order_json)),
                 REPO_ROOT,
             ),
+            "greedy_result": args.greedy_result and os.path.basename(args.greedy_result),
             "k_max": int(k_max),
             "seeds": [],
             "order_label": order.get("label"),

@@ -56,6 +56,17 @@ python evaluate_order.py \
 # Use --predictor logit_model_mean to score the same fixed-order hidden cells
 # with the logit-space model mean baseline.
 
+# Low-cost pool under the documented <= $30 public-cost rule (drops MMLU-Pro):
+CANDIDATE_ALLOWLIST=../candidate_allowlists/public_cost_le_30usd.json \
+  METRIC=medae OUT=greedy_medae_targets_tall_candidates_cost_le_30usd.json.gz \
+  MAX_STEPS=10 WORKERS=24 ./run.sh
+python evaluate_order.py \
+  --greedy-result results/greedy_medae_targets_tall_candidates_cost_le_30usd.json.gz \
+  --k-max 10 --workers 10 \
+  --out fixed_order_medae_cost_le_30usd_hidden_only.json.gz
+# --greedy-result evaluates the trajectory order of a greedy result instead of
+# a probe_orderings.json key.
+
 python run_coverage_matched_random.py \
   --k-values 1 3 5 10 \
   --n-subsets 10 \

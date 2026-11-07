@@ -2,6 +2,7 @@
 """Score held-out model baselines on stored probe-validation cells."""
 
 import argparse
+import functools
 import os
 import subprocess
 import sys
@@ -32,13 +33,21 @@ from benchpress.evaluation_harness import (
     matrix_identity_sha256,
 )
 from benchpress.io_utils import load_json, write_json_atomic
-from benchpress.methods.predictors import predict_logit_model_mean_scores
+from benchpress.methods.predictors import (
+    predict_logit_bias_als_scores,
+    predict_logit_model_mean_scores,
+)
 from benchpress.methods.transforms import _is_pct_bench
 
 
-PROTOCOL = 'heldout_logit_model_mean_baseline_v1'
+PROTOCOL = 'heldout_baselines_v2'
 RESULTS_DIR = os.path.join(SCRIPT_DIR, 'results')
-DEFAULT_OUT = os.path.join(RESULTS_DIR, 'heldout_logit_model_mean_baselines.json.gz')
+DEFAULT_OUT = os.path.join(RESULTS_DIR, 'heldout_baselines.json.gz')
+
+BASELINES = {
+    'logit_model_mean': predict_logit_model_mean_scores,
+    'logit_offsets_only': functools.partial(predict_logit_bias_als_scores, rank=0, lam=0.1),
+}
 
 IS_PCT_BENCH = np.array([
     _is_pct_bench(j, M_FULL, metric=BENCH_METRICS, benchmark_ids=BENCH_IDS)
@@ -153,7 +162,7 @@ def _prediction_metrics(records, pred_key, pct_only=False):
     }
 
 
-def _per_target_metrics(records):
+def _per_target_metrics(records, baseline):
     by_target = defaultdict(list)
     for record in records:
         by_target[record['model_id']].append(record)
@@ -169,8 +178,8 @@ def _per_target_metrics(records):
             for record in target_records
         ], dtype=float)
         mm_pred = np.array([
-            np.nan if record['logit_model_mean_pred'] is None
-            else record['logit_model_mean_pred']
+            np.nan if record[f'{baseline}_pred'] is None
+            else record[f'{baseline}_pred']
             for record in target_records
         ], dtype=float)
         bp_metrics = compute_prediction_error(true, bp_pred, aggregation='pool')
@@ -191,42 +200,40 @@ def _per_target_metrics(records):
             'n_revealed_probe_cells': int(target_records[0]['n_revealed_probe_cells']),
             'revealed_probe_ids': target_records[0]['revealed_probe_ids'],
             'benchpress_medae': bp_medae,
-            'logit_model_mean_medae': mm_medae,
-            'benchpress_medae_lt_model_mean': bp_better,
+            f'{baseline}_medae': mm_medae,
+            'benchpress_medae_lt_baseline': bp_better,
         })
     win_fraction = None if n_compared == 0 else float(n_bp_better / n_compared)
     return {
         'n_targets': int(len(by_target)),
         'n_targets_compared': int(n_compared),
-        'benchpress_medae_lt_model_mean_fraction': win_fraction,
+        'benchpress_medae_lt_baseline_fraction': win_fraction,
         'per_target': per_target,
     }
 
 
 def _summarize_step(records):
-    target_payload = _per_target_metrics(records)
-    return {
-        'benchpress': {
-            **_prediction_metrics(records, 'benchpress_pred', pct_only=False),
+    summary = {}
+    for name in ['benchpress', *BASELINES]:
+        summary[name] = {
+            **_prediction_metrics(records, f'{name}_pred', pct_only=False),
             'percentage_benchmarks': _prediction_metrics(
-                records, 'benchpress_pred', pct_only=True,
+                records, f'{name}_pred', pct_only=True,
             ),
-        },
-        'logit_model_mean': {
-            **_prediction_metrics(records, 'logit_model_mean_pred', pct_only=False),
-            'percentage_benchmarks': _prediction_metrics(
-                records, 'logit_model_mean_pred', pct_only=True,
-            ),
-        },
-        'paired_target_comparison': {
+        }
+    summary['paired_target_comparison'] = {}
+    summary['per_target'] = {}
+    for name in BASELINES:
+        target_payload = _per_target_metrics(records, name)
+        summary['paired_target_comparison'][name] = {
             'n_targets': target_payload['n_targets'],
             'n_targets_compared': target_payload['n_targets_compared'],
-            'benchpress_medae_lt_model_mean_fraction': (
-                target_payload['benchpress_medae_lt_model_mean_fraction']
+            'benchpress_medae_lt_baseline_fraction': (
+                target_payload['benchpress_medae_lt_baseline_fraction']
             ),
-        },
-        'per_target': target_payload['per_target'],
-    }
+        }
+        summary['per_target'][name] = target_payload['per_target']
+    return summary
 
 
 def _score_validation_file(path):
@@ -275,16 +282,22 @@ def _score_validation_file(path):
                 probe_indices,
                 train_model_indices,
             )
-            M_model_mean = predict_logit_model_mean_scores(
-                M_train, metric=BENCH_METRICS, benchmark_ids=BENCH_IDS,
-            )
+            baseline_matrices = {
+                name: predict_fn(
+                    M_train, metric=BENCH_METRICS, benchmark_ids=BENCH_IDS,
+                )
+                for name, predict_fn in BASELINES.items()
+            }
             model_id = MODEL_IDS[int(model_index)]
             for row in rows_by_model[model_index]:
                 bench_index = int(row['j'])
                 bench_id = BENCH_IDS[bench_index]
                 true = float(row['true'])
                 bp_pred = _finite_or_none(row['pred'])
-                mm_pred = _finite_or_none(M_model_mean[int(model_index), bench_index])
+                baseline_preds = {
+                    name: _finite_or_none(matrix[int(model_index), bench_index])
+                    for name, matrix in baseline_matrices.items()
+                }
                 cell = {
                     'source_file': source_file,
                     'source_path': source_abspath,
@@ -302,16 +315,15 @@ def _score_validation_file(path):
                     'is_percentage_benchmark': bool(IS_PCT_BENCH[bench_index]),
                     'true': true,
                     'benchpress_pred': bp_pred,
-                    'logit_model_mean_pred': mm_pred,
                     'benchpress_abs_error': (
                         None if bp_pred is None else abs(bp_pred - true)
-                    ),
-                    'logit_model_mean_abs_error': (
-                        None if mm_pred is None else abs(mm_pred - true)
                     ),
                     'n_revealed_probe_cells': int(len(revealed_probe_indices)),
                     'revealed_probe_ids': revealed_probe_ids,
                 }
+                for name, pred in baseline_preds.items():
+                    cell[f'{name}_pred'] = pred
+                    cell[f'{name}_abs_error'] = None if pred is None else abs(pred - true)
                 raw_cells.append(cell)
                 step_records.append(cell)
 
@@ -372,8 +384,9 @@ def main():
             'input_validation_results': [os.path.abspath(p) for p in args.validation_results],
             'prediction_engine': (
                 'BenchPress from stored validation_non_probe predictions; '
-                'baseline from predict_logit_model_mean_scores on the same '
-                'isolated held-out target matrix and scored on exactly the '
+                'baselines (logit-space model mean; Logit Bias ALS rank 0, '
+                'i.e. global level plus model and benchmark offsets) fit on the '
+                'same isolated held-out target matrix and scored on exactly the '
                 'stored validation_non_probe cells.'
             ),
             'metrics': {
