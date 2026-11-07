@@ -50,6 +50,16 @@ Under `--out-dir`:
 No shards are used. Rerunning the same command overwrites the same files with
 the same deterministic seeds and matrix identities.
 
+## Revealed-count breakdown
+
+`revealed_count_breakdown.py` reads the cached `results/may_to_aug/raw_predictions.json.gz` (no fitting; safe locally) and pools the Part (ii) greedy units by the number of probe scores each new model actually revealed (1, 2, 3+), scoring BenchPress and the logit-space model mean on the same cells with `compute_prediction_error`. Output: `results/may_to_aug/revealed_count_breakdown.json`.
+
+```bash
+python revealed_count_breakdown.py
+```
+
+Last valid result (from job 6307633 raw predictions; both MedAE orderings, k in {1,3,5,10} pooled): 1 revealed, 2,067 cells, BenchPress 8.40 / model mean 5.63; 2 revealed, 955 cells, 6.81 / 7.35; 3+ revealed, 1,015 cells, 6.43 / 8.37. At k=5 the median new model reveals 2 scores under both orderings. Paper: prospective paragraph in `app:temporal_deployment`.
+
 ## Last valid result
 
 CHTC CPU job 6307633 (`b3_mm`), github commit `9ac9963`, 2 CPUs, `python:3.11` container. It reproduces every BenchPress number of the earlier job 6307243 (commit `2f1ca06`) and adds the logit-space model mean and the most-reported-first orderings. May matrix 84 x 133 / 2,604 observed (same content as `evaluation_harness.M_FULL`; the manifest hash differs only because `load_score_matrix` orders models differently); August matrix 129 x 253 / 4,905 observed. The 2,604 shared cells are 99.65% identical.
