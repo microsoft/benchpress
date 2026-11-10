@@ -14,7 +14,10 @@ export BENCHPRESS_DATA="$DATA/may.json"
 
 python -m pip install -q --no-cache-dir --index-url https://download.pytorch.org/whl/cpu torch
 # pygam is in the repo's requirement.txt but not in its pyproject dependencies.
-python -m pip install -q --no-cache-dir "numpy==1.26.4" pygam \
+# python-utils>=3.8 needs typing_extensions>3.10.0.2, which py-irt pins; older
+# progressbar2/python-utils keep pip from backtracking indefinitely.
+python -m pip install -q --no-cache-dir "numpy==1.26.4" "pygam==0.12.0" \
+  "progressbar2==4.2.0" "python-utils==3.5.2" \
   "benchpred @ git+https://github.com/socialfoundations/benchmark-prediction@${BENCHPRED_COMMIT}"
 python -m pip freeze | sed 's/^/pip: /'
 
