@@ -13,7 +13,8 @@ COMMIT="$(git -C "$HERE" rev-parse HEAD)"
 export BENCHPRESS_DATA="$DATA/may.json"
 
 python -m pip install -q --no-cache-dir --index-url https://download.pytorch.org/whl/cpu torch
-python -m pip install -q --no-cache-dir "numpy==1.26.4" \
+# pygam is in the repo's requirement.txt but not in its pyproject dependencies.
+python -m pip install -q --no-cache-dir "numpy==1.26.4" pygam \
   "benchpred @ git+https://github.com/socialfoundations/benchmark-prediction@${BENCHPRED_COMMIT}"
 python -m pip freeze | sed 's/^/pip: /'
 
