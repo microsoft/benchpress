@@ -1,26 +1,29 @@
 #!/usr/bin/env python
 """Question-level budgets on the Open LLM Leaderboard v2 (Appendix question_level_budgets).
 
-All methods spend the same budget B of evaluated questions on each held-out
-model and predict that model's 37 subtask accuracies (percent):
+Each held-out model is evaluated on B questions and every method predicts its
+accuracy (percent) on the questions it was not evaluated on, per subtask.
 
-  subtasks   BenchPress revealing whole subtasks, chosen greedily by five-fold
-             CV MedAE on the selection models among subtasks that fit the
-             remaining budget.
-  questions  BenchPress on the model-by-question matrix: B random questions
-             split equally across subtasks, answers scored 0/100, subtask
-             score = mean of observed and predicted answers.
+Selections (which B questions are evaluated; shared by all predictors):
+  random     per subtask, a uniform random subset
+  anchors    per subtask, the GP-IRT anchor questions of tinyBenchmarks
+B is split equally across the 37 subtasks, each capped at half its questions;
+leftover budget goes to uncapped subtasks.
+
+Predictors (all see the same evaluated questions, all graded on the same
+unevaluated questions):
+  questions  BenchPress on the model-by-question matrix (answers 0/100);
+             prediction = mean of the predicted unevaluated answers
   random_sampling, random_sampling_learn, aipw, gp_irt
-             the per-subtask estimators of Zhang, Dorner and Hardt (2025)
-             (package `benchpred`), with the same per-subtask allocation.
+             estimators of Zhang, Dorner and Hardt (2025) (package `benchpred`).
+             They estimate the full subtask mean f; the implied estimate on the
+             unevaluated questions is (N f - sum of observed answers) / (N - n).
 
 Subcommands (run in this order):
   init        write <out>/manifest.json (config + config_hash)
-  select      greedy subtask selection per budget (CV cache, resumable)
-  subtasks    held-out predictions of `subtasks`
-  questions   held-out predictions of `questions` (one unit per seed/B/target)
-  estimators  held-out predictions of benchpred methods (unit per method/seed/B/column)
-  summarize   MedAE over all held-out cells and over unrevealed cells
+  estimators  coresets and benchpred predictions (unit per seed/B/column)
+  questions   BenchPress predictions (unit per selection/seed/B/target)
+  summarize   MedAE over the 127 x 37 held-out cells per selection
 
 Every unit is written atomically as JSON carrying the config_hash; existing
 units are skipped, units from another config fail fast.
@@ -29,7 +32,6 @@ units are skipped, units from another config fail fast.
 import argparse
 import hashlib
 import json
-import multiprocessing
 import os
 import sys
 import time
@@ -50,8 +52,6 @@ BUDGETS = [200, 400, 800, 1600, 3200, 6400]
 SEEDS = [0, 1, 2, 3, 4]
 SPLIT_SEED = 42
 TRAIN_FRACTION = 0.7
-N_FOLDS = 5
-FOLD_SEED = 42
 BENCHPRED_REPO = 'https://github.com/socialfoundations/benchmark-prediction'
 BENCHPRED_COMMIT = '5b7a23e32ee738c69b4c408cb9746429a7fd0043'
 ESTIMATORS = {
@@ -60,7 +60,8 @@ ESTIMATORS = {
     'aipw': 'AIPWPred',
     'gp_irt': 'GPIRTPred',
 }
-METHODS = ['subtasks', 'questions'] + list(ESTIMATORS)
+METHODS = ['questions'] + list(ESTIMATORS)
+SELECTIONS = ['random', 'anchors']
 DEFAULT_DATA = os.path.join(HERE, 'results', 'data', 'oll_items.npz')
 DEFAULT_OUT = os.path.join(HERE, 'results')
 
@@ -136,14 +137,9 @@ def split_models(n_models):
     return sorted(int(i) for i in perm[:n_train]), sorted(int(i) for i in perm[n_train:])
 
 
-def cv_folds(n_sel):
-    perm = np.random.RandomState(FOLD_SEED).permutation(n_sel)
-    return [np.sort(f) for f in np.array_split(perm, N_FOLDS)]
-
-
 def allocate(budget, sizes):
-    """Equal split of budget across subtasks, each capped at size - 1."""
-    caps = np.asarray(sizes) - 1
+    """Equal split of budget across subtasks, each capped at half its questions."""
+    caps = np.asarray(sizes) // 2
     if budget > caps.sum():
         raise ValueError(f'budget {budget} exceeds capacity {caps.sum()}')
     k = np.zeros(len(caps), dtype=int)
@@ -226,10 +222,11 @@ def cmd_init(args):
         'seeds': SEEDS,
         'split_seed': SPLIT_SEED,
         'train_fraction': TRAIN_FRACTION,
-        'n_folds': N_FOLDS,
-        'fold_seed': FOLD_SEED,
         'coreset_seed': '1000 * seed + column',
+        'allocation': 'equal split, each subtask capped at floor(size / 2)',
+        'target': 'accuracy on the unevaluated questions of each subtask',
         'predictor': 'benchpress.methods.predictors.predict_benchpress_scores',
+        'selections': SELECTIONS,
         'methods': METHODS,
         'column_ids': ctx.data.column_ids,
         'column_sizes': ctx.data.sizes.tolist(),
@@ -251,142 +248,109 @@ def cmd_init(args):
     print(f'wrote {path}: config_hash {manifest["config_hash"]}')
 
 
-# ─── select: greedy subtask selection by CV MedAE ────────────────────────────
+# ─── estimators: coresets and Zhang, Dorner and Hardt (2025) predictors ──────
 
-_CV = {}
+def hidden_estimate(full_mean, observed, n_total):
+    """Estimate on the unevaluated questions implied by a full-subtask estimate.
 
-
-def _cv_init(truth_sel, folds):
-    _CV['truth'] = truth_sel
-    _CV['folds'] = folds
-
-
-def cv_medae(probes):
-    """Five-fold CV MedAE on selection models; revealed cells count as exact."""
-    truth, folds = _CV['truth'], _CV['folds']
-    hidden = np.ones(truth.shape[1], dtype=bool)
-    hidden[list(probes)] = False
-    predicted = truth.copy()
-    for rows in folds:
-        matrix = truth.copy()
-        matrix[np.ix_(rows, np.flatnonzero(hidden))] = np.nan
-        pred = predict(matrix)
-        predicted[np.ix_(rows, np.flatnonzero(hidden))] = pred[np.ix_(rows, np.flatnonzero(hidden))]
-    return compute_prediction_error(truth.ravel(), predicted.ravel(), aggregation='pool')['medae']
+    full_mean: (n_targets,) estimate of the mean over all n_total questions.
+    observed: (n_targets, n) answers on the n evaluated questions (n < n_total).
+    """
+    return (n_total * full_mean - observed.sum(1)) / (n_total - observed.shape[1])
 
 
-def cmd_select(args):
+def estimator_unit(source, target, k, seed):
+    """Coresets of both selections and hidden-question predictions of every estimator."""
+    import benchpred
+    from sklearn.linear_model import RidgeCV
+
+    gp = benchpred.GPIRTPred().fit(source, k, seed=seed)
+    anchor_points = np.asarray(gp.anchor_points)
+    coresets = {'random': np.asarray(benchpred.RandomSampling().fit(source, k, seed=seed).get_coreset()),
+                'anchors': np.unique(anchor_points)}
+    pred = {s: {} for s in SELECTIONS}
+    for selection in SELECTIONS:
+        c = coresets[selection]
+        observed = target[:, c]
+        for name in ESTIMATORS:
+            if name == 'gp_irt':
+                if selection == 'random':
+                    # GP-IRT prediction with the random questions as equally weighted anchors.
+                    own = gp.anchor_points, gp.anchor_weights
+                    gp.anchor_points, gp.anchor_weights = c, np.full(len(c), 1.0 / len(c))
+                    full = gp.predict(observed)
+                    gp.anchor_points, gp.anchor_weights = own
+                else:
+                    full = gp.predict(target[:, anchor_points])
+            else:
+                est = getattr(benchpred, ESTIMATORS[name])().fit(source, k, seed=seed)
+                if not np.array_equal(est.get_coreset(), coresets['random']):
+                    raise AssertionError(f'{name} coreset differs from RandomSampling')
+                if selection == 'anchors' and name != 'random_sampling':
+                    est.compressed_data_indices = c
+                    if name == 'random_sampling_learn':
+                        # Refit as RandomSamplingAndLearn.fit does, on the given coreset.
+                        est.rgs = RidgeCV().fit(source[:, c], source.mean(1))
+                full = est.predict(observed)
+            full = np.asarray(full, dtype=float).ravel()
+            h = 100.0 * hidden_estimate(full, observed, source.shape[1])
+            if h.shape != (target.shape[0],) or not np.isfinite(h).all():
+                raise AssertionError(f'{name}/{selection} returned shape {h.shape}')
+            pred[selection][name] = h.tolist()
+    return coresets, anchor_points, pred
+
+
+def estimator_path(ctx, seed, budget, j):
+    return os.path.join(ctx.out, 'estimators', f's{seed}', f'B{budget}', f'c{j:02d}.json')
+
+
+def cmd_estimators(args):
+    commit = benchpred_commit()
+    if commit != BENCHPRED_COMMIT:
+        raise SystemExit(f'benchpred installed at {commit}, need {BENCHPRED_COMMIT}')
     ctx = Context(args)
+    seeds = ctx.subset(args.seeds, 'seeds')
     budgets = ctx.subset(args.budgets, 'budgets')
-    sizes = ctx.data.sizes
-    truth_sel = ctx.data.truth[ctx.sel]
-    folds = cv_folds(len(ctx.sel))
-    cache_path = os.path.join(ctx.out, 'select', 'cv_cache.jsonl')
-    os.makedirs(os.path.dirname(cache_path), exist_ok=True)
-    cache = {}
-    if os.path.exists(cache_path):
-        with open(cache_path) as f:
-            for line in f:
-                rec = json.loads(line)
-                if rec['config_hash'] != ctx.chash:
-                    raise SystemExit(f'{cache_path} has a foreign config_hash')
-                cache[tuple(rec['probes'])] = rec['medae']
-    _cv_init(truth_sel, folds)
-    pool = multiprocessing.Pool(args.workers, _cv_init, (truth_sel, folds)) if args.workers > 1 else None
-
-    def scores(keys):
-        todo = [k for k in keys if k not in cache]
-        if todo:
-            t0 = time.time()
-            vals = pool.map(cv_medae, todo) if pool else [cv_medae(k) for k in todo]
-            with open(cache_path, 'a') as f:
-                for k, v in zip(todo, vals):
-                    cache[k] = float(v)
-                    f.write(json.dumps({'probes': list(k), 'medae': float(v),
-                                        'config_hash': ctx.chash}) + '\n')
-            print(f'  {len(todo)} CV evaluations in {time.time() - t0:.0f}s', flush=True)
-        return [cache[k] for k in keys]
-
-    for budget in budgets:
-        path = os.path.join(ctx.out, 'select', f'B{budget}.json')
-        if read_unit(path, ctx.chash) is not None:
-            continue
-        probes, trace = [], []
-        while True:
-            remaining = budget - int(sizes[probes].sum())
-            cands = [j for j in range(len(sizes)) if j not in probes and sizes[j] <= remaining]
-            if not cands:
-                break
-            keys = [tuple(sorted(probes + [j])) for j in cands]
-            vals = scores(keys)
-            best_val, best_j = min(zip(vals, cands))
-            probes.append(best_j)
-            trace.append({'column': best_j, 'cv_medae': best_val,
-                          'questions_used': int(sizes[probes].sum())})
-            print(f'B={budget}: + {ctx.data.column_ids[best_j]} '
-                  f'cv_medae={best_val:.3f} used={trace[-1]["questions_used"]}', flush=True)
-        write_json_atomic(path, ctx.unit({
-            'budget': budget, 'probes': probes, 'trace': trace,
-            'questions_used': int(sizes[probes].sum())}))
-    if pool:
-        pool.close()
+    columns = args.columns if args.columns is not None else list(range(len(ctx.data.sizes)))
+    data = ctx.data
+    for seed in seeds:
+        for budget in budgets:
+            alloc = allocate(budget, data.sizes)
+            for j in columns:
+                path = estimator_path(ctx, seed, budget, j)
+                if read_unit(path, ctx.chash) is not None:
+                    continue
+                t0 = time.time()
+                q = data.col_questions[j]
+                source = data.answers[np.ix_(ctx.sel, q)].astype(np.float64)
+                target = data.answers[np.ix_(ctx.held, q)].astype(np.float64)
+                coresets, anchor_points, pred = estimator_unit(
+                    source, target, int(alloc[j]), 1000 * seed + j)
+                write_json_atomic(path, ctx.unit({
+                    'seed': seed, 'budget': budget, 'column': j,
+                    'allocation': int(alloc[j]),
+                    'coresets': {s: c.tolist() for s, c in coresets.items()},
+                    'gp_irt_anchor_points': anchor_points.tolist(),
+                    'targets': ctx.held, 'pred': pred, 'seconds': time.time() - t0}))
+                print(f'estimators s={seed} B={budget} c={j}: {time.time() - t0:.0f}s', flush=True)
 
 
-# ─── subtasks: held-out predictions with selected subtasks ───────────────────
-
-_HO = {}
-
-
-def _subtasks_one(task):
-    target, probes = task
-    truth = _HO['truth']
-    matrix = np.vstack([truth[_HO['sel']], np.full(truth.shape[1], np.nan)])
-    matrix[-1, probes] = truth[target, probes]
-    return predict(matrix)[-1].tolist()
-
-
-def cmd_subtasks(args):
-    ctx = Context(args)
-    budgets = ctx.subset(args.budgets, 'budgets')
-    _HO.update(truth=ctx.data.truth, sel=ctx.sel)
-    pool = multiprocessing.Pool(args.workers) if args.workers > 1 else None
-    for budget in budgets:
-        path = os.path.join(ctx.out, 'subtasks', f'B{budget}.json')
-        if read_unit(path, ctx.chash) is not None:
-            continue
-        sel = read_unit(os.path.join(ctx.out, 'select', f'B{budget}.json'), ctx.chash)
-        if sel is None:
-            raise SystemExit(f'missing selection for B={budget}; run `select`')
-        tasks = [(t, sel['probes']) for t in ctx.held]
-        t0 = time.time()
-        preds = pool.map(_subtasks_one, tasks) if pool else [_subtasks_one(t) for t in tasks]
-        write_json_atomic(path, ctx.unit({
-            'budget': budget, 'probes': sel['probes'],
-            'questions_used': sel['questions_used'],
-            'targets': ctx.held, 'pred': preds}))
-        print(f'subtasks B={budget}: {len(tasks)} targets in {time.time() - t0:.0f}s', flush=True)
-    if pool:
-        pool.close()
-
-
-# ─── shared coresets ─────────────────────────────────────────────────────────
-
-def random_coresets(ctx, seed, budget):
-    """Per-subtask random coresets (local question indices) shared by all random methods."""
-    from benchpred import RandomSampling
-    alloc = allocate(budget, ctx.data.sizes)
-    coresets = []
-    for j, q in enumerate(ctx.data.col_questions):
-        source = ctx.data.answers[np.ix_(ctx.sel, q)].astype(np.float64)
-        coresets.append(np.asarray(
-            RandomSampling().fit(source, int(alloc[j]), seed=1000 * seed + j).get_coreset()))
-    return alloc, coresets
+def load_coresets(ctx, seed, budget):
+    """{selection: [local question indices per column]} from the estimator units."""
+    units = []
+    for j in range(len(ctx.data.sizes)):
+        unit = read_unit(estimator_path(ctx, seed, budget, j), ctx.chash)
+        if unit is None:
+            raise SystemExit(f'missing {estimator_path(ctx, seed, budget, j)}; run `estimators`')
+        units.append(unit)
+    return {s: [np.asarray(u['coresets'][s], dtype=int) for u in units] for s in SELECTIONS}, units
 
 
 # ─── questions: BenchPress on the model-by-question matrix ───────────────────
 
 def cmd_questions(args):
     ctx = Context(args)
+    selections = ctx.subset(args.selections, 'selections')
     seeds = ctx.subset(args.seeds, 'seeds')
     budgets = ctx.subset(args.budgets, 'budgets')
     targets = ctx.subset(args.targets, 'heldout_models')
@@ -394,144 +358,86 @@ def cmd_questions(args):
     base = 100.0 * data.answers[ctx.sel].astype(np.float64)
     for seed in seeds:
         for budget in budgets:
-            _, coresets = random_coresets(ctx, seed, budget)
-            revealed = np.concatenate([q[c] for q, c in zip(data.col_questions, coresets)])
-            for target in targets:
-                path = os.path.join(ctx.out, 'questions', f's{seed}', f'B{budget}',
-                                    f'm{target:03d}.json')
-                if read_unit(path, ctx.chash) is not None:
-                    continue
-                t0 = time.time()
-                row = np.full(data.answers.shape[1], np.nan)
-                row[revealed] = 100.0 * data.answers[target, revealed]
-                pred_row = predict(np.vstack([base, row]))[-1]
-                if not np.array_equal(pred_row[revealed], row[revealed]):
-                    raise AssertionError('predictor changed observed answers')
-                pred = [float(pred_row[q].mean()) for q in data.col_questions]
-                write_json_atomic(path, ctx.unit({
-                    'seed': seed, 'budget': budget, 'target': target,
-                    'questions_used': int(len(revealed)),
-                    'revealed': sorted(int(i) for i in revealed), 'pred': pred}))
-                print(f'questions s={seed} B={budget} m={target}: '
-                      f'{time.time() - t0:.0f}s', flush=True)
-
-
-# ─── estimators: Zhang, Dorner and Hardt (2025) ──────────────────────────────
-
-def cmd_estimators(args):
-    import benchpred
-    commit = benchpred_commit()
-    if commit != BENCHPRED_COMMIT:
-        raise SystemExit(f'benchpred installed at {commit}, need {BENCHPRED_COMMIT}')
-    ctx = Context(args)
-    methods = args.methods or list(ESTIMATORS)
-    bad = sorted(set(methods) - set(ESTIMATORS))
-    if bad:
-        raise SystemExit(f'unknown methods {bad}')
-    seeds = ctx.subset(args.seeds, 'seeds')
-    budgets = ctx.subset(args.budgets, 'budgets')
-    columns = args.columns if args.columns is not None else list(range(len(ctx.data.sizes)))
-    data = ctx.data
-    for seed in seeds:
-        for budget in budgets:
-            alloc, coresets = random_coresets(ctx, seed, budget)
-            for j in columns:
-                q = data.col_questions[j]
-                source = data.answers[np.ix_(ctx.sel, q)].astype(np.float64)
-                target = data.answers[np.ix_(ctx.held, q)].astype(np.float64)
-                for name in methods:
-                    path = os.path.join(ctx.out, 'estimators', name, f's{seed}',
-                                        f'B{budget}', f'c{j:02d}.json')
+            coresets, _ = load_coresets(ctx, seed, budget)
+            for selection in selections:
+                observed = [q[c] for q, c in zip(data.col_questions, coresets[selection])]
+                hidden = [np.setdiff1d(q, o) for q, o in zip(data.col_questions, observed)]
+                revealed = np.concatenate(observed)
+                for target in targets:
+                    path = os.path.join(ctx.out, 'questions', selection, f's{seed}',
+                                        f'B{budget}', f'm{target:03d}.json')
                     if read_unit(path, ctx.chash) is not None:
                         continue
                     t0 = time.time()
-                    est = getattr(benchpred, ESTIMATORS[name])()
-                    est.fit(source, int(alloc[j]), seed=1000 * seed + j)
-                    coreset = np.asarray(est.get_coreset())
-                    if name != 'gp_irt' and not np.array_equal(coreset, coresets[j]):
-                        raise AssertionError(f'{name} coreset differs from RandomSampling')
-                    pred = 100.0 * np.asarray(est.predict(target[:, coreset]), dtype=float).ravel()
-                    if pred.shape != (len(ctx.held),) or not np.isfinite(pred).all():
-                        raise AssertionError(f'{name} returned shape {pred.shape}')
+                    row = np.full(data.answers.shape[1], np.nan)
+                    row[revealed] = 100.0 * data.answers[target, revealed]
+                    pred_row = predict(np.vstack([base, row]))[-1]
+                    if not np.array_equal(pred_row[revealed], row[revealed]):
+                        raise AssertionError('predictor changed observed answers')
+                    pred = [float(pred_row[h].mean()) for h in hidden]
                     write_json_atomic(path, ctx.unit({
-                        'method': name, 'seed': seed, 'budget': budget, 'column': j,
-                        'allocation': int(alloc[j]),
-                        'questions_used': int(len(np.unique(coreset))),
-                        'coreset': coreset.tolist(), 'targets': ctx.held,
-                        'pred': pred.tolist(), 'seconds': time.time() - t0}))
-                    print(f'{name} s={seed} B={budget} c={j}: {time.time() - t0:.0f}s', flush=True)
+                        'selection': selection, 'seed': seed, 'budget': budget,
+                        'target': target, 'questions_used': int(len(revealed)),
+                        'pred': pred}))
+                    print(f'questions {selection} s={seed} B={budget} m={target}: '
+                          f'{time.time() - t0:.0f}s', flush=True)
 
 
 # ─── summarize ───────────────────────────────────────────────────────────────
 
-def load_predictions(ctx, method, seed, budget):
-    """Return (pred[held, col], revealed[held, col], questions_used per target)."""
-    n_held, n_cols = len(ctx.held), len(ctx.data.sizes)
-    revealed = np.zeros((n_held, n_cols), dtype=bool)
-
-    def need(path):
-        unit = read_unit(path, ctx.chash)
-        if unit is None:
-            raise SystemExit(f'missing unit {path}')
-        return unit
-
-    if method == 'subtasks':
-        unit = need(os.path.join(ctx.out, 'subtasks', f'B{budget}.json'))
-        revealed[:, unit['probes']] = True
-        return np.array(unit['pred']), revealed, [unit['questions_used']] * n_held
-    if method == 'questions':
-        units = [need(os.path.join(ctx.out, 'questions', f's{seed}', f'B{budget}',
-                                   f'm{t:03d}.json')) for t in ctx.held]
-        return (np.array([u['pred'] for u in units]), revealed,
-                [u['questions_used'] for u in units])
-    units = [need(os.path.join(ctx.out, 'estimators', method, f's{seed}', f'B{budget}',
-                               f'c{j:02d}.json')) for j in range(n_cols)]
-    used = sum(u['questions_used'] for u in units)
-    return np.array([u['pred'] for u in units]).T, revealed, [used] * n_held
-
-
 def cmd_summarize(args):
     ctx = Context(args, check_commit=False)
-    truth = ctx.data.truth[ctx.held]
+    data = ctx.data
     rows = []
-    for method in METHODS:
+    for seed in ctx.config['seeds']:
         for budget in ctx.config['budgets']:
-            seeds = [None] if method == 'subtasks' else ctx.config['seeds']
-            for seed in seeds:
-                pred, revealed, used = load_predictions(ctx, method, seed, budget)
-                pred = np.where(revealed, truth, pred)
-                all_cells = compute_prediction_error(truth.ravel(), pred.ravel(),
-                                                     aggregation='pool')
-                hidden = ~revealed
-                unrevealed = compute_prediction_error(truth[hidden], pred[hidden],
-                                                      aggregation='pool')
-                rows.append({
-                    'method': method, 'seed': seed, 'budget': budget,
-                    'medae_all': all_cells['medae'], 'n_all': all_cells['n'],
-                    'medae_unrevealed': unrevealed['medae'], 'n_unrevealed': unrevealed['n'],
-                    'questions_used_max': int(max(used)),
-                    'questions_used_min': int(min(used)),
-                })
+            coresets, units = load_coresets(ctx, seed, budget)
+            for selection in SELECTIONS:
+                hidden = [np.setdiff1d(np.arange(len(q)), c)
+                          for q, c in zip(data.col_questions, coresets[selection])]
+                truth = np.stack([100.0 * data.answers[np.ix_(ctx.held, q[h])].mean(1)
+                                  for q, h in zip(data.col_questions, hidden)], axis=1)
+                used = int(sum(len(c) for c in coresets[selection]))
+                for method in METHODS:
+                    if method == 'questions':
+                        qunits = []
+                        for t in ctx.held:
+                            path = os.path.join(ctx.out, 'questions', selection, f's{seed}',
+                                                f'B{budget}', f'm{t:03d}.json')
+                            unit = read_unit(path, ctx.chash)
+                            if unit is None:
+                                raise SystemExit(f'missing unit {path}')
+                            qunits.append(unit)
+                        pred = np.array([u['pred'] for u in qunits])
+                    else:
+                        pred = np.array([u['pred'][selection][method] for u in units]).T
+                    err = compute_prediction_error(truth.ravel(), pred.ravel(), aggregation='pool')
+                    rows.append({'selection': selection, 'method': method, 'seed': seed,
+                                 'budget': budget, 'medae': err['medae'], 'n': err['n'],
+                                 'questions_used': used})
     table = {}
-    for method in METHODS:
-        for budget in ctx.config['budgets']:
-            sub = [r for r in rows if r['method'] == method and r['budget'] == budget]
-            entry = {'n_seeds': len(sub)}
-            for key in ('medae_all', 'medae_unrevealed'):
-                vals = np.array([r[key] for r in sub])
-                entry[f'{key}_mean'] = float(vals.mean())
-                entry[f'{key}_std'] = float(vals.std(ddof=1)) if len(vals) > 1 else 0.0
-            table.setdefault(method, {})[str(budget)] = entry
+    for selection in SELECTIONS:
+        for method in METHODS:
+            for budget in ctx.config['budgets']:
+                sub = [r for r in rows if (r['selection'], r['method'], r['budget'])
+                       == (selection, method, budget)]
+                vals = np.array([r['medae'] for r in sub])
+                table.setdefault(selection, {}).setdefault(method, {})[str(budget)] = {
+                    'n_seeds': len(sub), 'medae_mean': float(vals.mean()),
+                    'medae_std': float(vals.std(ddof=1)) if len(vals) > 1 else 0.0,
+                    'n_cells': sub[0]['n'],
+                    'questions_used_mean': float(np.mean([r['questions_used'] for r in sub]))}
     summary = {'config_hash': ctx.chash, 'code_commit': ctx.config['code_commit'],
                'summarize_commit': args.code_commit,
-               'n_heldout': len(ctx.held), 'n_columns': len(ctx.data.sizes),
+               'n_heldout': len(ctx.held), 'n_columns': len(data.sizes),
                'per_seed': rows, 'table': table}
     path = os.path.join(ctx.out, 'summary.json')
     write_json_atomic(path, summary)
-    for method in METHODS:
-        cells = '  '.join(f'{b}:{table[method][str(b)]["medae_all_mean"]:.2f}'
-                          for b in ctx.config['budgets'])
-        print(f'{method:24s} {cells}')
+    for selection in SELECTIONS:
+        for method in METHODS:
+            cells = '  '.join(f'{b}:{table[selection][method][str(b)]["medae_mean"]:.2f}'
+                              for b in ctx.config['budgets'])
+            print(f'{selection:8s} {method:24s} {cells}')
     print(f'wrote {path}')
 
 
@@ -544,26 +450,22 @@ def int_list(text):
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sub = ap.add_subparsers(dest='cmd', required=True)
-    commands = {'init': cmd_init, 'select': cmd_select, 'subtasks': cmd_subtasks,
-                'questions': cmd_questions, 'estimators': cmd_estimators,
-                'summarize': cmd_summarize}
+    commands = {'init': cmd_init, 'estimators': cmd_estimators,
+                'questions': cmd_questions, 'summarize': cmd_summarize}
     for name in commands:
         p = sub.add_parser(name)
         p.add_argument('--data', default=DEFAULT_DATA)
         p.add_argument('--out-dir', default=DEFAULT_OUT)
         p.add_argument('--code-commit', required=True,
                        help='git commit of this repository that the run uses')
-        if name in ('select', 'subtasks'):
-            p.add_argument('--workers', type=int, default=1)
-        if name in ('select', 'subtasks', 'questions', 'estimators'):
-            p.add_argument('--budgets', type=int_list, default=None)
         if name in ('questions', 'estimators'):
             p.add_argument('--seeds', type=int_list, default=None)
+            p.add_argument('--budgets', type=int_list, default=None)
         if name == 'questions':
+            p.add_argument('--selections', type=lambda s: s.split(','), default=None)
             p.add_argument('--targets', type=int_list, default=None,
                            help='held-out model indices (rows of the data matrix)')
         if name == 'estimators':
-            p.add_argument('--methods', type=lambda s: s.split(','), default=None)
             p.add_argument('--columns', type=int_list, default=None)
     args = ap.parse_args()
     commands[args.cmd](args)
