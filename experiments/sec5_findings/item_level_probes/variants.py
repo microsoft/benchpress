@@ -114,12 +114,21 @@ def summarize(args):
     reference_rows = {(r['selection'], r['method'], r['seed'], r['budget']): r
                       for r in reference['per_seed']}
     original_methods = [f'benchpress_r{r}' for r in bp['config']['ranks']] + list(ESTIMATORS)
-    methods = original_methods + ['variant_' + m for m in config['methods']]
+    if set(args.methods) - set(config['methods']):
+        raise ValueError('requested methods are not in the variant manifest')
+    methods = original_methods + ['variant_' + m for m in args.methods]
+    seeds = ctx.subset(args.seeds, 'seeds')
+    budgets = ctx.subset(args.budgets, 'budgets')
+    selections = ctx.subset(args.selections, 'selections')
+    complete = (set(args.methods) == set(config['methods'])
+                and set(seeds) == set(ctx.config['seeds'])
+                and set(budgets) == set(ctx.config['budgets'])
+                and set(selections) == set(ctx.config['selections']))
     records, optimizer_records = [], []
-    for seed in ctx.config['seeds']:
-        for budget in ctx.config['budgets']:
+    for seed in seeds:
+        for budget in budgets:
             coresets, units = load_coresets(ctx, seed, budget)
-            for selection in ctx.config['selections']:
+            for selection in selections:
                 observed = [q[c] for q, c in zip(ctx.data.col_questions, coresets[selection])]
                 hidden = [np.setdiff1d(q, o) for q, o in zip(ctx.data.col_questions, observed)]
                 truth = np.stack([100. * ctx.data.answers[np.ix_(ctx.held, h)].mean(1)
@@ -165,27 +174,31 @@ def summarize(args):
                         'budget': budget, 'medae': error['medae'], 'n': error['n'],
                         'questions_used': int(sum(len(o) for o in observed))})
     table = {}
-    for selection in ctx.config['selections']:
+    for selection in selections:
         for method in methods:
-            for budget in ctx.config['budgets']:
+            for budget in budgets:
                 rows = [r for r in records if (r['selection'], r['method'], r['budget'])
                         == (selection, method, budget)]
                 values = np.asarray([r['medae'] for r in rows])
                 table.setdefault(selection, {}).setdefault(method, {})[str(budget)] = {
-                    'medae_mean': float(values.mean()), 'medae_std': float(values.std(ddof=1)),
+                    'medae_mean': float(values.mean()),
+                    'medae_std': float(values.std(ddof=1)) if len(values) > 1 else 0.,
                     'n_seeds': len(rows), 'n_cells': rows[0]['n'],
                     'questions_used_mean': float(np.mean([r['questions_used'] for r in rows]))}
-    write_json_atomic(os.path.join(root, 'summary.json'), {
+    name = 'summary.json' if complete else 'pilot_summary.json'
+    write_json_atomic(os.path.join(root, name), {
         'config': config, 'config_hash': args.variant_hash, 'base_config_hash': ctx.chash,
         'summarize_commit': args.code_commit, 'reference_summary_sha256': sha256_file(
             os.path.join(ctx.out, 'summary.json')),
-        'frozen_reference_reproduced': True, 'per_seed': records,
+        'frozen_reference_reproduced': True, 'complete_grid': complete,
+        'selected_methods': args.methods, 'selected_seeds': seeds,
+        'selected_budgets': budgets, 'selected_selections': selections, 'per_seed': records,
         'fit_diagnostics': optimizer_records, 'table': table})
     for selection, method_rows in table.items():
         for method, cells in method_rows.items():
             print(selection, method, ' '.join(
-                f'{b}:{cells[str(b)]["medae_mean"]:.3f}' for b in ctx.config['budgets']))
-    print(f'wrote {root}/summary.json')
+                f'{b}:{cells[str(b)]["medae_mean"]:.3f}' for b in budgets))
+    print(f'wrote {root}/{name}; complete_grid={complete}')
 
 
 def main():

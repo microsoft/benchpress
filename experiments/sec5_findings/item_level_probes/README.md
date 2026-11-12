@@ -135,3 +135,6 @@ Run synthetic method checks remotely with
 First run the four methods on one existing setting, verify artifacts and
 observations, then fan out the remaining settings across CHTC CPU jobs.
 No new baseline fits or question selections are needed.
+The same selection/seed/budget/method flags can restrict `summarize` for
+canary diagnostics; these write `pilot_summary.json` with `complete_grid=false`,
+never the full-grid summary. Missing requested units still fail.
