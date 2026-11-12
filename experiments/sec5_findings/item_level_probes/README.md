@@ -109,6 +109,7 @@ All variants use rank 8 and lambda 0.1, with no rank or lambda selection.
 | `group_binary` | Bernoulli negative log likelihood with low-rank factors and that offset |
 | `raw_shrink` | Raw ALS with training-estimated shrinkage of subtask residuals, without itemwise clipping |
 | `task_mean_ridge` | Fixed-penalty ridge from all 37 revealed subtask means to hidden subtask means |
+| `task_item_pcr` | Subtask-mean ridge plus rank-8 principal-component regression on within-subtask revealed-item residuals |
 
 ALS retains column z-scoring, 40 iterations, and 10 initializations (42 to 51).
 The grouped model is `mu + a_i + c_j + d_i,group(j) + U_i.V_j`; every parameter
@@ -152,5 +153,11 @@ revealed/hidden question partition to construct its supervised examples.
 Features are standardized using training rows only; ridge alpha is 0.1.
 It predicts means, not question-level probabilities, and is a separate
 comparator rather than the default BenchPress method.
+`task_item_pcr` adds question-specific information without fitting unrestricted
+target-model offsets: training-only ridge removes the group-mean signal from
+the revealed item features, then a rank-8 PCA projection and ridge regression
+predict the corresponding hidden-mean residual. The rank is capped by the
+available item dimensions; every ridge alpha remains 0.1. Feature statistics,
+PCA directions, and regression weights use training rows only.
 Each newly requested method set has its own manifest and artifact hash;
 earlier method sets and their original source/configuration are preserved.

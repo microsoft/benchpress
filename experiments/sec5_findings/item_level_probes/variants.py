@@ -18,7 +18,7 @@ from benchpress.methods.predictors import fit_question_score_variant
 
 
 METHODS = ['raw', 'group_logit', 'group_raw', 'group_binary',
-           'raw_shrink', 'task_mean_ridge']
+           'raw_shrink', 'task_mean_ridge', 'task_item_pcr']
 RANK = 8
 LABELS = {
     'raw': 'Raw ALS',
@@ -27,6 +27,7 @@ LABELS = {
     'group_binary': 'Bernoulli low rank + subtask offsets',
     'raw_shrink': 'Raw ALS + shrunk subtask residuals',
     'task_mean_ridge': 'Subtask-mean ridge',
+    'task_item_pcr': 'Subtask-mean ridge + rank-8 item residuals',
 }
 
 
@@ -42,6 +43,8 @@ def fit(args):
                    'ftol': 1e-7, 'gtol': 1e-4},
         'task_mean_ridge': {'alpha': BP_LAM, 'rank': None,
                             'n_features': len(ctx.data.column_ids)},
+        'task_item_pcr': {'alpha': BP_LAM, 'item_rank': RANK,
+                          'feature_residualization': 'training group means'},
         'fit': 'pooled low-rank fits on allowed answers; '
                'supervised ridge on fully observed training rows',
     }

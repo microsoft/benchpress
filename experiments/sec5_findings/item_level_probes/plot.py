@@ -33,6 +33,7 @@ STYLES = {
     'variant_group_binary': ('Bernoulli + subtask offsets', DEEP_BLUE, ':', 'X'),
     'variant_raw_shrink': ('Raw ALS + shrunk residuals', MEMENTO_MAGENTA, '-.', '^'),
     'variant_task_mean_ridge': ('Subtask-mean ridge', DEEP_BLUE, '-', 'o'),
+    'variant_task_item_pcr': ('Subtask ridge + item PCs', MEMENTO_MAGENTA, '-', '*'),
 }
 
 

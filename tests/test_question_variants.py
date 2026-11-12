@@ -109,6 +109,19 @@ class QuestionVariantTests(unittest.TestCase):
         np.testing.assert_array_equal(pred[np.isfinite(matrix)], matrix[np.isfinite(matrix)])
         self.assertTrue(np.isfinite(pred).all())
 
+    def test_item_components_recover_information_absent_from_group_means(self):
+        source = [[z, 40 - z, z, 10., 30., 20.] for z in range(0, 40, 5)]
+        matrix = np.array(source + [[30., 10., np.nan, 10., 30., np.nan]])
+        groups = [0, 0, 0, 1, 1, 1]
+        mean_only, _ = predict_group_mean_ridge_scores(matrix, groups)
+        item_aware, diagnostics = predict_group_mean_ridge_scores(matrix, groups, item_rank=1)
+        self.assertAlmostEqual(mean_only[-1, 2], 17.5)
+        self.assertLess(abs(item_aware[-1, 2] - 30), 0.2)
+        self.assertAlmostEqual(item_aware[-1, 5], 20)
+        np.testing.assert_array_equal(
+            item_aware[np.isfinite(matrix)], matrix[np.isfinite(matrix)])
+        self.assertEqual(diagnostics['item_rank'], 1)
+
 
 if __name__ == '__main__':
     unittest.main()

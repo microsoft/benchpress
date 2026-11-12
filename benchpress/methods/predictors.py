@@ -57,7 +57,7 @@ def fit_question_score_variant(M_train, column_groups, method, rank=8, lam=0.1):
     change. Bernoulli fitting operates directly on 0/1 answers.
     """
     if method not in ('raw', 'group_logit', 'group_raw', 'group_binary',
-                      'raw_shrink', 'task_mean_ridge'):
+                      'raw_shrink', 'task_mean_ridge', 'task_item_pcr'):
         raise ValueError(f'unknown question-score variant: {method}')
     matrix = np.asarray(M_train, dtype=float)
     if matrix.ndim != 2 or not matrix.size:
@@ -68,6 +68,8 @@ def fit_question_score_variant(M_train, column_groups, method, rank=8, lam=0.1):
         return predict_shrunk_group_residual_scores(matrix, column_groups, rank, lam)
     if method == 'task_mean_ridge':
         return predict_group_mean_ridge_scores(matrix, column_groups, lam)
+    if method == 'task_item_pcr':
+        return predict_group_mean_ridge_scores(matrix, column_groups, lam, item_rank=rank)
     if method == 'group_binary':
         pred, diagnostics = fit_binary_group_low_rank(
             matrix / 100, column_groups, rank=rank, lam=lam)
@@ -137,13 +139,15 @@ def predict_shrunk_group_residual_scores(matrix, column_groups, rank=8, lam=0.1)
                     'iterations': 40, 'n_ensemble': 10, 'base_seed': 42}
 
 
-def predict_group_mean_ridge_scores(matrix, column_groups, lam=0.1):
+def predict_group_mean_ridge_scores(matrix, column_groups, lam=0.1, item_rank=0):
     """Predict missing group means from revealed group means with shared ridge.
 
     Fully observed rows provide supervised examples using the target rows'
     common mask. Training-only feature standardization, intercept, and fixed
-    ridge penalty are used. Returns group-mean predictions broadcast over each
-    missing group, plus diagnostics; these are not individual-item forecasts.
+    ridge penalty are used. Positive item_rank adds a per-group PCR correction
+    on revealed items residualized against the group-mean features.
+    Returns group-mean predictions broadcast over each missing group, plus
+    diagnostics; these are not individual-item forecasts.
     """
     from sklearn.linear_model import Ridge
 
@@ -151,6 +155,8 @@ def predict_group_mean_ridge_scores(matrix, column_groups, lam=0.1):
     groups = np.asarray(column_groups)
     if groups.shape != (matrix.shape[1],) or not np.isfinite(lam) or lam <= 0:
         raise ValueError('invalid column_groups or ridge penalty')
+    if not isinstance(item_rank, (int, np.integer)) or item_rank < 0:
+        raise ValueError('item_rank must be a nonnegative integer')
     observed = np.isfinite(matrix)
     reference, target = np.flatnonzero(observed.all(1)), np.flatnonzero(~observed.all(1))
     if len(reference) < 2 or not len(target):
@@ -158,7 +164,7 @@ def predict_group_mean_ridge_scores(matrix, column_groups, lam=0.1):
     mask = observed[target[0]]
     if not np.all(observed[target] == mask):
         raise ValueError('target rows must share the same revealed questions')
-    features, responses, hidden = [], [], []
+    features, responses, hidden, sampled = [], [], [], []
     for group in np.unique(groups):
         js = np.flatnonzero(groups == group)
         revealed, missing = js[mask[js]], js[~mask[js]]
@@ -167,6 +173,7 @@ def predict_group_mean_ridge_scores(matrix, column_groups, lam=0.1):
         features.append(matrix[:, revealed].mean(1))
         responses.append(matrix[np.ix_(reference, missing)].mean(1))
         hidden.append(missing)
+        sampled.append(revealed)
     features = np.stack(features, axis=1)
     responses = np.stack(responses, axis=1)
     mean, scale = features[reference].mean(0), features[reference].std(0)
@@ -174,10 +181,25 @@ def predict_group_mean_ridge_scores(matrix, column_groups, lam=0.1):
     features = (features - mean) / scale
     regressor = Ridge(alpha=lam, solver='svd').fit(features[reference], responses)
     estimates = regressor.predict(features[target])
+    if item_rank:
+        residual_targets = responses - regressor.predict(features[reference])
+        for j, revealed in enumerate(sampled):
+            items = matrix[:, revealed]
+            center, spread = items[reference].mean(0), items[reference].std(0)
+            spread[spread < 1e-8] = 1
+            items = (items - center) / spread
+            projection = Ridge(alpha=lam, solver='svd').fit(features[reference], items[reference])
+            residual_items = items - projection.predict(features)
+            _, _, directions = np.linalg.svd(residual_items[reference], full_matrices=False)
+            components = residual_items @ directions[:item_rank].T
+            correction = Ridge(alpha=lam, solver='svd').fit(
+                components[reference], residual_targets[:, j])
+            estimates[:, j] += correction.predict(components[target])
     result = matrix.copy()
     for j, missing in enumerate(hidden):
         result[np.ix_(target, missing)] = estimates[:, j, None]
     return result, {'n_reference_rows': len(reference), 'n_features': features.shape[1],
+                    'item_rank': item_rank,
                     'prediction_target': 'missing group mean, broadcast to its questions',
                     'feature_standardization': 'reference rows only', 'lam': lam}
 
