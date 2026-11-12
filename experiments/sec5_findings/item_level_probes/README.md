@@ -89,7 +89,7 @@ AP's `~/bp_iclr/run_job.sh`; `chtc_stage.sh data` builds the data and runs
 - `results/summary.json`
 - `figures/bp_question_level_budgets.pdf` via `save_fig`.
 
-## Last valid result
+## Frozen reference result
 
 The pooled logit runs at commit `5f63bd7` are complete: base configuration
 `1313fe0f25c8bd88`, pooled configuration `0f1e6888f939810f`. Original estimator
@@ -99,7 +99,9 @@ outputs are reused without changes.
 
 `variants.py` reads the existing data, split, estimator coresets, pooled
 predictions, and summary. It never writes those inputs or changes `run.py`.
-All variants use rank 8 and lambda 0.1, with no rank or lambda selection.
+Low-rank fits use rank 8 and lambda 0.1. Ridge alpha is 0.1; item residuals
+use at most eight principal components per subtask. No rank or penalty
+selection is performed.
 
 | Variant | Fitting method |
 | --- | --- |
@@ -170,3 +172,124 @@ Transfer this compact bundle and the job log back to the AP; retain the
 original per-job archives as the raw prediction source. This avoids an
 additional full merge, input tarball, and duplicate prediction archive in
 the AP home directory.
+
+## Exploratory results (2026-11-12)
+
+Removing logit reduces error, but raw ALS still plateaus near three accuracy
+points. Training-estimated residual shrinkage gives a decreasing curve.
+Subtask-mean ridge with item residuals performs best among the seven variants:
+it beats Random-Sampling-Learn at budgets 200 through 1600 under both
+selections, while Random-Sampling-Learn has slightly lower mean error at
+3200 and 6400. The ridge methods are separate comparators; the default
+BenchPress predictor remains unchanged.
+
+These are complete grids: seven methods, two selections, five seeds, and six
+budgets, totaling 420 fitted settings. Methods were developed after inspecting
+this fixed split, so this is exploratory evidence. All low-rank fits pool the
+held-out models using revealed answers only. The original evaluation, splits,
+coresets, hidden targets, and baseline predictions are unchanged.
+
+MedAE is the median absolute error over the 4,699 held-out model/subtask
+accuracies, in accuracy points; lower is better. A value of 2 means the median
+cell is two points from its true hidden-question accuracy. Each table entry
+is the mean of five per-seed MedAEs. The JSON summaries also retain their
+sample standard deviations and every per-seed value.
+
+### Random questions
+
+| Method | 200 | 400 | 800 | 1600 | 3200 | 6400 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| BenchPress (rank 8) | 4.582 | 4.397 | 4.320 | 4.296 | 4.298 | 4.565 |
+| Random-Sampling | 11.631 | 8.037 | 5.724 | 4.385 | 3.595 | 3.306 |
+| Random-Sampling-Learn | 3.973 | 3.376 | 2.675 | 2.222 | 1.966 | 1.928 |
+| AIPW | 9.024 | 5.768 | 3.995 | 2.845 | 2.246 | 2.048 |
+| GP-IRT | 7.227 | 5.959 | 4.720 | 3.260 | 2.769 | 2.664 |
+| Raw ALS | 3.557 | 3.239 | 3.079 | 3.009 | 3.139 | 3.143 |
+| Logit ALS + subtask offsets | 8.215 | 6.378 | 5.063 | 4.412 | 3.929 | 4.163 |
+| Raw ALS + subtask offsets | 7.402 | 5.475 | 4.065 | 3.266 | 2.806 | 2.620 |
+| Bernoulli + subtask offsets | 5.903 | 5.324 | 4.440 | 3.422 | 2.775 | 2.491 |
+| Raw ALS + shrunk subtask residuals | 3.608 | 3.158 | 2.792 | 2.552 | 2.475 | 2.348 |
+| Subtask-mean ridge | 3.113 | 2.866 | 2.589 | 2.382 | 2.344 | 2.395 |
+| Subtask-mean ridge + rank-8 item residuals | 2.972 | 2.653 | 2.332 | 2.091 | 1.995 | 1.955 |
+
+### GP-IRT anchor questions
+
+| Method | 200 | 400 | 800 | 1600 | 3200 | 6400 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| BenchPress (rank 8) | 4.508 | 4.308 | 4.214 | 4.205 | 4.243 | 4.533 |
+| Random-Sampling | 9.257 | 6.683 | 4.714 | 3.647 | 3.391 | 3.656 |
+| Random-Sampling-Learn | 3.848 | 3.085 | 2.518 | 2.056 | 1.843 | 1.824 |
+| AIPW | 7.151 | 4.992 | 3.525 | 2.592 | 2.076 | 1.910 |
+| GP-IRT | 6.038 | 5.063 | 4.019 | 2.706 | 2.148 | 2.005 |
+| Raw ALS | 3.432 | 3.141 | 3.022 | 2.959 | 3.055 | 3.012 |
+| Logit ALS + subtask offsets | 7.318 | 5.774 | 4.683 | 4.064 | 3.765 | 4.074 |
+| Raw ALS + subtask offsets | 6.500 | 4.891 | 3.646 | 2.889 | 2.514 | 2.376 |
+| Bernoulli + subtask offsets | 5.364 | 4.884 | 4.061 | 3.008 | 2.440 | 2.211 |
+| Raw ALS + shrunk subtask residuals | 3.430 | 3.043 | 2.701 | 2.451 | 2.354 | 2.275 |
+| Subtask-mean ridge | 3.053 | 2.824 | 2.527 | 2.345 | 2.213 | 2.266 |
+| Subtask-mean ridge + rank-8 item residuals | 2.838 | 2.549 | 2.206 | 1.999 | 1.854 | 1.835 |
+
+Anchor sets retain their original sizes: mean actual counts are 200, 399.6,
+800, 1599.6, 3200, and 6399.8. Every method uses the same realized set within
+each setting. The five seeds vary question selection, not the model split.
+
+Unrestricted subtask offsets hurt small-budget accuracy. The Bernoulli
+results are iteration-limited: all 600 initializations reached 400 iterations
+without optimizer convergence. They describe the recorded finite-iteration
+procedure, not a converged optimum.
+
+### Runtime and artifacts
+
+Fits ran on CHTC with one requested CPU, Python 3.11, NumPy 2.4.6,
+SciPy 1.17.1, scikit-learn 1.9.1, and pandas 3.1.1. No GPU or new model
+inference was used. Median recorded seconds per setting, excluding scheduler
+and environment setup, were:
+
+| Variant | Median seconds |
+| --- | ---: |
+| `raw` | 1033.216 |
+| `group_logit` | 410.198 |
+| `group_raw` | 436.743 |
+| `group_binary` | 4773.987 |
+| `raw_shrink` | 972.016 |
+| `task_mean_ridge` | 0.488 |
+| `task_item_pcr` | 0.703 |
+
+CPU hosts varied, so these timings are operational measurements rather than
+a controlled hardware comparison.
+
+| Methods | Fit commit | Configuration | Summary commit | Summary job |
+| --- | --- | --- | --- | --- |
+| `raw`, `group_logit`, `group_raw`, `group_binary` | `d8fb664d6461ce7532a7379d5ec07a302bffd371` | `37f038ab59473936` | `de24e6d` | `8416977` |
+| `raw_shrink` | `b9d1a979b521b217c75cec5b6045b64db93f16e3` | `3e45aded7c84be36` | `b9d1a97` | `8416813` |
+| `task_mean_ridge` | `b9d1a979b521b217c75cec5b6045b64db93f16e3` | `84605c28993268f9` | `b9d1a97` | `8416765` |
+| `task_item_pcr` | `b4d4f75d967fdc63a220a176282840a1cc4dcedd` | `6efd14d29c34e248` | `b4d4f75` | `8416775` |
+
+On CHTC, paths below are relative to `~/bp_iclr/`:
+
+- The first four methods' raw predictions are in
+  `out_variant_<method>_<selection>_s<seed>_B<budget>.tar.gz`;
+  `out_variants_summary.tar.gz` holds their compact summary and manifest.
+- `out_shrink_summary.tar.gz`, `out_task_mean_ridge_summary.tar.gz`, and
+  `out_task_item_pcr_grid.tar.gz` each contain their complete method grid,
+  per-question arrays, summary, and figures.
+- Per-unit paths inside the full archives start with
+  `experiments/sec5_findings/item_level_probes/results/variants/<config_hash>/`.
+  The compact first-four summary starts with `results/variants/`.
+- The frozen common input is `inputs/ilp/variants/ilp_inputs.tar.gz`.
+
+All four summaries have `complete_grid=true` and reproduce every original
+per-seed score to absolute tolerance `1e-12`. Their common reference-summary
+SHA256 is `fb2691b637170ceadbb820c414eaed6a270a3b57a3330a68836f23525581f89a`.
+Question data SHA256 is
+`6b67365fb38d65702f83ec0ddb8c0e059190ac9dc009a59aeb9aaeb55738ec2e`.
+
+Local cached summaries live at `results/variants/<config_hash>/summary.json`.
+`results/variants/comparison.json` is a derived merge with source hashes,
+all 840 unique per-seed rows (seven original methods plus seven variants),
+and 420 fit-diagnostic records. It retains the pre-existing rank-2 and rank-4
+reference rows; no additional rank fits were run for this exploration.
+`plot.py --summary results/variants/comparison.json` renders the comparison;
+`--methods` selects displayed curves without changing the saved results.
+The evaluation runner and shared metric are unchanged. Rebuttal and Overleaf
+text are outside this method-only exploration.
