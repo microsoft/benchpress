@@ -158,7 +158,8 @@ def summarize(args):
                         with np.load(path[:-5] + '.npz') as raw:
                             np.testing.assert_array_equal(raw['targets'], ctx.held)
                             np.testing.assert_array_equal(raw['revealed'], np.concatenate(observed))
-                            pred = np.stack([raw['pred'][:, h].mean(1) for h in hidden], axis=1)
+                            question_pred = raw['pred']
+                            pred = np.stack([question_pred[:, h].mean(1) for h in hidden], axis=1)
                         np.testing.assert_allclose(pred, unit['pred'], rtol=0, atol=1e-12)
                         optimizer_records.append({
                             'method': method, 'selection': selection, 'seed': seed,
