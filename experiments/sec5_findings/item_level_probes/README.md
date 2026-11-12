@@ -53,7 +53,9 @@ validation targets: each is predicted from the other 297 training models with
 the seed 0 evaluated questions of the same selection and B. `select` keeps,
 per selection and B, the grid point with the lowest validation MedAE (ties to
 the smaller rank, then the smaller lambda); `questions` uses it for the
-held-out models.
+held-out models. `select --ranks` restricts the candidate ranks; the reported
+run uses `--ranks 2,4,8`. `select` only reads tune units, so like `summarize`
+it may run at a later commit (recorded as `select_commit`).
 
 ## Metric
 
@@ -74,7 +76,7 @@ python build_data.py --source-dir <benchmark-prediction checkout>
 python run.py init --code-commit "$(git rev-parse HEAD)"
 python run.py estimators --seeds 0 --budgets 200 --columns 33 --code-commit "$(git rev-parse HEAD)"
 python run.py tune --selections random --budgets 200 --ranks 2 --lams 0.1 --targets <tune rows> --code-commit "$(git rev-parse HEAD)"
-python run.py select --code-commit "$(git rev-parse HEAD)"
+python run.py select --ranks 2,4,8 --code-commit "$(git rev-parse HEAD)"
 python run.py questions --selections random --seeds 0 --budgets 200 --targets <held-out rows> --code-commit "$(git rev-parse HEAD)"
 python run.py summarize --code-commit "$(git rev-parse HEAD)"
 python plot.py

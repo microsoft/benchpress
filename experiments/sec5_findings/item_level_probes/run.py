@@ -434,9 +434,10 @@ def selection_path(ctx):
 
 
 def cmd_select(args):
-    ctx = Context(args)
+    ctx = Context(args, check_commit=False)
     data = ctx.data
     cfg = ctx.config
+    ranks = ctx.subset(args.ranks, 'tune_ranks')
     chosen, grid = {}, []
     for budget in cfg['budgets']:
         coresets, _ = load_coresets(ctx, cfg['tune_seed'], budget)
@@ -445,7 +446,7 @@ def cmd_select(args):
             truth = np.array([[100.0 * data.answers[m, h].mean() for h in hidden]
                               for m in cfg['tune_models']])
             best = None
-            for rank in cfg['tune_ranks']:
+            for rank in ranks:
                 for lam in cfg['tune_lams']:
                     pred = []
                     for m in cfg['tune_models']:
@@ -462,7 +463,8 @@ def cmd_select(args):
             chosen.setdefault(selection, {})[str(budget)] = best
             print(f'{selection:8s} B={budget}: rank {best["rank"]}, lambda {best["lam"]:g}, '
                   f'tune MedAE {best["medae"]:.2f}')
-    write_json_atomic(selection_path(ctx), ctx.unit({'chosen': chosen, 'grid': grid}))
+    write_json_atomic(selection_path(ctx), ctx.unit({'ranks': ranks, 'select_commit': args.code_commit,
+                                                'chosen': chosen, 'grid': grid}))
     print(f'wrote {selection_path(ctx)}')
 
 
@@ -588,8 +590,10 @@ def main():
             p.add_argument('--targets', type=int_list, default=None,
                            help='model indices (rows of the data matrix): held-out '
                                 'models for questions, tune models for tune')
+        if name in ('tune', 'select'):
+            p.add_argument('--ranks', type=int_list, default=None,
+                           help='candidate ranks (subset of the manifest tune_ranks)')
         if name == 'tune':
-            p.add_argument('--ranks', type=int_list, default=None)
             p.add_argument('--lams', type=lambda s: [float(x) for x in s.split(',')],
                            default=None)
         if name == 'estimators':
