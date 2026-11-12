@@ -14,5 +14,17 @@ if [ "$STAGE" = check ]; then
 else
   cd "$HERE"
   tar xzf "$SCR/ilp_inputs.tar.gz"
+  if [ "$STAGE" = summarize ]; then
+    shopt -s nullglob
+    for archive in "$SCR"/out_variant_*.tar.gz; do
+      tar xzf "$archive" -C "$REPO" --wildcards \
+        'experiments/sec5_findings/item_level_probes/results/variants/*'
+    done
+  fi
   python variants.py "$STAGE" --code-commit "$COMMIT" "$@"
+  if [ "$STAGE" = summarize ]; then
+    find results/variants -type f \
+      \( -name manifest.json -o -name summary.json -o -name pilot_summary.json \) \
+      -print0 | tar --null -czf "$SCR/variant_summaries.tar.gz" -T -
+  fi
 fi

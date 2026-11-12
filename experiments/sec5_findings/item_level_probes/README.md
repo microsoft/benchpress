@@ -161,3 +161,12 @@ available item dimensions; every ridge alpha remains 0.1. Feature statistics,
 PCA directions, and regression weights use training rows only.
 Each newly requested method set has its own manifest and artifact hash;
 earlier method sets and their original source/configuration are preserved.
+
+For large CHTC summaries, transfer the frozen `ilp_inputs.tar.gz` and the
+completed `out_variant_*.tar.gz` shards directly to the summary job.
+`chtc_variants.sh summarize` merges their variant outputs in worker scratch,
+then writes `variant_summaries.tar.gz` containing manifests and summaries.
+Transfer this compact bundle and the job log back to the AP; retain the
+original per-job archives as the raw prediction source. This avoids an
+additional full merge, input tarball, and duplicate prediction archive in
+the AP home directory.
