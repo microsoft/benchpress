@@ -26,7 +26,7 @@ questions.
 
 | Method | Predictor |
 | --- | --- |
-| `questions` | BenchPress (`predict_logit_bias_als_scores`) on the training models plus the held-out model (answers 0/100, unevaluated entries missing); prediction = mean predicted answer on the unevaluated questions. Rank and lambda are tuned per selection and B (below) |
+| `benchpress_r{2,4,8}` | `predict_logit_bias_als_scores` (rank 2, 4 or 8, lambda 0.1 for every rank) with one fit per (selection, seed, B, rank) on the training models plus all 127 held-out models (answers 0/100; each held-out model reveals only its evaluated questions, unevaluated entries missing); prediction = mean predicted answer on the unevaluated questions |
 | `random_sampling`, `random_sampling_learn`, `aipw`, `gp_irt` | estimators of Zhang, Dorner and Hardt (2025), package `benchpred`, given the shared evaluated questions; their full-subtask estimate f is converted to the unevaluated questions as (N f minus the observed sum) / (N minus n) |
 
 For `anchors`, Random-Sampling-Learn is refit on the anchor questions and AIPW
@@ -44,19 +44,6 @@ equally weighted anchors with its fitted IRT model and lambda.
   mirroring `split_models_for_probe_validation`.
 - Budgets 200, 400, 800, 1600, 3200, 6400; random seeds 0 to 4.
 
-## BenchPress tuning
-
-Rank in {2, 4, 8, 16, 32} and lambda in {0.1, 1, 10} (the BenchPress default
-is rank 2, lambda 0.1) are chosen using training models only. `tune` treats
-24 training models (seed 43 permutation of the training models) as
-validation targets: each is predicted from the other 297 training models with
-the seed 0 evaluated questions of the same selection and B. `select` keeps,
-per selection and B, the grid point with the lowest validation MedAE (ties to
-the smaller rank, then the smaller lambda); `questions` uses it for the
-held-out models. `select --ranks` restricts the candidate ranks; the reported
-run uses `--ranks 2,4,8`. `select` only reads tune units, so like `summarize`
-it may run at a later commit (recorded as `select_commit`).
-
 ## Metric
 
 MedAE (accuracy points) between predicted and true accuracy on the unevaluated
@@ -68,23 +55,21 @@ and the mean and sample std across the five seeds.
 ## How to run
 
 Stages run in order; each compute unit is a JSON file carrying the
-`config_hash` of `results/manifest.json`. Existing units are skipped, units of
+`config_hash` of `results/manifest.json` (`benchpress` units: that of
+`results/benchpress/manifest.json`). Existing units are skipped, units of
 another config fail.
 
 ```bash
 python build_data.py --source-dir <benchmark-prediction checkout>
 python run.py init --code-commit "$(git rev-parse HEAD)"
 python run.py estimators --seeds 0 --budgets 200 --columns 33 --code-commit "$(git rev-parse HEAD)"
-python run.py tune --selections random --budgets 200 --ranks 2 --lams 0.1 --targets <tune rows> --code-commit "$(git rev-parse HEAD)"
-python run.py select --ranks 2,4,8 --code-commit "$(git rev-parse HEAD)"
-python run.py questions --selections random --seeds 0 --budgets 200 --targets <held-out rows> --code-commit "$(git rev-parse HEAD)"
+python run.py benchpress --selections random --seeds 0 --budgets 200 --ranks 2 --code-commit "$(git rev-parse HEAD)"
 python run.py summarize --code-commit "$(git rev-parse HEAD)"
 python plot.py
 ```
 
-`estimators` writes both selections' evaluated questions; `questions` reads
-them, so it runs after all 37 columns of its (seed, B) exist; `tune` needs
-seed 0 and `questions` needs `select`. `estimators`
+`estimators` writes both selections' evaluated questions; `benchpress` reads
+them, so it runs after all 37 columns of its (seed, B) exist. `estimators`
 needs `benchpred` installed from the pinned commit (checked at
 run time). On CHTC each job runs `chtc_stage.sh <stage> [options]` from the
 AP's `~/bp_iclr/run_job.sh`; `chtc_stage.sh data` builds the data and runs
@@ -93,16 +78,14 @@ AP's `~/bp_iclr/run_job.sh`; `chtc_stage.sh data` builds the data and runs
 ## Outputs
 
 - `results/manifest.json`: config (data sha256, code commit, budgets, seeds,
-  split, selections, allocation, target, column sizes, tuning grid and tune
-  models) and `config_hash`.
+  split, selections, allocation, target, column sizes) and `config_hash`.
 - `results/estimators/s{seed}/B{B}/c{column}.json`: evaluated questions per
   selection, raw GP-IRT anchor points, and each estimator's per-model
   predictions on the unevaluated questions.
-- `results/tune/{selection}/B{B}/r{rank}_l{lambda}/m{model}.json`: validation
-  predictions per grid point.
-- `results/tune_selection.json`: validation MedAE of every grid point and the
-  chosen rank and lambda per selection and B.
-- `results/questions/{selection}/s{seed}/B{B}/m{target}.json`
+- `results/benchpress/manifest.json`: BenchPress config (base `config_hash`,
+  code commit, ranks, lambda, fit) and its own `config_hash`.
+- `results/benchpress/{selection}/r{rank}/s{seed}/B{B}.json`: predictions for
+  all held-out models on the unevaluated questions of each subtask.
 - `results/summary.json`
 - `figures/bp_question_level_budgets.pdf` via `save_fig`.
 

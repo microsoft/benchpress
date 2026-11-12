@@ -12,10 +12,11 @@ leftover budget goes to uncapped subtasks.
 
 Predictors (all see the same evaluated questions, all graded on the same
 unevaluated questions):
-  questions  BenchPress (Logit Bias ALS) on the model-by-question matrix
-             (answers 0/100); prediction = mean of the predicted unevaluated
-             answers. Rank and lambda are chosen per selection and B by
-             validation on training models only (see `tune`).
+  benchpress BenchPress (Logit Bias ALS, ranks 2, 4, 8, lambda 0.1) on the
+             model-by-question matrix (answers 0/100): one fit per selection,
+             seed, B and rank on all training models plus all held-out models,
+             each held-out model revealing only its evaluated questions;
+             prediction = mean of the predicted unevaluated answers
   random_sampling, random_sampling_learn, aipw, gp_irt
              estimators of Zhang, Dorner and Hardt (2025) (package `benchpred`).
              They estimate the full subtask mean f; the implied estimate on the
@@ -24,10 +25,8 @@ unevaluated questions):
 Subcommands (run in this order):
   init        write <out>/manifest.json (config + config_hash)
   estimators  coresets and benchpred predictions (unit per seed/B/column)
-  tune        BenchPress on validation models drawn from the training models,
-              one fit per grid point (unit per selection/B/rank/lambda/model)
-  select      rank and lambda with the lowest validation MedAE per selection/B
-  questions   BenchPress predictions (unit per selection/seed/B/target)
+  benchpress  BenchPress predictions (unit per selection/rank/seed/B); writes
+              <out>/benchpress/manifest.json, which records the base config_hash
   summarize   MedAE over the 127 x 37 held-out cells per selection
 
 Every unit is written atomically as JSON carrying the config_hash; existing
@@ -57,10 +56,6 @@ BUDGETS = [200, 400, 800, 1600, 3200, 6400]
 SEEDS = [0, 1, 2, 3, 4]
 SPLIT_SEED = 42
 TRAIN_FRACTION = 0.7
-RANKS = [2, 4, 8, 16, 32]
-LAMS = [0.1, 1.0, 10.0]
-TUNE_SEED = 0
-N_TUNE_MODELS = 24
 BENCHPRED_REPO = 'https://github.com/socialfoundations/benchmark-prediction'
 BENCHPRED_COMMIT = '5b7a23e32ee738c69b4c408cb9746429a7fd0043'
 ESTIMATORS = {
@@ -70,6 +65,8 @@ ESTIMATORS = {
     'gp_irt': 'GPIRTPred',
 }
 METHODS = ['questions'] + list(ESTIMATORS)
+BP_RANKS = [2, 4, 8]
+BP_LAM = 0.1
 SELECTIONS = ['random', 'anchors']
 DEFAULT_DATA = os.path.join(HERE, 'results', 'data', 'oll_items.npz')
 DEFAULT_OUT = os.path.join(HERE, 'results')
@@ -146,12 +143,6 @@ def split_models(n_models):
     return sorted(int(i) for i in perm[:n_train]), sorted(int(i) for i in perm[n_train:])
 
 
-def tune_models(train_models):
-    """Validation models for tuning, drawn from the training models only."""
-    perm = np.random.RandomState(SPLIT_SEED + 1).permutation(len(train_models))
-    return sorted(int(train_models[i]) for i in perm[:N_TUNE_MODELS])
-
-
 def allocate(budget, sizes):
     """Equal split of budget across subtasks, each capped at half its questions."""
     caps = np.asarray(sizes) // 2
@@ -185,21 +176,6 @@ def predict(matrix, rank, lam):
     return pred
 
 
-def predict_hidden(data, base, target, observed, hidden, rank, lam):
-    """BenchPress mean prediction on each subtask's hidden questions for one target.
-
-    base: (n, Q) answers of the other models (0/100); observed, hidden: per-subtask
-    global question indices. Only the target's observed answers are revealed.
-    """
-    revealed = np.concatenate(observed)
-    row = np.full(data.answers.shape[1], np.nan)
-    row[revealed] = 100.0 * data.answers[target, revealed]
-    pred_row = predict(np.vstack([base, row]), rank, lam)[-1]
-    if not np.array_equal(pred_row[revealed], row[revealed]):
-        raise AssertionError('predictor changed observed answers')
-    return [float(pred_row[h].mean()) for h in hidden], int(len(revealed))
-
-
 # ─── Context shared by subcommands ───────────────────────────────────────────
 
 class Context:
@@ -208,7 +184,6 @@ class Context:
         self.data_path = os.path.abspath(args.data)
         self.data = Data(self.data_path)
         self.sel, self.held = split_models(len(self.data.model_ids))
-        self.tune = tune_models(self.sel)
         if not need_manifest:
             return
         path = os.path.join(self.out, 'manifest.json')
@@ -227,8 +202,6 @@ class Context:
                              f'manifest {self.config["code_commit"]}')
         if self.sel != self.config['selection_models'] or self.held != self.config['heldout_models']:
             raise SystemExit('model split differs from manifest')
-        if self.tune != self.config['tune_models']:
-            raise SystemExit('tune models differ from manifest')
 
     def subset(self, values, key):
         allowed = self.config[key]
@@ -258,13 +231,7 @@ def cmd_init(args):
         'coreset_seed': '1000 * seed + column',
         'allocation': 'equal split, each subtask capped at floor(size / 2)',
         'target': 'accuracy on the unevaluated questions of each subtask',
-        'predictor': 'benchpress.methods.predictors.predict_logit_bias_als_scores',
-        'tune_ranks': RANKS,
-        'tune_lams': LAMS,
-        'tune_seed': TUNE_SEED,
-        'tune_rule': 'lowest MedAE on the tune models per selection and budget; '
-                     'ties to the smaller rank, then the smaller lambda',
-        'tune_models': ctx.tune,
+        'predictor': 'benchpress.methods.predictors.predict_benchpress_scores',
         'selections': SELECTIONS,
         'methods': METHODS,
         'column_ids': ctx.data.column_ids,
@@ -385,123 +352,83 @@ def load_coresets(ctx, seed, budget):
     return {s: [np.asarray(u['coresets'][s], dtype=int) for u in units] for s in SELECTIONS}, units
 
 
-# ─── BenchPress on the model-by-question matrix ──────────────────────────────
+# ─── benchpress: one pooled fit on the model-by-question matrix ─────────────
 
-def split_questions(data, coresets):
-    """Per-subtask global indices of the evaluated and unevaluated questions."""
-    observed = [q[c] for q, c in zip(data.col_questions, coresets)]
-    hidden = [np.setdiff1d(q, o) for q, o in zip(data.col_questions, observed)]
-    return observed, hidden
+def benchpress_manifest_path(ctx):
+    return os.path.join(ctx.out, 'benchpress', 'manifest.json')
 
 
-def tune_path(ctx, selection, budget, rank, lam, model):
-    return os.path.join(ctx.out, 'tune', selection, f'B{budget}', f'r{rank}_l{lam:g}',
-                        f'm{model:03d}.json')
+def load_benchpress_manifest(ctx):
+    path = benchpress_manifest_path(ctx)
+    if not os.path.exists(path):
+        raise SystemExit(f'missing {path}; run `benchpress`')
+    with open(path) as f:
+        manifest = json.load(f)
+    if config_hash(manifest['config']) != manifest['config_hash']:
+        raise SystemExit(f'{path} config_hash does not match its config')
+    if manifest['config']['base_config_hash'] != ctx.chash:
+        raise SystemExit(f'{path} was built on another base config')
+    return manifest
 
 
-def cmd_tune(args):
-    ctx = Context(args)
-    selections = ctx.subset(args.selections, 'selections')
-    budgets = ctx.subset(args.budgets, 'budgets')
-    ranks = ctx.subset(args.ranks, 'tune_ranks')
-    lams = ctx.subset(args.lams, 'tune_lams')
-    models = ctx.subset(args.targets, 'tune_models')
-    data = ctx.data
-    for budget in budgets:
-        coresets, _ = load_coresets(ctx, ctx.config['tune_seed'], budget)
-        for selection in selections:
-            observed, hidden = split_questions(data, coresets[selection])
-            for model in models:
-                others = [m for m in ctx.sel if m != model]
-                base = 100.0 * data.answers[others].astype(np.float64)
-                for rank in ranks:
-                    for lam in lams:
-                        path = tune_path(ctx, selection, budget, rank, lam, model)
-                        if read_unit(path, ctx.chash) is not None:
-                            continue
-                        t0 = time.time()
-                        pred, used = predict_hidden(data, base, model, observed, hidden, rank, lam)
-                        write_json_atomic(path, ctx.unit({
-                            'selection': selection, 'budget': budget, 'rank': rank,
-                            'lam': lam, 'target': model, 'questions_used': used,
-                            'pred': pred}))
-                        print(f'tune {selection} B={budget} r={rank} l={lam:g} m={model}: '
-                              f'{time.time() - t0:.0f}s', flush=True)
+def benchpress_path(ctx, selection, rank, seed, budget):
+    return os.path.join(ctx.out, 'benchpress', selection, f'r{rank}', f's{seed}',
+                        f'B{budget}.json')
 
 
-def selection_path(ctx):
-    return os.path.join(ctx.out, 'tune_selection.json')
-
-
-def cmd_select(args):
+def cmd_benchpress(args):
     ctx = Context(args, check_commit=False)
-    data = ctx.data
-    cfg = ctx.config
-    ranks = ctx.subset(args.ranks, 'tune_ranks')
-    chosen, grid = {}, []
-    for budget in cfg['budgets']:
-        coresets, _ = load_coresets(ctx, cfg['tune_seed'], budget)
-        for selection in SELECTIONS:
-            observed, hidden = split_questions(data, coresets[selection])
-            truth = np.array([[100.0 * data.answers[m, h].mean() for h in hidden]
-                              for m in cfg['tune_models']])
-            best = None
-            for rank in ranks:
-                for lam in cfg['tune_lams']:
-                    pred = []
-                    for m in cfg['tune_models']:
-                        unit = read_unit(tune_path(ctx, selection, budget, rank, lam, m), ctx.chash)
-                        if unit is None:
-                            raise SystemExit(f'missing {tune_path(ctx, selection, budget, rank, lam, m)}')
-                        pred.append(unit['pred'])
-                    medae = compute_prediction_error(
-                        truth.ravel(), np.array(pred).ravel(), aggregation='pool')['medae']
-                    grid.append({'selection': selection, 'budget': budget, 'rank': rank,
-                                 'lam': lam, 'medae': medae})
-                    if best is None or medae < best['medae']:
-                        best = {'rank': rank, 'lam': lam, 'medae': medae}
-            chosen.setdefault(selection, {})[str(budget)] = best
-            print(f'{selection:8s} B={budget}: rank {best["rank"]}, lambda {best["lam"]:g}, '
-                  f'tune MedAE {best["medae"]:.2f}')
-    write_json_atomic(selection_path(ctx), ctx.unit({'ranks': ranks, 'select_commit': args.code_commit,
-                                                'chosen': chosen, 'grid': grid}))
-    print(f'wrote {selection_path(ctx)}')
-
-
-def load_selected(ctx):
-    sel = read_unit(selection_path(ctx), ctx.chash)
-    if sel is None:
-        raise SystemExit(f'missing {selection_path(ctx)}; run `tune` and `select`')
-    return sel['chosen']
-
-
-def cmd_questions(args):
-    ctx = Context(args)
+    config = {
+        'base_config_hash': ctx.chash,
+        'code_commit': args.code_commit,
+        'predictor': 'benchpress.methods.predictors.predict_logit_bias_als_scores',
+        'ranks': BP_RANKS,
+        'lam': BP_LAM,
+        'fit': 'one fit per selection, seed, B and rank on all training models '
+               '(all answers) and all held-out models (evaluated questions only)',
+    }
+    manifest = {'config': config, 'config_hash': config_hash(config)}
+    if os.path.exists(benchpress_manifest_path(ctx)):
+        if load_benchpress_manifest(ctx)['config_hash'] != manifest['config_hash']:
+            raise SystemExit(f'{benchpress_manifest_path(ctx)} exists with another config')
+    else:
+        write_json_atomic(benchpress_manifest_path(ctx), manifest)
+    bp_hash = manifest['config_hash']
     selections = ctx.subset(args.selections, 'selections')
     seeds = ctx.subset(args.seeds, 'seeds')
     budgets = ctx.subset(args.budgets, 'budgets')
-    targets = ctx.subset(args.targets, 'heldout_models')
-    chosen = load_selected(ctx)
+    ranks = BP_RANKS if args.ranks is None else args.ranks
+    if set(ranks) - set(BP_RANKS):
+        raise SystemExit(f'ranks {ranks} not in {BP_RANKS}')
     data = ctx.data
-    base = 100.0 * data.answers[ctx.sel].astype(np.float64)
+    train = 100.0 * data.answers[ctx.sel].astype(np.float64)
+    n_train = len(ctx.sel)
     for seed in seeds:
         for budget in budgets:
             coresets, _ = load_coresets(ctx, seed, budget)
             for selection in selections:
-                observed, hidden = split_questions(data, coresets[selection])
-                rank, lam = (chosen[selection][str(budget)][k] for k in ('rank', 'lam'))
-                for target in targets:
-                    path = os.path.join(ctx.out, 'questions', selection, f's{seed}',
-                                        f'B{budget}', f'm{target:03d}.json')
-                    if read_unit(path, ctx.chash) is not None:
+                observed = [q[c] for q, c in zip(data.col_questions, coresets[selection])]
+                hidden = [np.setdiff1d(q, o) for q, o in zip(data.col_questions, observed)]
+                revealed = np.concatenate(observed)
+                held = np.full((len(ctx.held), data.answers.shape[1]), np.nan)
+                held[:, revealed] = 100.0 * data.answers[np.ix_(ctx.held, revealed)]
+                matrix = np.vstack([train, held])
+                for rank in ranks:
+                    path = benchpress_path(ctx, selection, rank, seed, budget)
+                    if read_unit(path, bp_hash) is not None:
                         continue
                     t0 = time.time()
-                    pred, used = predict_hidden(data, base, target, observed, hidden, rank, lam)
-                    write_json_atomic(path, ctx.unit({
+                    pred = predict(matrix, rank, BP_LAM)[n_train:]
+                    if not np.array_equal(pred[:, revealed], held[:, revealed]):
+                        raise AssertionError('predictor changed observed answers')
+                    write_json_atomic(path, {
                         'selection': selection, 'seed': seed, 'budget': budget,
-                        'target': target, 'rank': rank, 'lam': lam,
-                        'questions_used': used, 'pred': pred}))
-                    print(f'questions {selection} s={seed} B={budget} m={target}: '
+                        'rank': rank, 'lam': BP_LAM, 'targets': ctx.held,
+                        'questions_used': int(len(revealed)),
+                        'pred': [[float(p[h].mean()) for h in hidden] for p in pred],
+                        'seconds': time.time() - t0,
+                        'config_hash': bp_hash, 'code_commit': args.code_commit})
+                    print(f'benchpress {selection} r={rank} s={seed} B={budget}: '
                           f'{time.time() - t0:.0f}s', flush=True)
 
 
@@ -509,6 +436,8 @@ def cmd_questions(args):
 
 def cmd_summarize(args):
     ctx = Context(args, check_commit=False)
+    bp = load_benchpress_manifest(ctx)
+    methods = [f'benchpress_r{r}' for r in bp['config']['ranks']] + list(ESTIMATORS)
     data = ctx.data
     rows = []
     for seed in ctx.config['seeds']:
@@ -520,17 +449,15 @@ def cmd_summarize(args):
                 truth = np.stack([100.0 * data.answers[np.ix_(ctx.held, q[h])].mean(1)
                                   for q, h in zip(data.col_questions, hidden)], axis=1)
                 used = int(sum(len(c) for c in coresets[selection]))
-                for method in METHODS:
-                    if method == 'questions':
-                        qunits = []
-                        for t in ctx.held:
-                            path = os.path.join(ctx.out, 'questions', selection, f's{seed}',
-                                                f'B{budget}', f'm{t:03d}.json')
-                            unit = read_unit(path, ctx.chash)
-                            if unit is None:
-                                raise SystemExit(f'missing unit {path}')
-                            qunits.append(unit)
-                        pred = np.array([u['pred'] for u in qunits])
+                for method in methods:
+                    if method.startswith('benchpress_r'):
+                        path = benchpress_path(ctx, selection, int(method[12:]), seed, budget)
+                        unit = read_unit(path, bp['config_hash'])
+                        if unit is None:
+                            raise SystemExit(f'missing unit {path}')
+                        if unit['targets'] != ctx.held:
+                            raise AssertionError(f'{path} targets differ from held-out models')
+                        pred = np.array(unit['pred'])
                     else:
                         pred = np.array([u['pred'][selection][method] for u in units]).T
                     err = compute_prediction_error(truth.ravel(), pred.ravel(), aggregation='pool')
@@ -539,7 +466,7 @@ def cmd_summarize(args):
                                  'questions_used': used})
     table = {}
     for selection in SELECTIONS:
-        for method in METHODS:
+        for method in methods:
             for budget in ctx.config['budgets']:
                 sub = [r for r in rows if (r['selection'], r['method'], r['budget'])
                        == (selection, method, budget)]
@@ -550,14 +477,14 @@ def cmd_summarize(args):
                     'n_cells': sub[0]['n'],
                     'questions_used_mean': float(np.mean([r['questions_used'] for r in sub]))}
     summary = {'config_hash': ctx.chash, 'code_commit': ctx.config['code_commit'],
+               'benchpress_config': bp['config'], 'benchpress_config_hash': bp['config_hash'],
                'summarize_commit': args.code_commit,
                'n_heldout': len(ctx.held), 'n_columns': len(data.sizes),
-               'benchpress_selected': load_selected(ctx),
                'per_seed': rows, 'table': table}
     path = os.path.join(ctx.out, 'summary.json')
     write_json_atomic(path, summary)
     for selection in SELECTIONS:
-        for method in METHODS:
+        for method in methods:
             cells = '  '.join(f'{b}:{table[selection][method][str(b)]["medae_mean"]:.2f}'
                               for b in ctx.config['budgets'])
             print(f'{selection:8s} {method:24s} {cells}')
@@ -573,29 +500,20 @@ def int_list(text):
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sub = ap.add_subparsers(dest='cmd', required=True)
-    commands = {'init': cmd_init, 'estimators': cmd_estimators, 'tune': cmd_tune,
-                'select': cmd_select, 'questions': cmd_questions, 'summarize': cmd_summarize}
+    commands = {'init': cmd_init, 'estimators': cmd_estimators,
+                'benchpress': cmd_benchpress, 'summarize': cmd_summarize}
     for name in commands:
         p = sub.add_parser(name)
         p.add_argument('--data', default=DEFAULT_DATA)
         p.add_argument('--out-dir', default=DEFAULT_OUT)
         p.add_argument('--code-commit', required=True,
                        help='git commit of this repository that the run uses')
-        if name in ('questions', 'estimators'):
+        if name in ('benchpress', 'estimators'):
             p.add_argument('--seeds', type=int_list, default=None)
-        if name in ('questions', 'estimators', 'tune'):
             p.add_argument('--budgets', type=int_list, default=None)
-        if name in ('questions', 'tune'):
+        if name == 'benchpress':
             p.add_argument('--selections', type=lambda s: s.split(','), default=None)
-            p.add_argument('--targets', type=int_list, default=None,
-                           help='model indices (rows of the data matrix): held-out '
-                                'models for questions, tune models for tune')
-        if name in ('tune', 'select'):
-            p.add_argument('--ranks', type=int_list, default=None,
-                           help='candidate ranks (subset of the manifest tune_ranks)')
-        if name == 'tune':
-            p.add_argument('--lams', type=lambda s: [float(x) for x in s.split(',')],
-                           default=None)
+            p.add_argument('--ranks', type=int_list, default=None)
         if name == 'estimators':
             p.add_argument('--columns', type=int_list, default=None)
     args = ap.parse_args()

@@ -19,7 +19,9 @@ from benchpress.plot_helpers.visual_identity import (  # noqa: E402
 )
 
 STYLES = {
-    'questions': ('BenchPress', ROSE, '-', 's'),
+    'benchpress_r2': ('BenchPress (rank 2)', ROSE, '-', 's'),
+    'benchpress_r4': ('BenchPress (rank 4)', ROSE, '--', 'P'),
+    'benchpress_r8': ('BenchPress (rank 8)', ROSE, ':', 'X'),
     'random_sampling': ('Random-Sampling', GRAY, '--', 'o'),
     'random_sampling_learn': ('Random-Sampling-Learn', VANILLA_BLUE, '-', 'D'),
     'aipw': ('AIPW', CYAN_TEAL, '-', '^'),
