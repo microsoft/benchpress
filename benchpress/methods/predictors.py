@@ -8,7 +8,12 @@ from benchpress.evaluation_harness import (
     BENCH_METRICS,
     make_score_predictor,
 )
-from benchpress.methods.completers import complete_bias_als, complete_model_mean
+from benchpress.methods.completers import (
+    complete_bias_als,
+    complete_group_bias_als,
+    complete_model_mean,
+    fit_binary_group_low_rank,
+)
 
 
 def predict_probit_bias_als_scores(M_train, rank=2, lam=0.1, metric=None,
@@ -40,6 +45,39 @@ def predict_benchpress_scores(M_train, metric=None, benchmark_ids=None):
             benchmark_ids = BENCH_IDS
     return predict_logit_bias_als_scores(
         M_train, rank=2, lam=0.1, metric=metric, benchmark_ids=benchmark_ids)
+
+
+def fit_question_score_variant(M_train, column_groups, method, rank=8, lam=0.1):
+    """Return (completed percentage answers, fit diagnostics) from observed data.
+
+    ALS variants keep the existing column standardization and 40-iteration,
+    10-initialization schedule. Only the feature transform and grouped offset
+    change. Bernoulli fitting operates directly on 0/1 answers.
+    """
+    if method not in ('raw', 'group_logit', 'group_raw', 'group_binary'):
+        raise ValueError(f'unknown question-score variant: {method}')
+    matrix = np.asarray(M_train, dtype=float)
+    if matrix.ndim != 2 or not matrix.size:
+        raise ValueError('M_train must be a nonempty 2-D matrix')
+    if not np.isin(matrix[np.isfinite(matrix)], [0, 100]).all() or np.isinf(matrix).any():
+        raise ValueError('observed question scores must be 0 or 100')
+    if method == 'group_binary':
+        pred, diagnostics = fit_binary_group_low_rank(
+            matrix / 100, column_groups, rank=rank, lam=lam)
+        return 100 * pred, {'optimizer': diagnostics}
+    ids = [f'q{j}' for j in range(matrix.shape[1])]
+    options = {'rank': rank, 'lam': lam}
+    if method == 'raw':
+        completer = complete_bias_als
+        options['normalize'] = False
+    else:
+        completer = complete_group_bias_als
+        options['column_groups'] = column_groups
+    predictor = make_score_predictor(
+        completer, 'logit' if method == 'group_logit' else 'identity',
+        metric={name: {'type': 'pct', 'range': [0, 100]} for name in ids},
+        benchmark_ids=ids, **options)
+    return predictor(matrix), {'iterations': 40, 'n_ensemble': 10, 'base_seed': 42}
 
 
 def predict_prior_residual_scores(M_train, prior_mean, prior_scale,

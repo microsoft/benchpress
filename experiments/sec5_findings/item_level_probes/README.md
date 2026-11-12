@@ -91,4 +91,47 @@ AP's `~/bp_iclr/run_job.sh`; `chtc_stage.sh data` builds the data and runs
 
 ## Last valid result
 
-Not run yet.
+The pooled logit runs at commit `5f63bd7` are complete: base configuration
+`1313fe0f25c8bd88`, pooled configuration `0f1e6888f939810f`. Original estimator
+outputs are reused without changes.
+
+## Method-only variants
+
+`variants.py` reads the existing data, split, estimator coresets, pooled
+predictions, and summary. It never writes those inputs or changes `run.py`.
+All variants use rank 8 and lambda 0.1, with no rank or lambda selection.
+
+| Variant | Fitting method |
+| --- | --- |
+| `raw` | Original Bias ALS with the identity feature transform |
+| `group_logit` | Logit Bias ALS with an additional model-by-subtask offset |
+| `group_raw` | Identity-transform Bias ALS with that offset |
+| `group_binary` | Bernoulli negative log likelihood with low-rank factors and that offset |
+
+ALS retains column z-scoring, 40 iterations, and 10 initializations (42 to 51).
+The grouped model is `mu + a_i + c_j + d_i,group(j) + U_i.V_j`; every parameter
+except `mu` receives the same L2 coefficient. Bernoulli fitting works on 0/1
+answers directly, using L-BFGS with at most 400 iterations per initialization,
+`ftol=1e-7`, and `gtol=1e-4`. Optimizer status is retained, including any
+iteration-limited fits. No method receives held-out unrevealed answers.
+The default BenchPress predictor is unchanged.
+
+```bash
+python variants.py fit --methods raw group_logit group_raw group_binary \
+  --selections random --seeds 0 --budgets 200 --code-commit "$(git rev-parse HEAD)"
+python variants.py summarize --variant-hash <hash> --code-commit "$(git rev-parse HEAD)"
+```
+
+Outputs are isolated under `results/variants/<config_hash>/`: a manifest,
+per-method/selection/seed/budget JSON predictions and optimizer diagnostics,
+and compressed per-question predictions with checksums. Existing valid units
+are reused. A damaged artifact or mismatched provenance fails rather than
+silently recomputing. Summarization verifies every original per-seed MedAE
+against the frozen summary to absolute tolerance `1e-12` and requires all
+127 x 37 cells, then scores the variants with the same shared metric.
+
+Run synthetic method checks remotely with
+`python -m unittest discover -s tests -p test_question_variants.py`.
+First run the four methods on one existing setting, verify artifacts and
+observations, then fan out the remaining settings across CHTC CPU jobs.
+No new baseline fits or question selections are needed.

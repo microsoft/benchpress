@@ -426,6 +426,155 @@ def complete_bias_als(M_train, rank=2, lam=0.1, n_iter=40,
     M_pred[obs] = M_train[obs]
     return M_pred
 
+def _group_completion_inputs(matrix, column_groups, rank, lam):
+    """Validate observed-only inputs and encode column groups contiguously."""
+    matrix = np.asarray(matrix, dtype=float)
+    groups = np.asarray(column_groups)
+    if matrix.ndim != 2 or not matrix.size or np.isinf(matrix).any():
+        raise ValueError('matrix must be nonempty, 2-D, and contain no infinities')
+    if groups.ndim != 1 or len(groups) != matrix.shape[1]:
+        raise ValueError('column_groups must have one label per column')
+    if not isinstance(rank, (int, np.integer)) or rank < 0:
+        raise ValueError('rank must be a nonnegative integer')
+    if not np.isfinite(lam) or lam <= 0:
+        raise ValueError('lam must be strictly positive')
+    observed = ~np.isnan(matrix)
+    if not observed.any(0).all() or not observed.any(1).all():
+        raise ValueError('every row and column must have observations')
+    _, groups = np.unique(groups, return_inverse=True)
+    return matrix, observed, groups
+
+
+def complete_group_bias_als(M_train, column_groups, rank=8, lam=0.1,
+                            n_iter=40, n_ensemble=10, base_seed=42):
+    """Complete scores with mu + a_i + c_j + d_i,group(j) + U_i.V_j.
+
+    Inputs are already in the desired fitting scale. The observed squared-error
+    loss and L2 penalty match complete_bias_als, with an additional penalty on d.
+    Rows/columns sharing an observation mask share a normal-equation matrix.
+    Returns the completed matrix, preserving observed entries exactly.
+    """
+    matrix, observed, groups = _group_completion_inputs(
+        M_train, column_groups, rank, lam)
+    if n_iter < 1 or n_ensemble < 1:
+        raise ValueError('n_iter and n_ensemble must be positive')
+    n_rows, n_cols = matrix.shape
+    n_groups = int(groups.max()) + 1
+    group_columns = [np.flatnonzero(groups == g) for g in range(n_groups)]
+    counts = np.stack([observed[:, js].sum(1) for js in group_columns], axis=1)
+    row_patterns = np.unique(np.packbits(observed, axis=1), axis=0,
+                             return_inverse=True)[1]
+    col_patterns = np.unique(np.packbits(observed.T, axis=1), axis=0,
+                             return_inverse=True)[1]
+    row_blocks = [np.flatnonzero(row_patterns == p) for p in np.unique(row_patterns)]
+    col_blocks = [np.flatnonzero(col_patterns == p) for p in np.unique(col_patterns)]
+    eye = lam * np.eye(rank + 1)
+    result = np.zeros_like(matrix)
+    for seed in range(base_seed, base_seed + n_ensemble):
+        rng = np.random.RandomState(seed)
+        mu = float(matrix[observed].mean())
+        a, c = np.zeros(n_rows), np.zeros(n_cols)
+        d = np.zeros((n_rows, n_groups))
+        u = rng.normal(0, 0.01, (n_rows, rank))
+        v = rng.normal(0, 0.01, (n_cols, rank))
+        for _ in range(n_iter):
+            for rows in row_blocks:
+                js = np.flatnonzero(observed[rows[0]])
+                x = np.column_stack((np.ones(len(js)), v[js]))
+                residual = (matrix[np.ix_(rows, js)] - mu - c[js]
+                            - d[np.ix_(rows, groups[js])])
+                coef = np.linalg.solve(x.T @ x + eye, x.T @ residual.T).T
+                a[rows], u[rows] = coef[:, 0], coef[:, 1:]
+            for js in col_blocks:
+                rows = np.flatnonzero(observed[:, js[0]])
+                x = np.column_stack((np.ones(len(rows)), u[rows]))
+                residual = (matrix[np.ix_(rows, js)] - mu - a[rows, None]
+                            - d[np.ix_(rows, groups[js])])
+                coef = np.linalg.solve(x.T @ x + eye, x.T @ residual).T
+                c[js], v[js] = coef[:, 0], coef[:, 1:]
+            residual = matrix - mu - a[:, None] - c - u @ v.T
+            for g, js in enumerate(group_columns):
+                d[:, g] = np.nansum(residual[:, js], axis=1) / (counts[:, g] + lam)
+            mu += float(np.nanmean(residual - d[:, groups]))
+        result += mu + a[:, None] + c + d[:, groups] + u @ v.T
+    result /= n_ensemble
+    result[observed] = matrix[observed]
+    return result
+
+
+def fit_binary_group_low_rank(M_train, column_groups, rank=8, lam=0.1,
+                              max_iter=400, n_ensemble=10, base_seed=42):
+    """Fit Bernoulli observations with grouped low-rank logits.
+
+    Returns (probabilities, optimizer_records), with observed 0/1 entries
+    restored. Each record reports whether L-BFGS converged; an iteration-limited
+    fit is retained but explicitly marked, while numerical failures raise.
+    Objective: sum observed binary cross-entropy + lam/2 times the squared
+    norms of row, column, group biases and both factor matrices.
+    """
+    from scipy.optimize import minimize
+    from scipy.special import expit
+
+    matrix, observed, groups = _group_completion_inputs(
+        M_train, column_groups, rank, lam)
+    if not np.isin(matrix[observed], [0, 1]).all():
+        raise ValueError('Bernoulli fitting requires observed entries to be 0 or 1')
+    if max_iter < 1 or n_ensemble < 1:
+        raise ValueError('max_iter and n_ensemble must be positive')
+    n_rows, n_cols = matrix.shape
+    n_groups = int(groups.max()) + 1
+    group_columns = [np.flatnonzero(groups == g) for g in range(n_groups)]
+    sizes = [1, n_rows, n_cols, n_rows * rank, n_cols * rank, n_rows * n_groups]
+    cuts = np.cumsum(sizes)[:-1]
+    target = np.where(observed, matrix, 0)
+
+    def objective(theta):
+        mu, a, c, u, v, d = np.split(theta, cuts)
+        u, v, d = u.reshape(n_rows, rank), v.reshape(n_cols, rank), d.reshape(n_rows, n_groups)
+        logits = mu[0] + a[:, None] + c + u @ v.T + d[:, groups]
+        loss = float(np.sum((np.logaddexp(0, logits) - target * logits)[observed]))
+        loss += 0.5 * lam * float(theta[1:] @ theta[1:])
+        residual = np.where(observed, expit(logits) - target, 0)
+        grad = np.concatenate((
+            [residual.sum()], residual.sum(1), residual.sum(0),
+            (residual @ v).ravel(), (residual.T @ u).ravel(),
+            np.stack([residual[:, js].sum(1) for js in group_columns], axis=1).ravel(),
+        ))
+        grad[1:] += lam * theta[1:]
+        return loss, grad
+
+    result = np.zeros_like(matrix)
+    records = []
+    p = (target.sum(0) + 0.5) / (observed.sum(0) + 1)
+    mean = float(matrix[observed].mean())
+    mu = float(np.log((mean + 1e-6) / (1 - mean + 1e-6)))
+    for seed in range(base_seed, base_seed + n_ensemble):
+        rng = np.random.RandomState(seed)
+        initial = np.concatenate((
+            [mu], np.zeros(n_rows), np.log(p / (1 - p)) - mu,
+            rng.normal(0, 0.01, n_rows * rank),
+            rng.normal(0, 0.01, n_cols * rank), np.zeros(n_rows * n_groups),
+        ))
+        fit = minimize(objective, initial, jac=True, method='L-BFGS-B',
+                       options={'maxiter': max_iter, 'ftol': 1e-7, 'gtol': 1e-4})
+        if not np.isfinite(fit.fun) or not np.isfinite(fit.x).all() or fit.status not in (0, 1):
+            raise RuntimeError(f'Bernoulli fit failed: {fit.message}')
+        mu_fit, a, c, u, v, d = np.split(fit.x, cuts)
+        logits = (mu_fit[0] + a[:, None] + c
+                  + u.reshape(n_rows, rank) @ v.reshape(n_cols, rank).T
+                  + d.reshape(n_rows, n_groups)[:, groups])
+        result += expit(logits)
+        records.append({'seed': seed, 'converged': bool(fit.success),
+                        'iterations': int(fit.nit), 'objective': float(fit.fun),
+                        'gradient_max': float(np.abs(fit.jac).max()),
+                        'message': str(fit.message)})
+        print(f'Bernoulli seed={seed} iterations={fit.nit} '
+              f'converged={fit.success} objective={fit.fun:.6f}', flush=True)
+    result /= n_ensemble
+    result[observed] = matrix[observed]
+    return result, records
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 #  M2: Nuclear Norm (proximal gradient with soft-thresholding)
 # ══════════════════════════════════════════════════════════════════════════════

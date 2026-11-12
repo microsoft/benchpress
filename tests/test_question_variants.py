@@ -1,0 +1,77 @@
+import unittest
+from unittest.mock import patch
+
+import numpy as np
+from scipy.optimize import approx_fprime, minimize
+
+from benchpress.methods.completers import (
+    complete_group_bias_als,
+    fit_binary_group_low_rank,
+)
+from benchpress.methods.predictors import fit_question_score_variant
+
+
+class QuestionVariantTests(unittest.TestCase):
+    def test_group_offsets_recover_opposing_subtask_skills(self):
+        groups = np.repeat([0, 1], 6)
+        truth = np.repeat([[1., 4.], [2., 3.], [4., 1.], [3., 2.]], 6, axis=1)
+        matrix = truth.copy()
+        matrix[-1, [2, 3, 4, 5, 8, 9, 10, 11]] = np.nan
+        before = matrix.copy()
+        pred = complete_group_bias_als(
+            matrix, groups, rank=0, lam=1e-5, n_iter=80, n_ensemble=1)
+        np.testing.assert_allclose(pred, truth, atol=1e-4)
+        np.testing.assert_array_equal(matrix, before)
+
+    def test_binary_gradient_and_observation_preservation(self):
+        matrix = np.array([[0., 1., 0., 1.], [1., 0., 1., 0.],
+                           [1., np.nan, 0., np.nan]])
+        groups = [0, 0, 1, 1]
+
+        def checked_minimize(fun, x0, **kwargs):
+            _, grad = fun(x0)
+            numeric = approx_fprime(x0, lambda x: fun(x)[0], epsilon=1e-6)
+            np.testing.assert_allclose(grad, numeric, atol=2e-6)
+            return minimize(fun, x0, **kwargs)
+
+        with patch('scipy.optimize.minimize', side_effect=checked_minimize):
+            pred, records = fit_binary_group_low_rank(
+                matrix, groups, rank=1, max_iter=100, n_ensemble=1)
+        np.testing.assert_array_equal(pred[np.isfinite(matrix)], matrix[np.isfinite(matrix)])
+        self.assertTrue(np.all((pred >= 0) & (pred <= 1)))
+        self.assertEqual(len(records), 1)
+        repeated, _ = fit_binary_group_low_rank(
+            matrix, groups, rank=1, max_iter=100, n_ensemble=1)
+        np.testing.assert_array_equal(pred, repeated)
+
+    def test_raw_inverse_preserves_empirical_binary_mean(self):
+        matrix = np.array([[0.], [0.], [0.], [100.], [np.nan]])
+        with patch('benchpress.methods.predictors.complete_bias_als',
+                   return_value=np.zeros_like(matrix)) as fit:
+            pred, _ = fit_question_score_variant(matrix, [0], 'raw')
+        self.assertAlmostEqual(pred[-1, 0], 25.)
+        self.assertTrue(np.isnan(fit.call_args.args[0][-1, 0]))
+        np.testing.assert_array_equal(pred[:-1], matrix[:-1])
+
+    def test_grouped_als_is_deterministic_with_irregular_masks(self):
+        matrix = np.array([[0., 1., 2., np.nan], [1., np.nan, 3., 2.],
+                           [np.nan, 2., 4., 1.]])
+        args = dict(column_groups=[0, 0, 1, 1], rank=2, n_iter=4, n_ensemble=2)
+        pred = complete_group_bias_als(matrix, **args)
+        np.testing.assert_array_equal(pred, complete_group_bias_als(matrix, **args))
+        np.testing.assert_array_equal(pred[np.isfinite(matrix)], matrix[np.isfinite(matrix)])
+        self.assertTrue(np.isfinite(pred).all())
+
+    def test_invalid_or_unidentified_inputs_fail(self):
+        with self.assertRaises(ValueError):
+            fit_binary_group_low_rank(np.array([[0., 0.5]]), [0, 0])
+        with self.assertRaises(ValueError):
+            complete_group_bias_als(np.array([[1., np.nan]]), [0, 0])
+        with self.assertRaises(ValueError):
+            complete_group_bias_als(np.array([[1., 2.]]), [0])
+        with self.assertRaises(ValueError):
+            fit_question_score_variant(np.array([[0., 100.]]), [0, 0], 'unknown')
+
+
+if __name__ == '__main__':
+    unittest.main()
