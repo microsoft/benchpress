@@ -15,7 +15,8 @@ if REPO_ROOT not in sys.path:
     sys.path.insert(0, REPO_ROOT)
 
 from benchpress.plot_helpers.visual_identity import (  # noqa: E402
-    ANSWER_VIOLET, CYAN_TEAL, GRAY, ROSE, VANILLA_BLUE, apply_single, save_fig,
+    ANSWER_VIOLET, CYAN_TEAL, DEEP_BLUE, GRAY, LAVENDER, MEMENTO_MAGENTA,
+    ROSE, VANILLA_BLUE, apply_single, save_fig,
 )
 
 STYLES = {
@@ -26,6 +27,10 @@ STYLES = {
     'random_sampling_learn': ('Random-Sampling-Learn', VANILLA_BLUE, '-', 'D'),
     'aipw': ('AIPW', CYAN_TEAL, '-', '^'),
     'gp_irt': ('GP-IRT', ANSWER_VIOLET, '-', 'v'),
+    'variant_raw': ('Raw ALS (rank 8)', MEMENTO_MAGENTA, '-', 's'),
+    'variant_group_logit': ('Logit ALS + subtask offsets', LAVENDER, '--', 'v'),
+    'variant_group_raw': ('Raw ALS + subtask offsets', CYAN_TEAL, '-.', 'P'),
+    'variant_group_binary': ('Bernoulli + subtask offsets', DEEP_BLUE, ':', 'X'),
 }
 
 
@@ -33,15 +38,20 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument('--summary', default=os.path.join(HERE, 'results', 'summary.json'))
     ap.add_argument('--name', default='bp_question_level_budgets')
+    ap.add_argument('--methods', nargs='+', choices=list(STYLES))
     args = ap.parse_args()
 
     with open(args.summary) as f:
         table = json.load(f)['table']
+    methods = args.methods if args.methods is not None else [
+        method for method in STYLES if method in table['random']]
+    has_variants = any(method.startswith('variant_') for method in methods)
     titles = {'random': 'Random questions', 'anchors': 'GP-IRT anchor questions'}
     apply_single()
-    fig, axes = plt.subplots(1, 2, figsize=(14, 5.5), sharey=True)
+    fig, axes = plt.subplots(1, 2, figsize=(14, 7 if has_variants else 5.5), sharey=True)
     for ax, (selection, title) in zip(axes, titles.items()):
-        for method, (label, color, ls, marker) in STYLES.items():
+        for method in methods:
+            label, color, ls, marker = STYLES[method]
             rows = table[selection][method]
             budgets = sorted(int(b) for b in rows)
             mean = np.array([rows[str(b)]['medae_mean'] for b in budgets])
@@ -56,7 +66,12 @@ def main():
         ax.set_ylim(bottom=0)
         ax.grid(alpha=0.3)
     axes[0].set_ylabel('MedAE (accuracy points)')
-    axes[0].legend(frameon=False, fontsize='small')
+    if has_variants:
+        fig.legend(*axes[0].get_legend_handles_labels(), loc='lower center',
+                   bbox_to_anchor=(0.5, -0.02), ncol=3, frameon=False, fontsize=11)
+        fig.subplots_adjust(bottom=0.25)
+    else:
+        axes[0].legend(frameon=False, fontsize='small')
     save_fig(args.name)
 
 
