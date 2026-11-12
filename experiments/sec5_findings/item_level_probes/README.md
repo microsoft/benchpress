@@ -107,6 +107,8 @@ All variants use rank 8 and lambda 0.1, with no rank or lambda selection.
 | `group_logit` | Logit Bias ALS with an additional model-by-subtask offset |
 | `group_raw` | Identity-transform Bias ALS with that offset |
 | `group_binary` | Bernoulli negative log likelihood with low-rank factors and that offset |
+| `raw_shrink` | Raw ALS with training-estimated shrinkage of subtask residuals, without itemwise clipping |
+| `task_mean_ridge` | Fixed-penalty ridge from all 37 revealed subtask means to hidden subtask means |
 
 ALS retains column z-scoring, 40 iterations, and 10 initializations (42 to 51).
 The grouped model is `mu + a_i + c_j + d_i,group(j) + U_i.V_j`; every parameter
@@ -138,3 +140,17 @@ No new baseline fits or question selections are needed.
 The same selection/seed/budget/method flags can restrict `summarize` for
 canary diagnostics; these write `pilot_summary.json` with `complete_grid=false`,
 never the full-grid summary. Missing requested units still fail.
+
+For `raw_shrink`, fully observed training rows estimate each subtask's
+between-model residual-mean variance and within-model residual variance.
+These determine empirical-Bayes shrinkage of a target model's revealed
+residual mean. The correction accounts for the relationship between the
+revealed and hidden subsets of a finite subtask. No hidden target answers
+enter either fit or prior estimation.
+`task_mean_ridge` learns a shared regression on training rows, using the same
+revealed/hidden question partition to construct its supervised examples.
+Features are standardized using training rows only; ridge alpha is 0.1.
+It predicts means, not question-level probabilities, and is a separate
+comparator rather than the default BenchPress method.
+Each newly requested method set has its own manifest and artifact hash;
+earlier method sets and their original source/configuration are preserved.

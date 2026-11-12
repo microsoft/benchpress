@@ -6,6 +6,8 @@ import numpy as np
 from benchpress.evaluation_harness import (
     BENCH_IDS,
     BENCH_METRICS,
+    col_normalize,
+    col_denormalize,
     make_score_predictor,
 )
 from benchpress.methods.completers import (
@@ -54,13 +56,18 @@ def fit_question_score_variant(M_train, column_groups, method, rank=8, lam=0.1):
     10-initialization schedule. Only the feature transform and grouped offset
     change. Bernoulli fitting operates directly on 0/1 answers.
     """
-    if method not in ('raw', 'group_logit', 'group_raw', 'group_binary'):
+    if method not in ('raw', 'group_logit', 'group_raw', 'group_binary',
+                      'raw_shrink', 'task_mean_ridge'):
         raise ValueError(f'unknown question-score variant: {method}')
     matrix = np.asarray(M_train, dtype=float)
     if matrix.ndim != 2 or not matrix.size:
         raise ValueError('M_train must be a nonempty 2-D matrix')
     if not np.isin(matrix[np.isfinite(matrix)], [0, 100]).all() or np.isinf(matrix).any():
         raise ValueError('observed question scores must be 0 or 100')
+    if method == 'raw_shrink':
+        return predict_shrunk_group_residual_scores(matrix, column_groups, rank, lam)
+    if method == 'task_mean_ridge':
+        return predict_group_mean_ridge_scores(matrix, column_groups, lam)
     if method == 'group_binary':
         pred, diagnostics = fit_binary_group_low_rank(
             matrix / 100, column_groups, rank=rank, lam=lam)
@@ -78,6 +85,101 @@ def fit_question_score_variant(M_train, column_groups, method, rank=8, lam=0.1):
         metric={name: {'type': 'pct', 'range': [0, 100]} for name in ids},
         benchmark_ids=ids, **options)
     return predictor(matrix), {'iterations': 40, 'n_ensemble': 10, 'base_seed': 42}
+
+
+def predict_shrunk_group_residual_scores(matrix, column_groups, rank=8, lam=0.1):
+    """Raw ALS plus empirical-Bayes group residuals from fully observed rows.
+
+    Returns linear score predictions and training-only prior moments. The group
+    correction targets the missing subset, including its finite-population
+    relationship to the observed residual mean. Linear item scores are not
+    clipped before aggregation; observed scores are restored exactly.
+    """
+    matrix = np.asarray(matrix, dtype=float)
+    groups = np.asarray(column_groups)
+    if groups.shape != (matrix.shape[1],):
+        raise ValueError('column_groups must have one label per column')
+    observed = np.isfinite(matrix)
+    reference = np.flatnonzero(observed.all(1))
+    if len(reference) < 2:
+        raise ValueError('shrinkage needs at least two fully observed reference rows')
+    z, mean, scale = col_normalize(matrix)
+    fitted = col_denormalize(complete_bias_als(
+        z, rank=rank, lam=lam, normalize=False, preserve_observed=False), mean, scale)
+    result = fitted.copy()
+    moments = []
+    for group in np.unique(groups):
+        js = np.flatnonzero(groups == group)
+        if len(js) < 2:
+            raise ValueError('residual variance needs at least two items per group')
+        residual = matrix[:, js] - fitted[:, js]
+        reference_residual = residual[reference]
+        reference_means = reference_residual.mean(1)
+        prior_mean = float(reference_means.mean())
+        prior_var = float(reference_means.var(ddof=1))
+        within_var = float(reference_residual.var(axis=1, ddof=1).mean())
+        n = observed[:, js].sum(1)
+        sample_mean = np.divide(np.nansum(residual, axis=1), n,
+                                out=np.full(len(n), prior_mean), where=n > 0)
+        sampling_var = (1 - n / len(js)) * within_var / np.maximum(n, 1)
+        weight = np.divide(prior_var, prior_var + sampling_var,
+                           out=np.zeros(len(n)), where=(prior_var + sampling_var) > 0)
+        weight[n == 0] = 0
+        full_mean = prior_mean + weight * (sample_mean - prior_mean)
+        hidden_mean = np.divide(len(js) * full_mean - n * sample_mean, len(js) - n,
+                                out=np.zeros(len(n)), where=n < len(js))
+        result[:, js] += hidden_mean[:, None]
+        moments.append({'group': str(group), 'prior_mean': prior_mean,
+                        'prior_variance': prior_var, 'within_variance': within_var,
+                        'n_reference_rows': len(reference)})
+    result[observed] = matrix[observed]
+    return result, {'group_prior': moments, 'item_clipping': False,
+                    'iterations': 40, 'n_ensemble': 10, 'base_seed': 42}
+
+
+def predict_group_mean_ridge_scores(matrix, column_groups, lam=0.1):
+    """Predict missing group means from revealed group means with shared ridge.
+
+    Fully observed rows provide supervised examples using the target rows'
+    common mask. Training-only feature standardization, intercept, and fixed
+    ridge penalty are used. Returns group-mean predictions broadcast over each
+    missing group, plus diagnostics; these are not individual-item forecasts.
+    """
+    from sklearn.linear_model import Ridge
+
+    matrix = np.asarray(matrix, dtype=float)
+    groups = np.asarray(column_groups)
+    if groups.shape != (matrix.shape[1],) or not np.isfinite(lam) or lam <= 0:
+        raise ValueError('invalid column_groups or ridge penalty')
+    observed = np.isfinite(matrix)
+    reference, target = np.flatnonzero(observed.all(1)), np.flatnonzero(~observed.all(1))
+    if len(reference) < 2 or not len(target):
+        raise ValueError('ridge needs reference rows and partially observed target rows')
+    mask = observed[target[0]]
+    if not np.all(observed[target] == mask):
+        raise ValueError('target rows must share the same revealed questions')
+    features, responses, hidden = [], [], []
+    for group in np.unique(groups):
+        js = np.flatnonzero(groups == group)
+        revealed, missing = js[mask[js]], js[~mask[js]]
+        if not len(revealed) or not len(missing):
+            raise ValueError('every group needs revealed and hidden questions')
+        features.append(matrix[:, revealed].mean(1))
+        responses.append(matrix[np.ix_(reference, missing)].mean(1))
+        hidden.append(missing)
+    features = np.stack(features, axis=1)
+    responses = np.stack(responses, axis=1)
+    mean, scale = features[reference].mean(0), features[reference].std(0)
+    scale[scale < 1e-8] = 1
+    features = (features - mean) / scale
+    regressor = Ridge(alpha=lam, solver='svd').fit(features[reference], responses)
+    estimates = regressor.predict(features[target])
+    result = matrix.copy()
+    for j, missing in enumerate(hidden):
+        result[np.ix_(target, missing)] = estimates[:, j, None]
+    return result, {'n_reference_rows': len(reference), 'n_features': features.shape[1],
+                    'prediction_target': 'missing group mean, broadcast to its questions',
+                    'feature_standardization': 'reference rows only', 'lam': lam}
 
 
 def predict_prior_residual_scores(M_train, prior_mean, prior_scale,

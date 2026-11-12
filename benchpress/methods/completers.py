@@ -322,7 +322,8 @@ def complete_soft_impute(M_train, rank=5, max_iter=100, tol=1e-4, normalize=True
 # ══════════════════════════════════════════════════════════════════════════════
 
 def complete_bias_als(M_train, rank=2, lam=0.1, n_iter=40,
-                     n_ensemble=10, base_seed=42, normalize=True):
+                     n_ensemble=10, base_seed=42, normalize=True,
+                     preserve_observed=True):
     """Bias-decomposed low-rank completion via ALS, ensemble averaged.
 
     Model:  Z_hat_ij = mu + a_i + c_j + U_i . V_j
@@ -349,6 +350,8 @@ def complete_bias_als(M_train, rank=2, lam=0.1, n_iter=40,
         base_seed   : ensemble seeds = base_seed + 0..n_ensemble-1
         normalize   : if True, internally col-normalize (standalone mode);
                       if False, operate directly (pipeline mode)
+        preserve_observed: if False, return fitted values at observed entries
+                      too, for observed-only residual calibration
     """
     obs = ~np.isnan(M_train)
     n_models, n_bench = M_train.shape
@@ -423,7 +426,8 @@ def complete_bias_als(M_train, rank=2, lam=0.1, n_iter=40,
     Z_bar /= n_ensemble
 
     M_pred = col_denormalize(Z_bar, cm, cs) if normalize else Z_bar.copy()
-    M_pred[obs] = M_train[obs]
+    if preserve_observed:
+        M_pred[obs] = M_train[obs]
     return M_pred
 
 def _group_completion_inputs(matrix, column_groups, rank, lam):

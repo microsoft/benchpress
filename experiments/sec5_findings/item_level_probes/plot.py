@@ -31,6 +31,8 @@ STYLES = {
     'variant_group_logit': ('Logit ALS + subtask offsets', LAVENDER, '--', 'v'),
     'variant_group_raw': ('Raw ALS + subtask offsets', CYAN_TEAL, '-.', 'P'),
     'variant_group_binary': ('Bernoulli + subtask offsets', DEEP_BLUE, ':', 'X'),
+    'variant_raw_shrink': ('Raw ALS + shrunk residuals', MEMENTO_MAGENTA, '-.', '^'),
+    'variant_task_mean_ridge': ('Subtask-mean ridge', DEEP_BLUE, '-', 'o'),
 }
 
 

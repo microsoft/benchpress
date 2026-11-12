@@ -17,26 +17,33 @@ from benchpress.io_utils import write_json_atomic, write_npz_compressed_atomic
 from benchpress.methods.predictors import fit_question_score_variant
 
 
-METHODS = ['raw', 'group_logit', 'group_raw', 'group_binary']
+METHODS = ['raw', 'group_logit', 'group_raw', 'group_binary',
+           'raw_shrink', 'task_mean_ridge']
 RANK = 8
 LABELS = {
     'raw': 'Raw ALS',
     'group_logit': 'Logit ALS + subtask offsets',
     'group_raw': 'Raw ALS + subtask offsets',
     'group_binary': 'Bernoulli low rank + subtask offsets',
+    'raw_shrink': 'Raw ALS + shrunk subtask residuals',
+    'task_mean_ridge': 'Subtask-mean ridge',
 }
 
 
 def fit(args):
     ctx = Context(args, check_commit=False)
+    methods = METHODS if args.methods is None else args.methods
     config = {
         'base_config_hash': ctx.chash, 'code_commit': args.code_commit,
-        'methods': METHODS, 'rank': RANK, 'lam': BP_LAM,
+        'methods': methods, 'rank': RANK, 'lam': BP_LAM,
         'als': {'n_iter': 40, 'n_ensemble': 10, 'base_seed': 42,
                 'standardize_columns': True},
         'binary': {'max_iter': 400, 'n_ensemble': 10, 'base_seed': 42,
                    'ftol': 1e-7, 'gtol': 1e-4},
-        'fit': 'pooled training rows and held-out revealed answers only',
+        'task_mean_ridge': {'alpha': BP_LAM, 'rank': None,
+                            'n_features': len(ctx.data.column_ids)},
+        'fit': 'pooled low-rank fits on allowed answers; '
+               'supervised ridge on fully observed training rows',
     }
     chash = config_hash(config)
     root = os.path.join(ctx.out, 'variants', chash)
@@ -61,7 +68,7 @@ def fit(args):
                 matrix = np.vstack((train, held))
                 mask_hash = config_hash({'targets': ctx.held,
                                          'observed': [o.tolist() for o in observed]})
-                for method in args.methods:
+                for method in methods:
                     path = os.path.join(root, method, selection, f's{seed}', f'B{budget}.json')
                     old = read_unit(path, chash)
                     if old is not None:
@@ -85,7 +92,8 @@ def fit(args):
                     write_json_atomic(path, {
                         'config_hash': chash, 'code_commit': args.code_commit,
                         'method': method, 'selection': selection, 'seed': seed,
-                        'budget': budget, 'rank': RANK, 'lam': BP_LAM,
+                        'budget': budget, 'rank': None if method == 'task_mean_ridge' else RANK,
+                        'lam': BP_LAM,
                         'targets': ctx.held, 'mask_hash': mask_hash,
                         'questions_used': int(len(revealed)),
                         'pred': np.stack([pred[:, h].mean(1) for h in hidden], axis=1).tolist(),
@@ -114,13 +122,14 @@ def summarize(args):
     reference_rows = {(r['selection'], r['method'], r['seed'], r['budget']): r
                       for r in reference['per_seed']}
     original_methods = [f'benchpress_r{r}' for r in bp['config']['ranks']] + list(ESTIMATORS)
-    if set(args.methods) - set(config['methods']):
+    selected_methods = config['methods'] if args.methods is None else args.methods
+    if set(selected_methods) - set(config['methods']):
         raise ValueError('requested methods are not in the variant manifest')
-    methods = original_methods + ['variant_' + m for m in args.methods]
+    methods = original_methods + ['variant_' + m for m in selected_methods]
     seeds = ctx.subset(args.seeds, 'seeds')
     budgets = ctx.subset(args.budgets, 'budgets')
     selections = ctx.subset(args.selections, 'selections')
-    complete = (set(args.methods) == set(config['methods'])
+    complete = (set(selected_methods) == set(config['methods'])
                 and set(seeds) == set(ctx.config['seeds'])
                 and set(budgets) == set(ctx.config['budgets'])
                 and set(selections) == set(ctx.config['selections']))
@@ -191,7 +200,7 @@ def summarize(args):
         'summarize_commit': args.code_commit, 'reference_summary_sha256': sha256_file(
             os.path.join(ctx.out, 'summary.json')),
         'frozen_reference_reproduced': True, 'complete_grid': complete,
-        'selected_methods': args.methods, 'selected_seeds': seeds,
+        'selected_methods': selected_methods, 'selected_seeds': seeds,
         'selected_budgets': budgets, 'selected_selections': selections, 'per_seed': records,
         'fit_diagnostics': optimizer_records, 'table': table})
     for selection, method_rows in table.items():
@@ -207,7 +216,7 @@ def main():
     parser.add_argument('--data', default=DEFAULT_DATA)
     parser.add_argument('--out-dir', default=DEFAULT_OUT)
     parser.add_argument('--code-commit', required=True)
-    parser.add_argument('--methods', nargs='+', choices=METHODS, default=METHODS)
+    parser.add_argument('--methods', nargs='+', choices=METHODS)
     parser.add_argument('--selections', type=lambda s: s.split(','))
     parser.add_argument('--seeds', type=int_list)
     parser.add_argument('--budgets', type=int_list)

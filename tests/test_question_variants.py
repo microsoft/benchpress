@@ -5,10 +5,15 @@ import numpy as np
 from scipy.optimize import approx_fprime, minimize
 
 from benchpress.methods.completers import (
+    complete_bias_als,
     complete_group_bias_als,
     fit_binary_group_low_rank,
 )
-from benchpress.methods.predictors import fit_question_score_variant
+from benchpress.methods.predictors import (
+    fit_question_score_variant,
+    predict_group_mean_ridge_scores,
+    predict_shrunk_group_residual_scores,
+)
 
 
 class QuestionVariantTests(unittest.TestCase):
@@ -71,6 +76,38 @@ class QuestionVariantTests(unittest.TestCase):
             complete_group_bias_als(np.array([[1., 2.]]), [0])
         with self.assertRaises(ValueError):
             fit_question_score_variant(np.array([[0., 100.]]), [0, 0], 'unknown')
+
+    def test_fitted_values_do_not_change_default_completion(self):
+        matrix = np.array([[0., 1., 2.], [1., 2., np.nan]])
+        options = dict(rank=1, n_iter=5, n_ensemble=1, normalize=False)
+        fitted = complete_bias_als(matrix, preserve_observed=False, **options)
+        completed = complete_bias_als(matrix, **options)
+        np.testing.assert_array_equal(fitted[np.isnan(matrix)], completed[np.isnan(matrix)])
+        np.testing.assert_array_equal(completed[np.isfinite(matrix)], matrix[np.isfinite(matrix)])
+
+    def test_group_mean_ridge_learns_cross_group_relation(self):
+        matrix = np.array([[0., 20., 80., 100.], [20., 40., 60., 80.],
+                           [40., 60., 40., 60.], [60., 80., 20., 40.],
+                           [30., np.nan, 50., np.nan]])
+        before = matrix.copy()
+        pred, diagnostics = predict_group_mean_ridge_scores(matrix, [0, 0, 1, 1], lam=1e-6)
+        np.testing.assert_allclose(pred[-1], [30., 50., 50., 70.], atol=1e-5)
+        np.testing.assert_array_equal(matrix, before)
+        self.assertEqual(diagnostics['n_reference_rows'], 4)
+        with self.assertRaises(ValueError):
+            predict_group_mean_ridge_scores(
+                np.vstack((matrix, [np.nan, 30., 50., np.nan])), [0, 0, 1, 1])
+
+    def test_shrinkage_uses_only_reference_moments_and_preserves_observations(self):
+        matrix = np.array([[0., 100., 0., 100.], [100., 100., 0., 0.],
+                           [0., np.nan, 100., np.nan]])
+        with patch('benchpress.methods.predictors.complete_bias_als',
+                   return_value=np.zeros_like(matrix)) as fit:
+            pred, diagnostics = predict_shrunk_group_residual_scores(matrix, [0, 0, 1, 1])
+        self.assertFalse(fit.call_args.kwargs['preserve_observed'])
+        self.assertEqual([m['n_reference_rows'] for m in diagnostics['group_prior']], [2, 2])
+        np.testing.assert_array_equal(pred[np.isfinite(matrix)], matrix[np.isfinite(matrix)])
+        self.assertTrue(np.isfinite(pred).all())
 
 
 if __name__ == '__main__':
