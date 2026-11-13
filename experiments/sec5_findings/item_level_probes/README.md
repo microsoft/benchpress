@@ -119,11 +119,15 @@ artifact directory; original predictions and summaries are reused unchanged.
 Run one setting first and reuse its artifact in the complete grid.
 
 The rank-40 run uses source commit
-`25d69878f9892db6bcd75149cdd31ab603fba995`: CHTC canary `8530299`
-(`random`, seed 0, budget 200), followed by controller `8530504`
-(`~/bp_iclr/rank40.dag`). The canary runs the package tests and reproduces
-the frozen reference scores before the remaining 59 fits are admitted.
-The dependent summary requires all 60 settings. Results are pending.
+`25d69878f9892db6bcd75149cdd31ab603fba995`, configuration
+`577115b7edd126a2`. CHTC canary `8530299` (`random`, seed 0, budget 200)
+passed the package tests and frozen-reference reproduction; fitting took
+2,914.49 seconds. Its median absolute error over 4,699 hidden model/subtask
+accuracies was 3.310 accuracy points, versus 4.498 for the frozen rank-8
+result. This is a single-setting pilot, not a five-seed grid result.
+Controller `8530550` (`~/bp_iclr/rank40.dag`) admitted the remaining 59 fits
+as grid `8530551`. The dependent summary requires all 60 settings, reusing
+the canary. Full-grid results are pending.
 Raw archives go to `CHTC:$STAGING/bp_iclr/question_rank40/`, where
 `$STAGING=/staging/y/yzeng58`; the final compact summary is `summary.tar.gz`
 in that directory. This avoids adding the grid to the nearly full AP home.
