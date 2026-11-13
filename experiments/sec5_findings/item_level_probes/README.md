@@ -118,6 +118,16 @@ six budgets remain fixed. Its 60 settings have a separate manifest and
 artifact directory; original predictions and summaries are reused unchanged.
 Run one setting first and reuse its artifact in the complete grid.
 
+The rank-40 run uses source commit
+`25d69878f9892db6bcd75149cdd31ab603fba995`: CHTC canary `8530299`
+(`random`, seed 0, budget 200), followed by controller `8530504`
+(`~/bp_iclr/rank40.dag`). The canary runs the package tests and reproduces
+the frozen reference scores before the remaining 59 fits are admitted.
+The dependent summary requires all 60 settings. Results are pending.
+Raw archives go to `CHTC:$STAGING/bp_iclr/question_rank40/`, where
+`$STAGING=/staging/y/yzeng58`; the final compact summary is `summary.tar.gz`
+in that directory. This avoids adding the grid to the nearly full AP home.
+
 | Variant | Fitting method |
 | --- | --- |
 | `raw` | Original Bias ALS with the identity feature transform |
