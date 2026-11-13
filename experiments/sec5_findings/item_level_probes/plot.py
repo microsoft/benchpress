@@ -23,10 +23,12 @@ STYLES = {
     'benchpress_r2': ('BenchPress (rank 2)', ROSE, '-', 's'),
     'benchpress_r4': ('BenchPress (rank 4)', ROSE, '--', 'P'),
     'benchpress_r8': ('BenchPress (rank 8)', ROSE, ':', 'X'),
+    'benchpress_r40': ('BenchPress (rank 40)', ROSE, '-', 'P'),
     'random_sampling': ('Random-Sampling', GRAY, '--', 'o'),
     'random_sampling_learn': ('Random-Sampling-Learn', VANILLA_BLUE, '-', 'D'),
     'aipw': ('AIPW', CYAN_TEAL, '-', '^'),
     'gp_irt': ('GP-IRT', ANSWER_VIOLET, '-', 'v'),
+    'variant_logit': ('BenchPress (logit ALS)', ROSE, '-', 'P'),
     'variant_raw': ('Raw ALS (rank 8)', MEMENTO_MAGENTA, '-', 's'),
     'variant_group_logit': ('Logit ALS + subtask offsets', LAVENDER, '--', 'v'),
     'variant_group_raw': ('Raw ALS + subtask offsets', CYAN_TEAL, '-.', 'P'),
@@ -45,7 +47,8 @@ def main():
     args = ap.parse_args()
 
     with open(args.summary) as f:
-        table = json.load(f)['table']
+        summary = json.load(f)
+    table = summary['table']
     methods = args.methods if args.methods is not None else [
         method for method in STYLES if method in table['random']]
     has_variants = any(method.startswith('variant_') for method in methods)
@@ -55,6 +58,10 @@ def main():
     for ax, (selection, title) in zip(axes, titles.items()):
         for method in methods:
             label, color, ls, marker = STYLES[method]
+            if method == 'variant_logit':
+                label = f'BenchPress (rank {summary["config"]["rank"]})'
+            elif method == 'variant_raw' and 'config' in summary:
+                label = f'Raw ALS (rank {summary["config"]["rank"]})'
             rows = table[selection][method]
             budgets = sorted(int(b) for b in rows)
             mean = np.array([rows[str(b)]['medae_mean'] for b in budgets])

@@ -56,7 +56,7 @@ def fit_question_score_variant(M_train, column_groups, method, rank=8, lam=0.1):
     10-initialization schedule. Only the feature transform and grouped offset
     change. Bernoulli fitting operates directly on 0/1 answers.
     """
-    if method not in ('raw', 'group_logit', 'group_raw', 'group_binary',
+    if method not in ('logit', 'raw', 'group_logit', 'group_raw', 'group_binary',
                       'raw_shrink', 'task_mean_ridge', 'task_item_pcr'):
         raise ValueError(f'unknown question-score variant: {method}')
     matrix = np.asarray(M_train, dtype=float)
@@ -76,14 +76,14 @@ def fit_question_score_variant(M_train, column_groups, method, rank=8, lam=0.1):
         return 100 * pred, {'optimizer': diagnostics}
     ids = [f'q{j}' for j in range(matrix.shape[1])]
     options = {'rank': rank, 'lam': lam}
-    if method == 'raw':
+    if method in ('logit', 'raw'):
         completer = complete_bias_als
         options['normalize'] = False
     else:
         completer = complete_group_bias_als
         options['column_groups'] = column_groups
     predictor = make_score_predictor(
-        completer, 'logit' if method == 'group_logit' else 'identity',
+        completer, 'logit' if method in ('logit', 'group_logit') else 'identity',
         metric={name: {'type': 'pct', 'range': [0, 100]} for name in ids},
         benchmark_ids=ids, **options)
     return predictor(matrix), {'iterations': 40, 'n_ensemble': 10, 'base_seed': 42}

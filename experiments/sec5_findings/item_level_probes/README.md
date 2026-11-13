@@ -103,6 +103,21 @@ Low-rank fits use rank 8 and lambda 0.1. Ridge alpha is 0.1; item residuals
 use at most eight principal components per subtask. No rank or penalty
 selection is performed.
 
+The same runner accepts a fixed `--rank` (default 8). The explicitly selected
+`logit` method uses the original BenchPress predictor without residual
+correction; it is not included in the default seven-method set. For the
+requested rank-40 comparison:
+
+```bash
+python variants.py fit --methods logit --rank 40 --code-commit "$(git rev-parse HEAD)"
+```
+
+Only rank changes: lambda 0.1, 40 ALS iterations, ten initializations
+(42 through 51), pooled fitting, the existing two selections, five seeds, and
+six budgets remain fixed. Its 60 settings have a separate manifest and
+artifact directory; original predictions and summaries are reused unchanged.
+Run one setting first and reuse its artifact in the complete grid.
+
 | Variant | Fitting method |
 | --- | --- |
 | `raw` | Original Bias ALS with the identity feature transform |

@@ -21,6 +21,7 @@ METHODS = ['raw', 'group_logit', 'group_raw', 'group_binary',
            'raw_shrink', 'task_mean_ridge', 'task_item_pcr']
 RANK = 8
 LABELS = {
+    'logit': 'BenchPress (logit ALS)',
     'raw': 'Raw ALS',
     'group_logit': 'Logit ALS + subtask offsets',
     'group_raw': 'Raw ALS + subtask offsets',
@@ -36,14 +37,14 @@ def fit(args):
     methods = METHODS if args.methods is None else args.methods
     config = {
         'base_config_hash': ctx.chash, 'code_commit': args.code_commit,
-        'methods': methods, 'rank': RANK, 'lam': BP_LAM,
+        'methods': methods, 'rank': args.rank, 'lam': BP_LAM,
         'als': {'n_iter': 40, 'n_ensemble': 10, 'base_seed': 42,
                 'standardize_columns': True},
         'binary': {'max_iter': 400, 'n_ensemble': 10, 'base_seed': 42,
                    'ftol': 1e-7, 'gtol': 1e-4},
         'task_mean_ridge': {'alpha': BP_LAM, 'rank': None,
                             'n_features': len(ctx.data.column_ids)},
-        'task_item_pcr': {'alpha': BP_LAM, 'item_rank': RANK,
+        'task_item_pcr': {'alpha': BP_LAM, 'item_rank': args.rank,
                           'feature_residualization': 'training group means'},
         'fit': 'pooled low-rank fits on allowed answers; '
                'supervised ridge on fully observed training rows',
@@ -82,7 +83,7 @@ def fit(args):
                     start = time.time()
                     print(f'start {method} {selection} s={seed} B={budget}', flush=True)
                     completed, diagnostics = fit_question_score_variant(
-                        matrix, ctx.data.question_column, method, rank=RANK, lam=BP_LAM)
+                        matrix, ctx.data.question_column, method, rank=args.rank, lam=BP_LAM)
                     if not np.isfinite(completed).all():
                         raise ValueError(f'{method} returned nonfinite predictions')
                     if not np.array_equal(completed[np.isfinite(matrix)], matrix[np.isfinite(matrix)]):
@@ -95,7 +96,7 @@ def fit(args):
                     write_json_atomic(path, {
                         'config_hash': chash, 'code_commit': args.code_commit,
                         'method': method, 'selection': selection, 'seed': seed,
-                        'budget': budget, 'rank': None if method == 'task_mean_ridge' else RANK,
+                        'budget': budget, 'rank': None if method == 'task_mean_ridge' else args.rank,
                         'lam': BP_LAM,
                         'targets': ctx.held, 'mask_hash': mask_hash,
                         'questions_used': int(len(revealed)),
@@ -220,12 +221,15 @@ def main():
     parser.add_argument('--data', default=DEFAULT_DATA)
     parser.add_argument('--out-dir', default=DEFAULT_OUT)
     parser.add_argument('--code-commit', required=True)
-    parser.add_argument('--methods', nargs='+', choices=METHODS)
+    parser.add_argument('--methods', nargs='+', choices=['logit'] + METHODS)
+    parser.add_argument('--rank', type=int, default=RANK)
     parser.add_argument('--selections', type=lambda s: s.split(','))
     parser.add_argument('--seeds', type=int_list)
     parser.add_argument('--budgets', type=int_list)
     parser.add_argument('--variant-hash')
     args = parser.parse_args()
+    if args.rank < 1:
+        parser.error('--rank must be positive')
     if args.stage == 'summarize' and not args.variant_hash:
         parser.error('summarize requires --variant-hash')
     (fit if args.stage == 'fit' else summarize)(args)

@@ -11,12 +11,26 @@ from benchpress.methods.completers import (
 )
 from benchpress.methods.predictors import (
     fit_question_score_variant,
+    predict_logit_bias_als_scores,
     predict_group_mean_ridge_scores,
     predict_shrunk_group_residual_scores,
 )
 
 
 class QuestionVariantTests(unittest.TestCase):
+    def test_logit_variant_matches_original_predictor_at_requested_rank(self):
+        matrix = np.array([[0., 100., 0., 100.], [100., 0., 100., 0.],
+                           [0., 100., 100., 0.], [100., np.nan, 0., np.nan]])
+        ids = [f'q{j}' for j in range(matrix.shape[1])]
+        metric = {name: {'type': 'pct', 'range': [0, 100]} for name in ids}
+        for rank in (2, 40):
+            with self.subTest(rank=rank):
+                expected = predict_logit_bias_als_scores(
+                    matrix, rank=rank, lam=0.1, metric=metric, benchmark_ids=ids)
+                actual, _ = fit_question_score_variant(
+                    matrix, [0, 0, 1, 1], 'logit', rank=rank, lam=0.1)
+                np.testing.assert_array_equal(actual, expected)
+
     def test_group_offsets_recover_opposing_subtask_skills(self):
         groups = np.repeat([0, 1], 6)
         truth = np.repeat([[1., 4.], [2., 3.], [4., 1.], [3., 2.]], 6, axis=1)
