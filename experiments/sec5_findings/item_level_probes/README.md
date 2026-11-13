@@ -120,14 +120,10 @@ Run one setting first and reuse its artifact in the complete grid.
 
 The rank-40 run uses source commit
 `25d69878f9892db6bcd75149cdd31ab603fba995`, configuration
-`577115b7edd126a2`. CHTC canary `8530299` (`random`, seed 0, budget 200)
-passed the package tests and frozen-reference reproduction; fitting took
-2,914.49 seconds. Its median absolute error over 4,699 hidden model/subtask
-accuracies was 3.310 accuracy points, versus 4.498 for the frozen rank-8
-result. This is a single-setting pilot, not a five-seed grid result.
-Controller `8530550` (`~/bp_iclr/rank40.dag`) admitted the remaining 59 fits
-as grid `8530551`. The dependent summary requires all 60 settings, reusing
-the canary. Full-grid results are pending.
+`577115b7edd126a2`. CHTC canary `8530299` passed the package tests and
+frozen-reference reproduction. Controller `8530550` admitted the remaining
+59 fits as grid `8530551`; summary job `8530646` verified all 60 settings,
+reusing the canary. The complete comparison is reported below.
 Raw archives go to `CHTC:$STAGING/bp_iclr/question_rank40/`, where
 `$STAGING=/staging/y/yzeng58`; the final compact summary is `summary.tar.gz`
 in that directory. This avoids adding the grid to the nearly full AP home.
@@ -201,6 +197,9 @@ Transfer this compact bundle and the job log back to the AP; retain the
 original per-job archives as the raw prediction source. This avoids an
 additional full merge, input tarball, and duplicate prediction archive in
 the AP home directory.
+For shards stored in CHTC staging, use `file:///staging/...` input URLs and
+`requirements = (TARGET.HasCHTCStaging == true)`; plain `/staging/...` paths
+in `transfer_input_files` are rejected by the scheduler.
 
 ## Exploratory results (2026-11-12)
 
@@ -322,3 +321,78 @@ reference rows; no additional rank fits were run for this exploration.
 `--methods` selects displayed curves without changing the saved results.
 The evaluation runner and shared metric are unchanged. Rebuttal and Overleaf
 text are outside this method-only exploration.
+
+## Fixed-rank BenchPress results (2026-11-13)
+
+Rank 40 reduces mean MedAE by 24.7% to 34.6% relative to rank 8 across all
+12 selection/budget cells, but does not remove the large-budget plateau.
+Error rises again at 6400 questions under both selections. Raw ALS with
+shrunk residuals at rank 8 has lower mean error from 800 questions onward.
+
+Only rank changed from the original pooled BenchPress fit: logit transform,
+column standardization, lambda 0.1, 40 ALS iterations, ten initializations,
+data, split, revealed questions, hidden targets, and scoring are unchanged.
+All 60 settings completed. This extends the same exploratory model split,
+not an independent validation split.
+
+MedAE is the median absolute error over 127 held-out models times 37
+subtasks (4,699 hidden-accuracy predictions), in accuracy points; lower is
+better. Each cell below averages five question-selection seeds. The JSON
+retains all per-seed values and their sample standard deviations.
+
+### Random questions
+
+| Method | 200 | 400 | 800 | 1600 | 3200 | 6400 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| BenchPress (rank 8) | 4.582 | 4.397 | 4.320 | 4.296 | 4.298 | 4.565 |
+| BenchPress (rank 40) | 3.431 | 3.131 | 2.923 | 2.823 | 2.834 | 3.061 |
+| Raw ALS + shrunk residuals (rank 8) | 3.608 | 3.158 | 2.792 | 2.552 | 2.475 | 2.348 |
+| Random-Sampling-Learn | 3.973 | 3.376 | 2.675 | 2.222 | 1.966 | 1.928 |
+
+### GP-IRT anchor questions
+
+| Method | 200 | 400 | 800 | 1600 | 3200 | 6400 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| BenchPress (rank 8) | 4.508 | 4.308 | 4.214 | 4.205 | 4.243 | 4.533 |
+| BenchPress (rank 40) | 3.394 | 3.091 | 2.834 | 2.774 | 2.773 | 2.998 |
+| Raw ALS + shrunk residuals (rank 8) | 3.430 | 3.043 | 2.701 | 2.451 | 2.354 | 2.275 |
+| Random-Sampling-Learn | 3.848 | 3.085 | 2.518 | 2.056 | 1.843 | 1.824 |
+
+The actual anchor counts and seed interpretation are the same as above.
+Baseline and rank-8 variant results were reused, not refitted.
+
+### Runtime and artifacts
+
+CHTC jobs requested one CPU and 8 GB RAM each, using Python 3.11,
+NumPy 2.4.6, SciPy 1.17.1, scikit-learn 1.9.1, and pandas 3.1.1.
+Median recorded fit time was 3,354.820 seconds, with a range of
+2,429.201 to 7,839.841 seconds. These exclude scheduling and environment
+setup; hosts varied. No GPU or new model inference was used.
+
+All 60 raw archives are retained under
+`CHTC:$STAGING/bp_iclr/question_rank40/`, with names
+`out_variant_logit_r40_<selection>_s<seed>_B<budget>.tar.gz`.
+The compact `summary.tar.gz` contains
+`results/variants/577115b7edd126a2/{manifest,pilot_summary,summary}.json`.
+The full summary has `complete_grid=true`, 60 fit diagnostics, and 480
+per-seed metric rows including the seven frozen reference methods.
+Its SHA256 is
+`5ddf9dc4bac882452679eda2cfdb2b578b5f591e2c59eeade295414105fb48bc`.
+It reproduces the same frozen reference-summary hash documented above.
+
+`results/variants/rank40_comparison.json` is a derived merge of this summary
+and the prior comparison. Its source hashes and method alias record that
+`benchpress_r40` comes from `variant_logit` in configuration
+`577115b7edd126a2`. It retains all 900 unique per-seed rows and 480 fit
+diagnostics across the method explorations without modifying source outputs.
+The focused figure uses:
+
+```bash
+python plot.py --summary results/variants/rank40_comparison.json \
+  --name bp_rank40_comparison --methods benchpress_r8 benchpress_r40 \
+  variant_raw_shrink random_sampling_learn
+```
+
+Lines show five-seed means; shaded bands show one sample standard deviation,
+not confidence intervals. The default predictor, evaluation runner,
+rebuttal, and Overleaf text are unchanged.
