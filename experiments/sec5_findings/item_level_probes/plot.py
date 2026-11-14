@@ -107,13 +107,15 @@ def main():
     ap.add_argument('--summary', default=os.path.join(HERE, 'results', 'summary.json'))
     ap.add_argument('--name')
     ap.add_argument('--methods', nargs='+', choices=list(STYLES))
+    ap.add_argument('--selections', nargs='+', choices=['random', 'anchors'])
+    ap.add_argument('--xlabel')
     args = ap.parse_args()
 
     with open(args.summary) as f:
         summary = json.load(f)
     if summary.get('config', {}).get('comparison') == 'question_selection':
-        if args.methods is not None:
-            raise ValueError('the selection comparison always plots all compared policies at the evaluated ranks')
+        if any(value is not None for value in (args.methods, args.selections, args.xlabel)):
+            raise ValueError('the selection comparison uses all compared policies and its fixed axis labels')
         plot_selection(summary, args.name or 'bp_question_selection')
         return
     table = summary['table']
@@ -122,18 +124,23 @@ def main():
     name = args.name or ('bp_question_accuracy' if accuracy else 'bp_question_level_budgets')
     methods = args.methods if args.methods is not None else [
         method for method in STYLES if method in table['random']]
-    if accuracy and any(set(methods) != set(rows) for rows in table.values()):
-        raise ValueError('the accuracy figure must include every scored method')
-    if accuracy and set(methods) != {'benchpress_r8', 'benchpress_r40',
-                                     'gp_irt_items', 'aipw_items'}:
+    titles = {'random': 'Random questions', 'anchors': 'GP-IRT anchor questions'}
+    selections = args.selections if args.selections is not None else list(titles)
+    if len(set(methods)) != len(methods) or len(set(selections)) != len(selections):
+        raise ValueError('methods and selections must be distinct')
+    if accuracy and any(not set(methods).issubset(table[selection]) for selection in selections):
+        raise ValueError('requested accuracy methods must be present in every selected panel')
+    if accuracy and (not methods or not set(methods).issubset({
+            'benchpress_r8', 'benchpress_r40', 'gp_irt_items', 'aipw_items'})):
         raise ValueError('accuracy requires native question predictors, not broadcast subtask means')
     field = 'accuracy' if accuracy else 'medae'
     has_variants = any(method.startswith('variant_') for method in methods)
-    titles = {'random': 'Random questions', 'anchors': 'GP-IRT anchor questions'}
     apply_single()
     height = 6.5 if accuracy else (7 if has_variants else 5.5)
-    fig, axes = plt.subplots(1, 2, figsize=(14, height), sharey=True)
-    for ax, (selection, title) in zip(axes, titles.items()):
+    fig, axes = plt.subplots(1, len(selections), figsize=(7 * len(selections), height),
+                             sharey=True, squeeze=False)
+    axes = axes[0]
+    for ax, selection in zip(axes, selections):
         for method in methods:
             label, color, ls, marker = STYLES[method]
             if method == 'variant_logit':
@@ -149,11 +156,11 @@ def main():
             ax.plot(budgets, mean, color=color, linestyle=ls, marker=marker,
                     label=label, zorder=zorder)
             ax.fill_between(budgets, mean - std, mean + std, color=color, alpha=0.15, linewidth=0)
-        ax.set_title(title)
+        ax.set_title(titles[selection])
         ax.set_xscale('log', base=2)
         ax.set_xticks(budgets)
         ax.set_xticklabels([str(b) for b in budgets])
-        ax.set_xlabel('Evaluated questions per model')
+        ax.set_xlabel(args.xlabel if args.xlabel is not None else 'Evaluated questions per model')
         if not accuracy:
             ax.set_ylim(bottom=0)
         ax.grid(alpha=0.3)
@@ -163,7 +170,8 @@ def main():
     axes[0].set_ylabel('Accuracy (%)' if accuracy else 'MedAE (accuracy points)')
     if accuracy:
         fig.legend(*axes[0].get_legend_handles_labels(), loc='lower center',
-                   bbox_to_anchor=(0.5, 0.06), ncol=2, frameon=False, fontsize=15)
+                   bbox_to_anchor=(0.5, 0.04 if len(selections) == 1 else 0.06),
+                   ncol=2, frameon=False, fontsize=15)
         fig.subplots_adjust(bottom=0.28)
     elif has_variants:
         fig.legend(*axes[0].get_legend_handles_labels(), loc='lower center',

@@ -725,9 +725,23 @@ python plot.py --summary results/accuracy/0b10e5b35d18180a/summary.json \
   --name bp_question_accuracy
 ```
 
+For the Q1 rebuttal figure, retain only random questions and three predictors:
+
+```bash
+python plot.py --summary results/accuracy/0b10e5b35d18180a/summary.json \
+  --methods benchpress_r40 gp_irt_items aipw_items --selections random \
+  --xlabel 'Known scores per model' --name bp_question_accuracy_random
+```
+
+This saved-summary projection preserves all six budgets and five-seed sample
+standard deviations. Known scores are the revealed binary question outcomes;
+GP-IRT and AIPW denote their internal IRT and ridge question predictors.
+The resulting PDF/PNG are embedded alongside the Q1 draft in the parent
+submission repository at `benchpress/rebuttal/iclr-2027/`.
+
 The figure shows means and one sample standard deviation, not confidence
 intervals. Local delivery copies are in
 `~/Downloads/benchpress-question-variants/`: `bp_question_accuracy.pdf`,
 `bp_question_accuracy.png`, `native-accuracy-summary.json`,
 `native-accuracy-table.csv`, and `native-accuracy-per-seed.csv`.
-The aggregate-score results, rebuttal, and Overleaf text remain unchanged.
+The aggregate-score results and Overleaf text remain unchanged.
