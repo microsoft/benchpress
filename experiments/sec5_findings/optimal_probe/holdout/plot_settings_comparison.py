@@ -3,6 +3,7 @@
 import hashlib
 import os
 import sys
+import textwrap
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT = os.path.abspath(os.path.join(HERE, '..', '..', '..', '..'))
@@ -19,6 +20,13 @@ from matplotlib.colors import to_rgba
 import numpy as np
 
 STEM = 'bp_main_vs_heldout_medae'
+CAPTION = (
+    'Main experiment above, held-out below; cost-unaware left, cost-aware right. '
+    'Pooled MedAE (score points; lower is better); pointwise 95% model-bootstrap '
+    'intervals (2,000 resamples), with the split, probes, and predictions fixed. '
+    'The budget $k$ counts requested probes; unavailable probes reveal no scores, '
+    'and revealed cells leave the test set.'
+)
 
 
 def main():
@@ -156,6 +164,10 @@ def main():
     upper_limit = max(10, np.ceil(max(r['ci_upper'] for r in intervals)))
     axes[0, 0].set_ylim(lower_limit, upper_limit)
     axes[0, 0].set_yticks(np.arange(lower_limit, upper_limit + 1))
+    fig.text(0.02, -0.025, textwrap.fill(CAPTION, width=116,
+                                      break_long_words=False, break_on_hyphens=False),
+             ha='left', va='top', fontsize=15, fontstyle='italic',
+             linespacing=1.35, color=CHARCOAL)
     save_fig(STEM)
     sources = []
     for path in source_paths:
@@ -172,25 +184,8 @@ def main():
         },
         'sources': sources, 'data': plotted,
     }, indent=2)
-    caption = (
-        '**Main and held-out probe experiments.** Top: probe selection and '
-        'evaluation on the main 84-model matrix; each target is predicted using '
-        'the other 83 model rows and its available probe scores. Bottom: probes '
-        'selected on 59 models are evaluated on 25 held-out models, one target '
-        'at a time. Left: cost-unaware greedy; right: cost-aware greedy. All '
-        'panels show pooled median absolute error (MedAE, lower is better), '
-        'using the original MedAE-selected probe orderings. Methods share the '
-        'same revealed scores and test cells within each panel at each budget. '
-        'The settings use different probe sets and evaluation cells. Requested '
-        'probes may be unavailable, and newly revealed scores leave the test set. '
-        'All four panels compare BenchPress, offsets only (which removes '
-        'the two latent factors), and logit-space model mean. Bars are '
-        'pointwise 95% percentile intervals '
-        'from 2,000 model-cluster bootstrap resamples (seed 42), paired across '
-        'methods and budgets within each setting. Model splits, probe '
-        'orderings, and fitted predictions remain fixed.\n')
     with open(os.path.join(HERE, 'figures', STEM + '_caption.md'), 'w') as handle:
-        handle.write(caption)
+        handle.write('*' + CAPTION + '*\n')
 
 
 if __name__ == '__main__':
