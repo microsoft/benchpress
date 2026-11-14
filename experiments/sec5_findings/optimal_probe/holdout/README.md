@@ -141,6 +141,7 @@ across predictors within a budget but change across budgets.
 ```bash
 python plot_baselines.py
 python plot_baselines.py --metric medape
+python plot_baselines.py --metric both
 ```
 
 Outputs: `figures/bp_heldout_probe_baselines.pdf` and `.png`, plus
@@ -156,6 +157,14 @@ The `--metric medape` variant writes the same four files with stem
 `bp_heldout_probe_baselines_medape`. It keeps the MedAE-selected probes and
 changes only the plotted metric. MedAPE excludes zero true scores. All 60
 plotted values are checked against the saved baseline summaries.
+
+The `--metric both` variant writes one four-panel figure with stem
+`bp_heldout_probe_baselines_both`: MedAE on the top row, MedAPE on the bottom,
+cost-unaware probes on the left, and cost-aware probes on the right. All 120
+plotted values match the original summaries. Its PNG is embedded in the local
+ICLR rebuttal W1-2 / Q1 draft, with a short caption and the original 59/25
+evaluation scope. OpenReview comments do not render images, so submission
+requires an anonymous figure link or revised-paper appendix reference.
 
 ## Matched revealed-count comparison
 
@@ -214,7 +223,7 @@ cells; rows 1 to 3 therefore differ from the wider-cohort table above.
 | 5 | 4.57 / 4.92 / 6.02 | 6.16 / 6.51 / 9.92 |
 
 The order remains BenchPress / offsets only / model mean. The five-count table
-is used in ICLR rebuttal R-sCbk Q1 and W1-2. Its small, availability-selected
+is a separate matched-subset diagnostic. Its small, availability-selected
 cohorts limit generalization; the reported advantage is in pooled MedAE and
 does not imply a majority of per-model wins. The parameterized summarizer
 reproduces the original three-count JSON byte for byte.
