@@ -104,6 +104,60 @@ NPZs/checksums, and exact evaluation question IDs. Scored outputs are in
 seed/budget grid). Existing predictions, figures,
 MedAE summaries, rebuttal, and Overleaf text remain unchanged.
 
+#### Completed selection comparison
+
+The rank-40 comparison completed on CHTC on November 14, 2026. Accuracy is
+the percentage of held-out model/question pairs whose binary answer
+correctness is predicted correctly; higher is better. Both policies use the
+same unrevealed questions within each seed/budget. Values below are means
+and sample standard deviations over five seeds; gains are selected minus
+random in percentage points.
+
+| Questions per model | Random accuracy (%) | BenchPress-selected accuracy (%) | Paired gain (pp) |
+| --- | --- | --- | --- |
+| 200 | 79.564 ± 0.229 | 79.501 ± 0.184 | -0.063 ± 0.341 |
+| 400 | 80.612 ± 0.132 | 80.887 ± 0.127 | +0.275 ± 0.196 |
+| 800 | 81.457 ± 0.320 | 81.548 ± 0.128 | +0.092 ± 0.358 |
+| 1600 | 81.965 ± 0.114 | 81.994 ± 0.249 | +0.029 ± 0.307 |
+| 3200 | 81.851 ± 0.216 | 81.931 ± 0.167 | +0.081 ± 0.077 |
+| 6400 | 86.206 ± 0.053 | 86.218 ± 0.057 | +0.012 ± 0.017 |
+
+This profile-clustering selector gives small mean gains at five budgets,
+with the largest at 400 questions; it slightly decreases mean accuracy at
+200. The paired gains measure selection quality at each budget. Absolute
+accuracies across budgets use different evaluation question sets, with
+1,385,951 to 2,639,568 model/question pairs per setting.
+
+The one-time training-profile fit took 46.2 minutes. Selecting each question
+set took 0.74 to 23.48 seconds (median 2.31 seconds). The 30 prediction fits
+took 37.9 to 117.4 minutes each (median 73.6 minutes), using one CPU per job;
+these are wall times on the allocated workers. Random predictions were
+reused. Numerical runtime: Python 3.11.18, NumPy 2.4.6, SciPy 1.17.1,
+scikit-learn 1.9.1.
+
+| Artifact or stage | Provenance |
+| --- | --- |
+| Profiles and selected-question fits | Source `963bd24d5e0932a4efeb01053ba67aca6f14cf1c`; configuration `a6d858760138c8e7` |
+| Paired scoring | Source `2df380d593d44199e35a1bf7b9a1482046b739b5`; evaluated ranks `[40]`; configuration `2afb2f4eb6822707` |
+| CHTC jobs | Profiles `8627467`; canary fit `8635377`; remaining 29 fits `8654137`; full scorer `8666984` |
+| Persistent archive directory | `CHTC:/staging/y/yzeng58/bp_iclr/question_selection/963bd24d5e0932a4efeb01053ba67aca6f14cf1c/` |
+| Raw artifacts | `profiles.tar.gz` and `out_selection_s{seed}_B{budget}_963bd24.tar.gz` in that directory |
+| Compact scored archive | `summary_2df380d593d44199e35a1bf7b9a1482046b739b5.tar.gz` in that directory |
+| Summary inside archive | `results/question_selection/a6d858760138c8e7/scores/2afb2f4eb6822707/summary.json` |
+| Summary SHA256 | `7359951d896ac9e8fd9a08173d805fc40551920665738de8717d489c72302f16` |
+
+All 30 raw prediction checksums and exact unique selection budgets were
+verified. The summary contains 60 accuracy records, 30 paired gains,
+30 evaluation masks, 12 aggregate accuracy cells, and six aggregate gain
+cells. Both policies share each setting's denominator and mask hash.
+The complete scorer reproduces the seed-0, budget-200 canary exactly.
+
+The derived PDF, PNG, `table.csv`, and `summary.json` are delivered under
+`~/Downloads/benchpress-question-selection/`. Recreate the single-panel
+figure from the saved summary with
+`python plot.py --summary <summary.json> --name bp_question_selection`.
+The source archive and configuration above remain the canonical result.
+
 ### Binary question-prediction accuracy
 
 `baselines.py summarize` scores the individual binary answers on unrevealed
