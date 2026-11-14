@@ -42,7 +42,7 @@ STYLES = {
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument('--summary', default=os.path.join(HERE, 'results', 'summary.json'))
-    ap.add_argument('--name', default='bp_question_level_budgets')
+    ap.add_argument('--name')
     ap.add_argument('--methods', nargs='+', choices=list(STYLES))
     args = ap.parse_args()
 
@@ -51,6 +51,7 @@ def main():
     table = summary['table']
     metric = summary.get('config', {}).get('metric', {})
     accuracy = metric.get('name') == 'binary_accuracy'
+    name = args.name or ('bp_question_accuracy_all' if accuracy else 'bp_question_level_budgets')
     methods = args.methods if args.methods is not None else [
         method for method in STYLES if method in table['random']]
     if accuracy and any(set(methods) != set(rows) for rows in table.values()):
@@ -74,18 +75,22 @@ def main():
             budgets = sorted(int(b) for b in rows)
             mean = np.array([rows[str(b)][field + '_mean'] for b in budgets])
             std = np.array([rows[str(b)][field + '_std'] for b in budgets])
-            ax.plot(budgets, mean, color=color, linestyle=ls, marker=marker, label=label)
+            zorder = 3 if accuracy and method in {
+                'benchpress_r8', 'variant_group_logit'} else 2
+            ax.plot(budgets, mean, color=color, linestyle=ls, marker=marker,
+                    label=label, zorder=zorder)
             ax.fill_between(budgets, mean - std, mean + std, color=color, alpha=0.15, linewidth=0)
         ax.set_title(title)
         ax.set_xscale('log', base=2)
         ax.set_xticks(budgets)
         ax.set_xticklabels([str(b) for b in budgets])
         ax.set_xlabel('Evaluated questions per model')
-        if accuracy:
-            ax.set_ylim(0, 100)
-        else:
+        if not accuracy:
             ax.set_ylim(bottom=0)
         ax.grid(alpha=0.3)
+    if accuracy:
+        lower, upper = axes[0].get_ylim()
+        axes[0].set_ylim(max(0, lower), min(100, upper))
     axes[0].set_ylabel('Accuracy (%)' if accuracy else 'MedAE (accuracy points)')
     if has_variants:
         fig.legend(*axes[0].get_legend_handles_labels(), loc='lower center',
@@ -99,7 +104,7 @@ def main():
                  r'$\dagger$ Subtask-constant predictions. Hidden questions only; '
                  r'predict 1 iff score $>0.5$. Bands: one seed standard deviation.',
                  ha='center', fontsize=10)
-    save_fig(args.name)
+    save_fig(name)
 
 
 if __name__ == '__main__':
