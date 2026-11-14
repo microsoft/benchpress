@@ -43,6 +43,7 @@ STYLES = {
 
 def plot_selection(summary, name):
     table = summary['table']
+    ranks = summary['config']['ranks']
     policies = {
         'random': dict(PROBE_RANDOM_STYLE, label='Random questions'),
         'benchpress_anchors': {
@@ -52,12 +53,14 @@ def plot_selection(summary, name):
     }
     if (not summary['complete_grid']
             or summary['config']['metric']['name'] != 'binary_accuracy'
-            or set(table) != {'benchpress_r8', 'benchpress_r40'}
+            or not ranks or set(table) != {f'benchpress_r{rank}' for rank in ranks}
             or any(set(rows) != set(policies) for rows in table.values())):
-        raise ValueError('selection figure requires the complete two-policy, two-rank comparison')
+        raise ValueError('selection figure requires both policies for every evaluated rank')
     apply_single()
-    fig, axes = plt.subplots(1, 2, figsize=(14, 6.5), sharey=True)
-    for ax, rank in zip(axes, (8, 40)):
+    fig, axes = plt.subplots(1, len(ranks), figsize=(7 * len(ranks), 6.5),
+                             sharey=True, squeeze=False)
+    axes = axes[0]
+    for ax, rank in zip(axes, ranks):
         for policy, style in policies.items():
             rows = table[f'benchpress_r{rank}'][policy]
             budgets = sorted(map(int, rows))
@@ -96,7 +99,7 @@ def main():
         summary = json.load(f)
     if summary.get('config', {}).get('comparison') == 'question_selection':
         if args.methods is not None:
-            raise ValueError('the selection comparison always plots both policies and ranks')
+            raise ValueError('the selection comparison always plots both policies at the evaluated ranks')
         plot_selection(summary, args.name or 'bp_question_selection')
         return
     table = summary['table']

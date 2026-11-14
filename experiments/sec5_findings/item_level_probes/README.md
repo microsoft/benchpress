@@ -57,8 +57,8 @@ and the mean and sample std across the five seeds.
 ### BenchPress question selection versus random
 
 `selection.py` compares only two question-selection policies, with the same
-BenchPress predictor at ranks 8 and 40. It reuses the frozen random-selection
-predictions (`8e7e521f9645ce06` and `577115b7edd126a2`); it never refits random
+rank-40 BenchPress predictor. It reuses the frozen rank-40 random-selection
+predictions (`577115b7edd126a2`); it never refits random
 or runs GP-IRT/AIPW. The split, budgets, five seeds, and per-subtask allocation
 remain fixed.
 
@@ -74,11 +74,10 @@ number of questions: k-means++ initialization, three initializations, batches
 of 1024, at most 100 iterations, ten non-improving batches before stopping,
 and seed `1000*selection_seed+subtask`. Each center contributes its nearest
 unused actual question, with index-order tie breaking. Duplicate profiles
-therefore cannot reduce the allocated budget. Both predictor ranks use exactly
-the same selected IDs. Each prediction fit sees the training rows and all
+therefore cannot reduce the allocated budget. Each prediction fit sees the training rows and all
 127 held-out rows' selected answers, as in the frozen random runs.
 
-For each seed and budget, both policies and ranks are scored on the same
+For each seed and budget, both policies are scored on the same
 questions: those unrevealed by either policy. `compute_binary_accuracy` uses
 the existing strict `>0.5` rule. The old random scalar accuracies are not reused:
 their raw predictions are rescored on this paired mask. Evaluation populations
@@ -89,15 +88,20 @@ an exploratory comparison on the previously used fixed model split.
 
 From the repository root, run `python -m
 experiments.sec5_findings.item_level_probes.selection` with stages `profiles`,
-`select`, `fit`, and `summarize`, each with `--code-commit <source-commit>`.
+`select`, `fit`, and `summarize`, each with `--code-commit <source-commit>`;
+use `--ranks 40` for fitting and scoring.
 Stages after `profiles` require `--selection-hash <hash>`; `--seeds`,
-`--budgets`, and `fit --ranks` restrict units for canaries/resume.
+`--budgets` restrict units for canaries/resume. Training profiles and prediction
+fits retain their original source manifest when reused. Scoring has its own
+configuration hash, including evaluated ranks and the scorer commit, so
+changing the evaluation scope cannot overwrite or relabel source artifacts.
 Use Python 3.11.18 with `requirements-selection.txt`, matching the frozen
 random fits' numerical-library versions. Outputs under
 `results/question_selection/<hash>/` include the training-profile NPZ,
 manifest, selected global question IDs and timings, per-setting prediction
-NPZs/checksums, exact evaluation question IDs, and `summary.json`
-(`pilot_summary.json` for an incomplete grid). Existing predictions, figures,
+NPZs/checksums, and exact evaluation question IDs. Scored outputs are in
+`scores/<score-hash>/summary.json` (`pilot_summary.json` for an incomplete
+seed/budget grid). Existing predictions, figures,
 MedAE summaries, rebuttal, and Overleaf text remain unchanged.
 
 ### Binary question-prediction accuracy

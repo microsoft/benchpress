@@ -84,7 +84,7 @@ def profiles(args):
             'seed': '1000 * selection_seed + subtask',
             'representative': 'nearest unused question per fitted center; index breaks ties',
         },
-        'ranks': RANKS, 'lam': BP_LAM,
+        'ranks': args.ranks, 'lam': BP_LAM,
         'als': {'n_iter': 40, 'n_ensemble': 10, 'base_seed': 42,
                 'standardize_columns': True},
         'fit': 'pooled training rows and held-out rows with only selected answers revealed',
@@ -217,7 +217,10 @@ def summarize(args):
     root = os.path.join(ctx.out, 'question_selection', args.selection_hash)
     load_profiles(ctx, root, args.selection_hash)
     config = manifest['config']
-    for rank in RANKS:
+    ranks = sorted(args.ranks)
+    if not ranks or not set(ranks).issubset(config['ranks']):
+        raise ValueError('requested ranks are not in the fitted configuration')
+    for rank in ranks:
         chash = config['random_sources'][str(rank)]
         with open(os.path.join(ctx.out, 'variants', chash, 'manifest.json')) as f:
             original = json.load(f)
@@ -227,8 +230,14 @@ def summarize(args):
                 or cfg['methods'] != ['logit'] or cfg['lam'] != config['lam']
                 or cfg['als'] != config['als']):
             raise ValueError('random reference differs from the fixed predictor settings')
-    seeds = ctx.subset(args.seeds, 'seeds')
-    budgets = ctx.subset(args.budgets, 'budgets')
+    seeds = sorted(ctx.subset(args.seeds, 'seeds'))
+    budgets = sorted(ctx.subset(args.budgets, 'budgets'))
+    score_config = dict(
+        config, ranks=ranks, seeds=seeds, budgets=budgets,
+        source_config_hash=args.selection_hash, fit_code_commit=config['code_commit'],
+        code_commit=args.code_commit, scoring_runtime=RUNTIME,
+        random_sources={str(r): config['random_sources'][str(r)] for r in ranks})
+    score_hash = config_hash(score_config)
     records, pairs, masks = [], [], []
     truth = ctx.data.answers[ctx.held]
     for seed in seeds:
@@ -252,7 +261,7 @@ def summarize(args):
                 'per_subtask': [int(np.isin(q, common).sum()) for q in ctx.data.col_questions],
                 'selection_seconds': selection['seconds'],
             })
-            for rank in RANKS:
+            for rank in ranks:
                 scores = {}
                 for policy in ('random', 'benchpress_anchors'):
                     if policy == 'random':
@@ -288,7 +297,7 @@ def summarize(args):
     if len(records) != len({(r['rank'], r['selection'], r['seed'], r['budget']) for r in records}):
         raise ValueError('duplicate paired accuracy rows')
     table, gains = {}, {}
-    for rank in RANKS:
+    for rank in ranks:
         method = f'benchpress_r{rank}'
         for budget in budgets:
             for policy in ('random', 'benchpress_anchors'):
@@ -311,13 +320,14 @@ def summarize(args):
     complete = (set(seeds) == set(ctx.config['seeds'])
                 and set(budgets) == set(ctx.config['budgets']))
     name = 'summary.json' if complete else 'pilot_summary.json'
-    write_json_atomic(os.path.join(root, name), {
-        **manifest, 'summarize_commit': args.code_commit, 'complete_grid': complete,
+    output = os.path.join(root, 'scores', score_hash, name)
+    write_json_atomic(output, {
+        'config': score_config, 'config_hash': score_hash, 'complete_grid': complete,
         'n_models': len(ctx.held), 'n_questions': truth.shape[1],
         'per_seed': records, 'paired_gains': pairs, 'table': table, 'gains': gains,
         'evaluation_masks': masks,
     })
-    print(f'wrote {root}/{name}; complete_grid={complete}', flush=True)
+    print(f'wrote {output}; complete_grid={complete}', flush=True)
 
 
 def main():
@@ -329,7 +339,7 @@ def main():
     parser.add_argument('--selection-hash')
     parser.add_argument('--seeds', type=int_list)
     parser.add_argument('--budgets', type=int_list)
-    parser.add_argument('--ranks', nargs='+', type=int, choices=RANKS, default=RANKS)
+    parser.add_argument('--ranks', nargs='+', type=int, choices=RANKS, default=[40])
     args = parser.parse_args()
     if args.stage != 'profiles' and not args.selection_hash:
         parser.error('this stage requires --selection-hash')

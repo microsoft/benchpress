@@ -43,6 +43,7 @@ class QuestionSelectionTests(unittest.TestCase):
                     'selection_hash': config_hash([[1], [4]])}
         config = {
             'base_config_hash': 'base', 'lam': 0.1, 'als': {},
+            'ranks': [8, 40], 'code_commit': 'fit',
             'random_sources': {}, 'metric': {'stored_score_scale': 100., 'threshold': 0.5},
         }
         grid = {'seeds': [0], 'budgets': [2]}
@@ -60,7 +61,7 @@ class QuestionSelectionTests(unittest.TestCase):
                 out=root, chash='base', data=data, held=[1], config=grid,
                 subset=lambda values, key: grid[key] if values is None else values)
             args = SimpleNamespace(selection_hash='selected', seeds=None, budgets=None,
-                                   code_commit='scorer')
+                                   code_commit='scorer', ranks=[40])
             units = [{'targets': [1], 'seed': 0, 'budget': 2, 'column': j} for j in (0, 1)]
 
             def predictions(ctx, path, chash, selected):
@@ -85,10 +86,17 @@ class QuestionSelectionTests(unittest.TestCase):
                         {'random': [np.array([0]), np.array([0])]}, units)), \
                     patch.object(selection, 'load_question_predictions', side_effect=predictions):
                 selection.summarize(args)
-            with open(os.path.join(root, 'question_selection', 'selected', 'summary.json')) as f:
+            scores = os.path.join(root, 'question_selection', 'selected', 'scores')
+            hashes = os.listdir(scores)
+            self.assertEqual(len(hashes), 1)
+            with open(os.path.join(scores, hashes[0], 'summary.json')) as f:
                 summary = json.load(f)
+            self.assertEqual(hashes[0], config_hash(summary['config']))
         self.assertEqual(summary['evaluation_masks'][0]['questions'], [2, 5])
-        self.assertEqual(len(summary['per_seed']), 4)
+        self.assertEqual(summary['config']['ranks'], [40])
+        self.assertEqual(summary['config']['fit_code_commit'], 'fit')
+        self.assertEqual(set(summary['table']), {'benchpress_r40'})
+        self.assertEqual(len(summary['per_seed']), 2)
         for row in summary['per_seed']:
             self.assertEqual(row['n'], 2)
             self.assertEqual(row['accuracy'], 50. if row['selection'] == 'random' else 100.)
