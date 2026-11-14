@@ -151,3 +151,17 @@ ICLR figure: `plot.py --compare --hidden-only --metric medape --all-in fixed_ord
 `tab:probe_sets` and two most-reported-first baselines (`coverage_any`,
 `coverage_low_cost`; construction and counts recorded per ordering). Its unrestricted k=5 prefix matches the brute-force diagnostic
 set `gpqa_diamond, hle, codeforces_rating, mmlu_pro, arc_agi_1` up to ordering.
+
+## MedAPE comparison with offsets only
+
+`python plot_offsets.py` plots BenchPress and offsets only across 1 through 10
+requested probes in the main 84-model setup, using the same MedAE-selected
+orderings as the main MedAE results. Inputs are
+`results/fixed_order_medae_{any,low_cost}{,_rank0}_hidden_only.json.gz`.
+The output stem is `figures/bp_main_probe_offsets_medape`, with vector PDF,
+PNG, caption, and a JSON companion containing all 40 values and source hashes.
+Plotting requires no predictor fitting. The raw prediction cells and labels
+match across methods at each budget; the canonical metric reproduces all 40
+summary values. The x-axis counts requested probes, and MedAPE is pooled over
+unrevealed cells with nonzero true scores. This standalone figure is distinct
+from Figure 10's MedAPE-selected ordering and the 59/25 held-out-model figure.

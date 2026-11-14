@@ -1,0 +1,201 @@
+{
+  "metric": "pooled MedAPE on unrevealed observed cells with nonzero true score",
+  "n_selection_models": 84,
+  "n_evaluated_models": 84,
+  "sources": [
+    {
+      "path": "results/fixed_order_medae_any_hidden_only.json.gz",
+      "sha256": "2276a507b404c5cbae192e4eaf66756ba295310baf8e6590b913119aeafc4ca1",
+      "manifest": {
+        "git_commit": "2f1ca06c3de8ce151b44533fda768c506ee829e1",
+        "matrix_identity_sha256": "9603f902534fb79bf9e8ae042297268ee54d8e60e5647397d15f71562d3889f8",
+        "matrix_shape": [
+          84,
+          133
+        ],
+        "n_observed": 2604
+      }
+    },
+    {
+      "path": "results/fixed_order_medae_any_rank0_hidden_only.json.gz",
+      "sha256": "eed9c70fb1e6327bf72f2cd9d312224d2ce477bff3d9104691c60afba31c4904",
+      "manifest": {
+        "git_commit": "9ac99635f556bfec943aeae1253cdf6db7ea41bf",
+        "matrix_identity_sha256": "9603f902534fb79bf9e8ae042297268ee54d8e60e5647397d15f71562d3889f8",
+        "matrix_shape": [
+          84,
+          133
+        ],
+        "n_observed": 2604
+      }
+    },
+    {
+      "path": "results/fixed_order_medae_low_cost_hidden_only.json.gz",
+      "sha256": "84628ea956c18e48e6eca045a767f32efddea9255b9eeef45bc2ce53c0b8f958",
+      "manifest": {
+        "git_commit": "2f1ca06c3de8ce151b44533fda768c506ee829e1",
+        "matrix_identity_sha256": "9603f902534fb79bf9e8ae042297268ee54d8e60e5647397d15f71562d3889f8",
+        "matrix_shape": [
+          84,
+          133
+        ],
+        "n_observed": 2604
+      }
+    },
+    {
+      "path": "results/fixed_order_medae_low_cost_rank0_hidden_only.json.gz",
+      "sha256": "a04e13c5c6fd255d20409172792d8c78e7d7a2d6e3d8d189ff883063291df16c",
+      "manifest": {
+        "git_commit": "9ac99635f556bfec943aeae1253cdf6db7ea41bf",
+        "matrix_identity_sha256": "9603f902534fb79bf9e8ae042297268ee54d8e60e5647397d15f71562d3889f8",
+        "matrix_shape": [
+          84,
+          133
+        ],
+        "n_observed": 2604
+      }
+    }
+  ],
+  "data": [
+    {
+      "ordering": "medae_any",
+      "requested_probes": 1,
+      "test_cells": 2522,
+      "benchpress": 10.476763065511575,
+      "offsets_only": 9.731390414753713
+    },
+    {
+      "ordering": "medae_any",
+      "requested_probes": 2,
+      "test_cells": 2476,
+      "benchpress": 8.826865100447032,
+      "offsets_only": 8.984518046058875
+    },
+    {
+      "ordering": "medae_any",
+      "requested_probes": 3,
+      "test_cells": 2449,
+      "benchpress": 8.45991558094384,
+      "offsets_only": 9.201461016170432
+    },
+    {
+      "ordering": "medae_any",
+      "requested_probes": 4,
+      "test_cells": 2391,
+      "benchpress": 8.033947504230207,
+      "offsets_only": 9.378261978821772
+    },
+    {
+      "ordering": "medae_any",
+      "requested_probes": 5,
+      "test_cells": 2354,
+      "benchpress": 7.98076270818925,
+      "offsets_only": 8.923921597430526
+    },
+    {
+      "ordering": "medae_any",
+      "requested_probes": 6,
+      "test_cells": 2316,
+      "benchpress": 7.930572570004147,
+      "offsets_only": 8.638113711887359
+    },
+    {
+      "ordering": "medae_any",
+      "requested_probes": 7,
+      "test_cells": 2284,
+      "benchpress": 7.777408660468282,
+      "offsets_only": 8.689976798422
+    },
+    {
+      "ordering": "medae_any",
+      "requested_probes": 8,
+      "test_cells": 2245,
+      "benchpress": 7.550895550342554,
+      "offsets_only": 8.689530293251138
+    },
+    {
+      "ordering": "medae_any",
+      "requested_probes": 9,
+      "test_cells": 2198,
+      "benchpress": 7.733802459282657,
+      "offsets_only": 8.807684062858682
+    },
+    {
+      "ordering": "medae_any",
+      "requested_probes": 10,
+      "test_cells": 2185,
+      "benchpress": 7.546677557177625,
+      "offsets_only": 8.84715850387149
+    },
+    {
+      "ordering": "medae_low_cost",
+      "requested_probes": 1,
+      "test_cells": 2522,
+      "benchpress": 10.476763065511575,
+      "offsets_only": 9.731390414753713
+    },
+    {
+      "ordering": "medae_low_cost",
+      "requested_probes": 2,
+      "test_cells": 2464,
+      "benchpress": 9.836013861027364,
+      "offsets_only": 10.487155464908838
+    },
+    {
+      "ordering": "medae_low_cost",
+      "requested_probes": 3,
+      "test_cells": 2432,
+      "benchpress": 9.47492361148714,
+      "offsets_only": 10.201566395188715
+    },
+    {
+      "ordering": "medae_low_cost",
+      "requested_probes": 4,
+      "test_cells": 2400,
+      "benchpress": 9.416878685606992,
+      "offsets_only": 10.33676053776429
+    },
+    {
+      "ordering": "medae_low_cost",
+      "requested_probes": 5,
+      "test_cells": 2385,
+      "benchpress": 9.163440542114499,
+      "offsets_only": 10.083626917165185
+    },
+    {
+      "ordering": "medae_low_cost",
+      "requested_probes": 6,
+      "test_cells": 2338,
+      "benchpress": 9.301922052850353,
+      "offsets_only": 9.99349747730071
+    },
+    {
+      "ordering": "medae_low_cost",
+      "requested_probes": 7,
+      "test_cells": 2315,
+      "benchpress": 8.940507420571395,
+      "offsets_only": 9.779953691375356
+    },
+    {
+      "ordering": "medae_low_cost",
+      "requested_probes": 8,
+      "test_cells": 2285,
+      "benchpress": 8.761378929530329,
+      "offsets_only": 10.047693417729587
+    },
+    {
+      "ordering": "medae_low_cost",
+      "requested_probes": 9,
+      "test_cells": 2271,
+      "benchpress": 8.84756022260498,
+      "offsets_only": 9.763780047636592
+    },
+    {
+      "ordering": "medae_low_cost",
+      "requested_probes": 10,
+      "test_cells": 2248,
+      "benchpress": 8.780573069709627,
+      "offsets_only": 9.628439173358144
+    }
+  ]
+}
