@@ -12,6 +12,8 @@ save_outputs() {
     if [ -d "$SNAPSHOT_ROOT/repo/$SNAPSHOT_OUTPUT" ]; then
         tar -czf "$SNAPSHOT_ROOT/random_reveals_${SNAPSHOT_MODE}.tar.gz" \
             -C "$SNAPSHOT_ROOT/repo" "$SNAPSHOT_OUTPUT"
+    else
+        tar -czf "$SNAPSHOT_ROOT/random_reveals_${SNAPSHOT_MODE}.tar.gz" --files-from /dev/null
     fi
     exit "$status"
 }
