@@ -35,6 +35,32 @@ matrix hashes must match the archived prospective experiment. The checked-in
 tests cover target-score isolation, exclusion of August-only columns, nested
 reveals, fixed test cells, and insufficient hidden-score handling.
 
+Verified run: CHTC canary `8579438.0` passed three tests and one complete unit;
+full job `8579742.0` completed 1,380 units at code commit `02e66f5` in 732 seconds
+on 16 CPUs (Python 3.11 container, 4 GB RAM requested). The returned archive
+SHA256 is `f84ba139915e4370596967b6985917d732be09d1b8e558aa36881131a5ebb77e`.
+Results are in `results/random_reveals/`: `manifest.json`, `summary.json`,
+`raw_predictions.json.gz`, per-unit records, `validation.json`, `report.md`, and
+the scheduler logs under `execution/`. Local verification reproduces every
+summary entry from 17,510 raw test records, with all three predictions finite.
+The persistent CHTC archive is `~/bp_iclr/random_reveals_run.tar.gz`.
+
+Matched comparison: the same 23 targets and 2,240 target/seed/benchmark records
+at every budget. Both columns list BenchPress / offsets only / model mean:
+
+| Revealed scores | Pooled MedAE | Median model MedAE |
+|---|---|---|
+| 1 | 8.14 / 7.49 / 7.71 | 7.98 / 7.52 / 6.62 |
+| 3 | 5.97 / 6.44 / 6.77 | 6.60 / 6.56 / 5.47 |
+| 5 | 5.90 / 6.03 / 6.16 | 6.35 / 6.02 / 5.53 |
+| 10 | 5.43 / 5.46 / 6.00 | 6.15 / 5.44 / 5.14 |
+
+The model-level column first takes each model's median MedAE over seeds, then
+the median across models. It favors model mean, while pooled MedAE favors
+BenchPress from three reveals onward; these summaries must be distinguished.
+All-eligible target counts are 42 / 41 / 32 / 23 at 1 / 3 / 5 / 10 reveals.
+The complete target inventory and both aggregations are in the report.
+
 ## Paper mapping
 
 Section 5.3 / Appendix D.3 candidate diagnostic for prospective updates.
