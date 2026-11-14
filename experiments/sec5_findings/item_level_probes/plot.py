@@ -36,6 +36,8 @@ STYLES = {
     'variant_raw_shrink': ('Raw ALS + shrunk residuals', MEMENTO_MAGENTA, '-.', '^'),
     'variant_task_mean_ridge': ('Subtask-mean ridge', DEEP_BLUE, '-', 'o'),
     'variant_task_item_pcr': ('Subtask ridge + item PCs', MEMENTO_MAGENTA, '-', '*'),
+    'gp_irt_items': ('IRT predictor (GP-IRT)', ANSWER_VIOLET, '-', 'v'),
+    'aipw_items': ('Ridge predictor (AIPW)', CYAN_TEAL, '-', '^'),
 }
 
 
@@ -51,16 +53,19 @@ def main():
     table = summary['table']
     metric = summary.get('config', {}).get('metric', {})
     accuracy = metric.get('name') == 'binary_accuracy'
-    name = args.name or ('bp_question_accuracy_all' if accuracy else 'bp_question_level_budgets')
+    name = args.name or ('bp_question_accuracy' if accuracy else 'bp_question_level_budgets')
     methods = args.methods if args.methods is not None else [
         method for method in STYLES if method in table['random']]
     if accuracy and any(set(methods) != set(rows) for rows in table.values()):
         raise ValueError('the accuracy figure must include every scored method')
+    if accuracy and set(methods) != {'benchpress_r8', 'benchpress_r40',
+                                     'gp_irt_items', 'aipw_items'}:
+        raise ValueError('accuracy requires native question predictors, not broadcast subtask means')
     field = 'accuracy' if accuracy else 'medae'
     has_variants = any(method.startswith('variant_') for method in methods)
     titles = {'random': 'Random questions', 'anchors': 'GP-IRT anchor questions'}
     apply_single()
-    height = 8 if accuracy else (7 if has_variants else 5.5)
+    height = 6.5 if accuracy else (7 if has_variants else 5.5)
     fig, axes = plt.subplots(1, 2, figsize=(14, height), sharey=True)
     for ax, (selection, title) in zip(axes, titles.items()):
         for method in methods:
@@ -69,8 +74,6 @@ def main():
                 label = f'BenchPress (rank {summary["config"]["rank"]})'
             elif method == 'variant_raw' and 'rank' in summary.get('config', {}):
                 label = f'Raw ALS (rank {summary["config"]["rank"]})'
-            if accuracy and method in metric['subtask_constant_methods']:
-                label += r' $\dagger$'
             rows = table[selection][method]
             budgets = sorted(int(b) for b in rows)
             mean = np.array([rows[str(b)][field + '_mean'] for b in budgets])
@@ -92,7 +95,11 @@ def main():
         lower, upper = axes[0].get_ylim()
         axes[0].set_ylim(max(0, lower), min(100, upper))
     axes[0].set_ylabel('Accuracy (%)' if accuracy else 'MedAE (accuracy points)')
-    if has_variants:
+    if accuracy:
+        fig.legend(*axes[0].get_legend_handles_labels(), loc='lower center',
+                   bbox_to_anchor=(0.5, 0.06), ncol=2, frameon=False, fontsize=15)
+        fig.subplots_adjust(bottom=0.28)
+    elif has_variants:
         fig.legend(*axes[0].get_legend_handles_labels(), loc='lower center',
                    bbox_to_anchor=(0.5, 0.025 if accuracy else -0.02),
                    ncol=3, frameon=False, fontsize=11)
@@ -101,8 +108,8 @@ def main():
         axes[0].legend(frameon=False, fontsize='small')
     if accuracy:
         fig.text(0.5, 0.01,
-                 r'$\dagger$ Subtask-constant predictions. Hidden questions only; '
-                 r'predict 1 iff score $>0.5$. Bands: one seed standard deviation.',
+                 r'Hidden questions only; predict 1 iff score $>0.5$. Bands: one seed standard deviation.'
+                 '\nBaselines use their internal question predictors, not their aggregate score estimators.',
                  ha='center', fontsize=10)
     save_fig(name)
 

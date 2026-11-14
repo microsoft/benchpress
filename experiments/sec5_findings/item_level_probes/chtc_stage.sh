@@ -12,13 +12,16 @@ COMMIT="$(git -C "$HERE" rev-parse HEAD)"
 # benchpress loads its packaged score matrix on import; this experiment does not use it.
 export BENCHPRESS_DATA="$DATA/may.json"
 
-python -m pip install -q --no-cache-dir --index-url https://download.pytorch.org/whl/cpu torch
-# pygam is in the repo's requirement.txt but not in its pyproject dependencies.
-# python-utils>=3.8 needs typing_extensions>3.10.0.2, which py-irt pins; older
-# progressbar2/python-utils keep pip from backtracking indefinitely.
-python -m pip install -q --no-cache-dir "numpy==1.26.4" "pygam==0.12.0" \
-  "progressbar2==4.2.0" "python-utils==3.5.2" \
-  "benchpred @ git+https://github.com/socialfoundations/benchmark-prediction@${BENCHPRED_COMMIT}"
+if [ "$STAGE" = question-baselines ]; then
+  python -m pip install -q --no-cache-dir -r "$HERE/requirements-baselines.txt"
+else
+  python -m pip install -q --no-cache-dir --index-url https://download.pytorch.org/whl/cpu torch
+  # pygam is in the repo's requirement.txt but not in its pyproject dependencies.
+  # Older progressbar2/python-utils avoid conflicting with py-irt's typing_extensions pin.
+  python -m pip install -q --no-cache-dir "numpy==1.26.4" "pygam==0.12.0" \
+    "progressbar2==4.2.0" "python-utils==3.5.2" \
+    "benchpred @ git+https://github.com/socialfoundations/benchmark-prediction@${BENCHPRED_COMMIT}"
+fi
 python -m pip freeze | sed 's/^/pip: /'
 
 cd "$HERE"
@@ -28,6 +31,14 @@ if [ "$STAGE" = data ]; then
   git -C "$SCR/zhang" checkout -q "$BENCHPRED_COMMIT"
   python build_data.py --source-dir "$SCR/zhang"
   python run.py init --code-commit "$COMMIT"
+elif [ "$STAGE" = question-baselines ]; then
+  cd "$REPO"
+  if [ "${1:-}" = check ]; then
+    python -m unittest discover -s tests -p test_question_baselines.py
+    python -m unittest discover -s tests -p test_question_accuracy.py
+  else
+    python -m experiments.sec5_findings.item_level_probes.baselines "$@" --code-commit "$COMMIT"
+  fi
 else
   python run.py "$STAGE" --code-commit "$COMMIT" "$@"
 fi

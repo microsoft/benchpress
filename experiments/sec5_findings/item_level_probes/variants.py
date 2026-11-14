@@ -2,7 +2,6 @@
 """Method-only variants on the frozen question-level evaluation artifacts."""
 
 import argparse
-import hashlib
 import json
 import os
 import time
@@ -248,20 +247,19 @@ def summarize_accuracy(args):
                 or cfg['base_config_hash'] != ctx.chash):
             raise ValueError(f'variant provenance mismatch: {manifest_path}')
         for method in cfg['methods']:
-            if method != 'logit' and cfg['rank'] != RANK:
-                raise ValueError(f'accuracy comparison expects rank-{RANK} variants')
-            label = f'benchpress_r{cfg["rank"]}' if method == 'logit' else 'variant_' + method
+            if method != 'logit' or cfg['rank'] not in (8, 40):
+                raise ValueError('accuracy recovery expects original BenchPress ranks 8 and 40')
+            label = f'benchpress_r{cfg["rank"]}'
             if label in sources:
                 raise ValueError(f'duplicate prediction source for {label}')
             sources[label] = {'config_hash': chash, 'method': method}
-    expected = {'benchpress_r8', 'benchpress_r40'} | {'variant_' + m for m in METHODS}
+    expected = {'benchpress_r8', 'benchpress_r40'}
     if set(sources) != expected:
         raise ValueError(f'accuracy requires exactly these fitted methods: {sorted(expected)}')
-    constant = list(ESTIMATORS) + ['variant_task_mean_ridge', 'variant_task_item_pcr']
     metric = {'name': 'binary_accuracy', 'threshold': 0.5, 'comparison': '>',
               'tie_prediction': 0, 'stored_score_scale': 100., 'units': 'percent',
               'aggregation': 'pooled hidden model-question pairs',
-              'subtask_constant_methods': constant}
+              'subtask_constant_methods': []}
     config = {'base_config_hash': ctx.chash, 'code_commit': args.code_commit,
               'sources': sources, 'metric': metric,
               'reference_summary_sha256': sha256_file(os.path.join(ctx.out, 'summary.json'))}
@@ -270,8 +268,7 @@ def summarize_accuracy(args):
     seeds = ctx.subset(args.seeds, 'seeds')
     budgets = ctx.subset(args.budgets, 'budgets')
     selections = ctx.subset(args.selections, 'selections')
-    methods = ['benchpress_r8', 'benchpress_r40'] + list(ESTIMATORS) + [
-        'variant_' + m for m in METHODS]
+    methods = ['benchpress_r8', 'benchpress_r40']
     complete = all(set(values) == set(ctx.config[key]) for key, values in
                    [('seeds', seeds), ('budgets', budgets), ('selections', selections)])
     records = []
@@ -283,42 +280,30 @@ def summarize_accuracy(args):
                 if (unit['targets'] != ctx.held or unit['column'] != j
                         or unit['seed'] != seed or unit['budget'] != budget):
                     raise ValueError('estimator targets or setting mismatch')
-            estimator_hash = hashlib.sha256(
-                json.dumps(units, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
             for selection in selections:
                 observed = [q[c] for q, c in zip(ctx.data.col_questions, coresets[selection])]
-                hidden = [np.setdiff1d(q, o) for q, o in zip(ctx.data.col_questions, observed)]
                 revealed = np.concatenate(observed)
                 test_mask = np.ones(truth.shape, dtype=bool)
                 test_mask[:, revealed] = False
                 mask_hash = config_hash({'targets': ctx.held,
                                          'observed': [o.tolist() for o in observed]})
                 for method in methods:
-                    if method in sources:
-                        source = sources[method]
-                        path = os.path.join(ctx.out, 'variants', source['config_hash'],
-                                            source['method'], selection, f's{seed}', f'B{budget}.json')
-                        pred, unit = load_question_predictions(
-                            ctx, path, source['config_hash'], observed)
-                        if (unit['method'], unit['selection'], unit['seed'], unit['budget']) != (
-                                source['method'], selection, seed, budget):
-                            raise ValueError(f'prediction setting mismatch: {path}')
-                        source_hash = unit['question_pred_sha256']
-                        if method == 'benchpress_r8':
-                            original = read_unit(
-                                benchpress_path(ctx, selection, 8, seed, budget), bp['config_hash'])
-                            if original is None or original['targets'] != ctx.held:
-                                raise ValueError('missing frozen rank-8 reference')
-                            np.testing.assert_allclose(unit['pred'], original['pred'],
-                                                       rtol=0, atol=1e-12)
-                        if method in constant:
-                            for h in hidden:
-                                if np.any(np.ptp(pred[:, h], axis=1) != 0):
-                                    raise ValueError(f'{method} is not subtask-constant')
-                    else:
-                        means = np.asarray([u['pred'][selection][method] for u in units]).T
-                        pred = means[:, ctx.data.question_column]
-                        source_hash = estimator_hash
+                    source = sources[method]
+                    path = os.path.join(ctx.out, 'variants', source['config_hash'],
+                                        source['method'], selection, f's{seed}', f'B{budget}.json')
+                    pred, unit = load_question_predictions(
+                        ctx, path, source['config_hash'], observed)
+                    if (unit['method'], unit['selection'], unit['seed'], unit['budget']) != (
+                            source['method'], selection, seed, budget):
+                        raise ValueError(f'prediction setting mismatch: {path}')
+                    source_hash = unit['question_pred_sha256']
+                    if method == 'benchpress_r8':
+                        original = read_unit(
+                            benchpress_path(ctx, selection, 8, seed, budget), bp['config_hash'])
+                        if original is None or original['targets'] != ctx.held:
+                            raise ValueError('missing frozen rank-8 reference')
+                        np.testing.assert_allclose(unit['pred'], original['pred'],
+                                                   rtol=0, atol=1e-12)
                     result = compute_binary_accuracy(
                         truth, pred / metric['stored_score_scale'], test_mask,
                         threshold=metric['threshold'])
@@ -327,7 +312,7 @@ def summarize_accuracy(args):
                     records.append(dict(
                         result, selection=selection, method=method, seed=seed, budget=budget,
                         questions_used=len(revealed), mask_hash=mask_hash,
-                        prediction_sha256=source_hash, subtask_constant=method in constant))
+                        prediction_sha256=source_hash, subtask_constant=False))
                 print(f'accuracy {selection} s={seed} B={budget}: {len(methods)} methods', flush=True)
     if len({(r['selection'], r['method'], r['seed'], r['budget']) for r in records}) != len(records):
         raise ValueError('duplicate accuracy settings')
