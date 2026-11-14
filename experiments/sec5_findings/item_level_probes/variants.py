@@ -14,6 +14,7 @@ from run import (
     load_coresets, read_unit, sha256_file,
 )
 from benchpress.io_utils import write_json_atomic, write_npz_compressed_atomic
+from benchpress.evaluation_harness import compute_binary_accuracy
 from benchpress.methods.predictors import fit_question_score_variant
 
 
@@ -108,6 +109,30 @@ def fit(args):
                           f'seconds={time.time() - start:.1f} config={chash}', flush=True)
 
 
+def load_question_predictions(ctx, path, chash, observed):
+    """Read one checked question-prediction array and its unit metadata."""
+    unit = read_unit(path, chash)
+    mask_hash = config_hash({'targets': ctx.held,
+                             'observed': [o.tolist() for o in observed]})
+    if unit is None or unit['targets'] != ctx.held or unit['mask_hash'] != mask_hash:
+        raise ValueError(f'missing or mismatched predictions: {path}')
+    if sha256_file(path[:-5] + '.npz') != unit['question_pred_sha256']:
+        raise ValueError(f'corrupt question predictions: {path}')
+    revealed = np.concatenate(observed)
+    with np.load(path[:-5] + '.npz') as raw:
+        np.testing.assert_array_equal(raw['targets'], ctx.held)
+        np.testing.assert_array_equal(raw['revealed'], revealed)
+        pred = raw['pred']
+    if pred.shape != (len(ctx.held), ctx.data.answers.shape[1]) or not np.isfinite(pred).all():
+        raise ValueError(f'invalid question prediction shape/values: {path}')
+    np.testing.assert_array_equal(
+        pred[:, revealed], 100. * ctx.data.answers[np.ix_(ctx.held, revealed)])
+    hidden = [np.setdiff1d(q, o) for q, o in zip(ctx.data.col_questions, observed)]
+    means = np.stack([pred[:, h].mean(1) for h in hidden], axis=1)
+    np.testing.assert_allclose(means, unit['pred'], rtol=0, atol=1e-12)
+    return pred, unit
+
+
 def summarize(args):
     ctx = Context(args, check_commit=False)
     root = os.path.join(ctx.out, 'variants', args.variant_hash)
@@ -146,22 +171,12 @@ def summarize(args):
                 hidden = [np.setdiff1d(q, o) for q, o in zip(ctx.data.col_questions, observed)]
                 truth = np.stack([100. * ctx.data.answers[np.ix_(ctx.held, h)].mean(1)
                                   for h in hidden], axis=1)
-                mask_hash = config_hash({'targets': ctx.held,
-                                         'observed': [o.tolist() for o in observed]})
                 for method in methods:
                     if method.startswith('variant_'):
                         path = os.path.join(root, method[8:], selection, f's{seed}', f'B{budget}.json')
-                        unit = read_unit(path, args.variant_hash)
-                        if unit is None or unit['targets'] != ctx.held or unit['mask_hash'] != mask_hash:
-                            raise ValueError(f'missing or mismatched predictions: {path}')
-                        if sha256_file(path[:-5] + '.npz') != unit['question_pred_sha256']:
-                            raise ValueError(f'corrupt question predictions: {path}')
-                        with np.load(path[:-5] + '.npz') as raw:
-                            np.testing.assert_array_equal(raw['targets'], ctx.held)
-                            np.testing.assert_array_equal(raw['revealed'], np.concatenate(observed))
-                            question_pred = raw['pred']
-                            pred = np.stack([question_pred[:, h].mean(1) for h in hidden], axis=1)
-                        np.testing.assert_allclose(pred, unit['pred'], rtol=0, atol=1e-12)
+                        question_pred, unit = load_question_predictions(
+                            ctx, path, args.variant_hash, observed)
+                        pred = np.stack([question_pred[:, h].mean(1) for h in hidden], axis=1)
                         optimizer_records.append({
                             'method': method, 'selection': selection, 'seed': seed,
                             'budget': budget, 'seconds': unit['seconds'],
@@ -215,9 +230,125 @@ def summarize(args):
     print(f'wrote {root}/{name}; complete_grid={complete}')
 
 
+def summarize_accuracy(args):
+    ctx = Context(args, check_commit=False)
+    bp = load_benchpress_manifest(ctx)
+    sources = {}
+    for chash in args.variant_hashes:
+        manifest_path = os.path.join(ctx.out, 'variants', chash, 'manifest.json')
+        with open(manifest_path) as f:
+            manifest = json.load(f)
+        cfg = manifest['config']
+        if (config_hash(cfg) != chash or manifest['config_hash'] != chash
+                or cfg['base_config_hash'] != ctx.chash):
+            raise ValueError(f'variant provenance mismatch: {manifest_path}')
+        for method in cfg['methods']:
+            if method != 'logit' and cfg['rank'] != RANK:
+                raise ValueError(f'accuracy comparison expects rank-{RANK} variants')
+            label = f'benchpress_r{cfg["rank"]}' if method == 'logit' else 'variant_' + method
+            if label in sources:
+                raise ValueError(f'duplicate prediction source for {label}')
+            sources[label] = {'config_hash': chash, 'method': method}
+    expected = {'benchpress_r8', 'benchpress_r40'} | {'variant_' + m for m in METHODS}
+    if set(sources) != expected:
+        raise ValueError(f'accuracy requires exactly these fitted methods: {sorted(expected)}')
+    constant = list(ESTIMATORS) + ['variant_task_mean_ridge', 'variant_task_item_pcr']
+    metric = {'name': 'binary_accuracy', 'threshold': 0.5, 'comparison': '>',
+              'tie_prediction': 0, 'stored_score_scale': 100., 'units': 'percent',
+              'aggregation': 'pooled hidden model-question pairs',
+              'subtask_constant_methods': constant}
+    config = {'base_config_hash': ctx.chash, 'code_commit': args.code_commit,
+              'sources': sources, 'metric': metric,
+              'reference_summary_sha256': sha256_file(os.path.join(ctx.out, 'summary.json'))}
+    chash = config_hash(config)
+    root = os.path.join(ctx.out, 'accuracy', chash)
+    seeds = ctx.subset(args.seeds, 'seeds')
+    budgets = ctx.subset(args.budgets, 'budgets')
+    selections = ctx.subset(args.selections, 'selections')
+    methods = ['benchpress_r8', 'benchpress_r40'] + list(ESTIMATORS) + [
+        'variant_' + m for m in METHODS]
+    complete = all(set(values) == set(ctx.config[key]) for key, values in
+                   [('seeds', seeds), ('budgets', budgets), ('selections', selections)])
+    records = []
+    truth = ctx.data.answers[ctx.held]
+    for seed in seeds:
+        for budget in budgets:
+            coresets, units = load_coresets(ctx, seed, budget)
+            for j, unit in enumerate(units):
+                if (unit['targets'] != ctx.held or unit['column'] != j
+                        or unit['seed'] != seed or unit['budget'] != budget):
+                    raise ValueError('estimator targets or setting mismatch')
+            estimator_hash = config_hash(units)
+            for selection in selections:
+                observed = [q[c] for q, c in zip(ctx.data.col_questions, coresets[selection])]
+                hidden = [np.setdiff1d(q, o) for q, o in zip(ctx.data.col_questions, observed)]
+                revealed = np.concatenate(observed)
+                test_mask = np.ones(truth.shape, dtype=bool)
+                test_mask[:, revealed] = False
+                mask_hash = config_hash({'targets': ctx.held,
+                                         'observed': [o.tolist() for o in observed]})
+                for method in methods:
+                    if method in sources:
+                        source = sources[method]
+                        path = os.path.join(ctx.out, 'variants', source['config_hash'],
+                                            source['method'], selection, f's{seed}', f'B{budget}.json')
+                        pred, unit = load_question_predictions(
+                            ctx, path, source['config_hash'], observed)
+                        if (unit['method'], unit['selection'], unit['seed'], unit['budget']) != (
+                                source['method'], selection, seed, budget):
+                            raise ValueError(f'prediction setting mismatch: {path}')
+                        source_hash = unit['question_pred_sha256']
+                        if method == 'benchpress_r8':
+                            original = read_unit(
+                                benchpress_path(ctx, selection, 8, seed, budget), bp['config_hash'])
+                            if original is None or original['targets'] != ctx.held:
+                                raise ValueError('missing frozen rank-8 reference')
+                            np.testing.assert_allclose(unit['pred'], original['pred'],
+                                                       rtol=0, atol=1e-12)
+                        if method in constant:
+                            for h in hidden:
+                                if np.any(np.ptp(pred[:, h], axis=1) != 0):
+                                    raise ValueError(f'{method} is not subtask-constant')
+                    else:
+                        means = np.asarray([u['pred'][selection][method] for u in units]).T
+                        pred = means[:, ctx.data.question_column]
+                        source_hash = estimator_hash
+                    result = compute_binary_accuracy(
+                        truth, pred / metric['stored_score_scale'], test_mask,
+                        threshold=metric['threshold'])
+                    if result['n'] != len(ctx.held) * (truth.shape[1] - len(revealed)):
+                        raise ValueError('accuracy denominator or revealed-question set mismatch')
+                    records.append(dict(
+                        result, selection=selection, method=method, seed=seed, budget=budget,
+                        questions_used=len(revealed), mask_hash=mask_hash,
+                        prediction_sha256=source_hash, subtask_constant=method in constant))
+                print(f'accuracy {selection} s={seed} B={budget}: {len(methods)} methods', flush=True)
+    if len({(r['selection'], r['method'], r['seed'], r['budget']) for r in records}) != len(records):
+        raise ValueError('duplicate accuracy settings')
+    table = {}
+    for selection in selections:
+        for method in methods:
+            for budget in budgets:
+                rows = [r for r in records if (r['selection'], r['method'], r['budget'])
+                        == (selection, method, budget)]
+                values = np.asarray([r['accuracy'] for r in rows])
+                table.setdefault(selection, {}).setdefault(method, {})[str(budget)] = {
+                    'accuracy_mean': float(values.mean()),
+                    'accuracy_std': float(values.std(ddof=1)) if len(values) > 1 else 0.,
+                    'n_seeds': len(rows), 'n_cells_min': min(r['n'] for r in rows),
+                    'n_cells_max': max(r['n'] for r in rows),
+                    'questions_used_mean': float(np.mean([r['questions_used'] for r in rows]))}
+    name = 'summary.json' if complete else 'pilot_summary.json'
+    write_json_atomic(os.path.join(root, name), {
+        'config': config, 'config_hash': chash, 'complete_grid': complete,
+        'frozen_rank8_reproduced': True, 'n_models': len(ctx.held),
+        'n_questions': truth.shape[1], 'per_seed': records, 'table': table})
+    print(f'wrote {root}/{name}; complete_grid={complete}', flush=True)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('stage', choices=['fit', 'summarize'])
+    parser.add_argument('stage', choices=['fit', 'summarize', 'accuracy'])
     parser.add_argument('--data', default=DEFAULT_DATA)
     parser.add_argument('--out-dir', default=DEFAULT_OUT)
     parser.add_argument('--code-commit', required=True)
@@ -227,12 +358,15 @@ def main():
     parser.add_argument('--seeds', type=int_list)
     parser.add_argument('--budgets', type=int_list)
     parser.add_argument('--variant-hash')
+    parser.add_argument('--variant-hashes', nargs='+')
     args = parser.parse_args()
     if args.rank < 1:
         parser.error('--rank must be positive')
     if args.stage == 'summarize' and not args.variant_hash:
         parser.error('summarize requires --variant-hash')
-    (fit if args.stage == 'fit' else summarize)(args)
+    if args.stage == 'accuracy' and not args.variant_hashes:
+        parser.error('accuracy requires --variant-hashes')
+    {'fit': fit, 'summarize': summarize, 'accuracy': summarize_accuracy}[args.stage](args)
 
 
 if __name__ == '__main__':

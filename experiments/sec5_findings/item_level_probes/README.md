@@ -54,6 +54,50 @@ and the mean and sample std across the five seeds.
 
 ## How to run
 
+### Binary question-prediction accuracy
+
+`variants.py accuracy` scores the individual binary answers on unrevealed
+questions of the 127 held-out models. A score strictly greater than 0.5
+predicts 1; ties predict 0. Stored percentage scores are divided by 100.
+`compute_binary_accuracy` pools all hidden model/question pairs, so larger
+subtasks contribute more questions. Revealed answers and training rows are
+excluded. Each figure point is the mean of five seed-level percentages;
+bands are one sample standard deviation.
+
+The figure retains the twelve previously displayed methods and adds
+BenchPress rank 40. The four `benchpred` estimators and the two ridge
+comparators use subtask-constant predictions: their estimated hidden-subtask
+mean is assigned to every hidden question in that subtask before thresholding.
+The legend marks these six curves. The remaining seven curves use their
+individual-question predictions.
+
+The frozen rank-8 files contain subtask means. Regenerate only its sixty fits
+with `variants.py fit --methods logit --rank 8`, preserving all original
+settings and saving the per-question NPZs. Accuracy scoring requires every
+regenerated subtask mean to reproduce the frozen rank-8 prediction within
+absolute tolerance `1e-12`. Other methods reuse their existing predictions.
+
+```bash
+python variants.py accuracy --variant-hashes <rank8-hash> 577115b7edd126a2 \
+  37f038ab59473936 3e45aded7c84be36 84605c28993268f9 6efd14d29c34e248 \
+  --code-commit "$(git rev-parse HEAD)"
+python plot.py --summary results/accuracy/<accuracy-hash>/summary.json \
+  --name bp_question_accuracy_all
+```
+
+Outputs are separate `results/accuracy/<config_hash>/{summary,pilot_summary}.json`
+files, recording the threshold, comparison/tie rule, aggregation, source
+configurations, masks, prediction checksums, integer correct/total counts,
+and seed-level accuracies. The scorer validates raw NPZ checksums, target
+order, revealed answers, and agreement with each saved subtask mean.
+`--selections`, `--seeds`, and `--budgets` restrict a pilot; incomplete grids
+write only `pilot_summary.json`. Original MedAE files remain unchanged.
+`chtc_variants.sh accuracy` merges retained variant archives in worker scratch
+and returns the compact `accuracy_summaries.tar.gz`. Scoring runs on one CPU
+worker after the rank-8 canary and remaining fits; no GPU is needed.
+
+### Subtask-accuracy estimates
+
 Stages run in order; each compute unit is a JSON file carrying the
 `config_hash` of `results/manifest.json` (`benchpress` units: that of
 `results/benchpress/manifest.json`). Existing units are skipped, units of

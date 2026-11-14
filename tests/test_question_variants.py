@@ -23,7 +23,7 @@ class QuestionVariantTests(unittest.TestCase):
                            [0., 100., 100., 0.], [100., np.nan, 0., np.nan]])
         ids = [f'q{j}' for j in range(matrix.shape[1])]
         metric = {name: {'type': 'pct', 'range': [0, 100]} for name in ids}
-        for rank in (2, 40):
+        for rank in (2, 8, 40):
             with self.subTest(rank=rank):
                 expected = predict_logit_bias_als_scores(
                     matrix, rank=rank, lam=0.1, metric=metric, benchmark_ids=ids)

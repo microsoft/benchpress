@@ -143,6 +143,31 @@ EPS_ZERO = 1e-6  # |actual| threshold below which APE is dropped
 _VALID_AGG = ('pool', 'per_group_median')
 
 
+def compute_binary_accuracy(actual, predicted, test_mask, *, threshold):
+    """Pool binary accuracy (%) over an explicit boolean evaluation mask.
+
+    Labels must be 0/1; scores and threshold must use the same units.
+    Scores strictly above threshold predict 1; ties predict 0. No selected
+    entry is dropped, including invalid or nonfinite entries.
+    """
+    actual = np.asarray(actual)
+    predicted = np.asarray(predicted, dtype=float)
+    test_mask = np.asarray(test_mask)
+    if (actual.shape != predicted.shape or actual.shape != test_mask.shape
+            or test_mask.dtype != np.bool_):
+        raise ValueError('labels, scores and boolean test_mask must have identical shapes')
+    labels, scores = actual[test_mask], predicted[test_mask]
+    if not labels.size:
+        raise ValueError('binary accuracy requires a nonempty evaluation set')
+    if not np.isin(labels, [0, 1]).all() or not np.isfinite(scores).all():
+        raise ValueError('selected entries require binary labels and finite scores')
+    if not np.isfinite(threshold):
+        raise ValueError('threshold must be finite')
+    correct = int(np.count_nonzero((scores > threshold) == labels))
+    return {'accuracy': 100. * correct / labels.size,
+            'correct': correct, 'n': int(labels.size)}
+
+
 def compute_prediction_error(actual, predicted, test_set=None, groups=None,
                              aggregation='pool', label=""):
     if aggregation not in _VALID_AGG:
