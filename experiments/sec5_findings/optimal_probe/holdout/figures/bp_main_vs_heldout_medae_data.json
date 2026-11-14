@@ -1,0 +1,367 @@
+{
+  "metric": "pooled MedAE on unrevealed observed cells",
+  "sources": [
+    {
+      "path": "results/heldout_baselines_s42.json.gz",
+      "sha256": "f64bf11b8f96bd787e603c04d8430cc7fea7699fdc60373e1f49276612847fef"
+    },
+    {
+      "path": "../all_known/results/fixed_order_medae_any_hidden_only.json.gz",
+      "sha256": "2276a507b404c5cbae192e4eaf66756ba295310baf8e6590b913119aeafc4ca1"
+    },
+    {
+      "path": "../all_known/results/fixed_order_medae_any_rank0_hidden_only.json.gz",
+      "sha256": "eed9c70fb1e6327bf72f2cd9d312224d2ce477bff3d9104691c60afba31c4904"
+    },
+    {
+      "path": "../all_known/results/fixed_order_medae_low_cost_hidden_only.json.gz",
+      "sha256": "84628ea956c18e48e6eca045a767f32efddea9255b9eeef45bc2ce53c0b8f958"
+    },
+    {
+      "path": "../all_known/results/fixed_order_medae_low_cost_rank0_hidden_only.json.gz",
+      "sha256": "a04e13c5c6fd255d20409172792d8c78e7d7a2d6e3d8d189ff883063291df16c"
+    }
+  ],
+  "data": [
+    {
+      "setting": "main",
+      "ordering": "cost_unaware_greedy",
+      "k": 1,
+      "test_cells": 2522,
+      "benchpress": 6.2662460570424585,
+      "logit_offsets_only": 5.91776127174699
+    },
+    {
+      "setting": "main",
+      "ordering": "cost_unaware_greedy",
+      "k": 2,
+      "test_cells": 2476,
+      "benchpress": 5.429198231792343,
+      "logit_offsets_only": 5.524741786467917
+    },
+    {
+      "setting": "main",
+      "ordering": "cost_unaware_greedy",
+      "k": 3,
+      "test_cells": 2449,
+      "benchpress": 4.997537428208943,
+      "logit_offsets_only": 5.526681701532894
+    },
+    {
+      "setting": "main",
+      "ordering": "cost_unaware_greedy",
+      "k": 4,
+      "test_cells": 2391,
+      "benchpress": 4.86085017796082,
+      "logit_offsets_only": 5.542392720285889
+    },
+    {
+      "setting": "main",
+      "ordering": "cost_unaware_greedy",
+      "k": 5,
+      "test_cells": 2354,
+      "benchpress": 4.744581311576809,
+      "logit_offsets_only": 5.410459011570467
+    },
+    {
+      "setting": "main",
+      "ordering": "cost_unaware_greedy",
+      "k": 6,
+      "test_cells": 2316,
+      "benchpress": 4.71399602412253,
+      "logit_offsets_only": 5.1623404820518175
+    },
+    {
+      "setting": "main",
+      "ordering": "cost_unaware_greedy",
+      "k": 7,
+      "test_cells": 2284,
+      "benchpress": 4.4897334590219025,
+      "logit_offsets_only": 5.22301251402931
+    },
+    {
+      "setting": "main",
+      "ordering": "cost_unaware_greedy",
+      "k": 8,
+      "test_cells": 2245,
+      "benchpress": 4.487749449725044,
+      "logit_offsets_only": 5.2487767502726115
+    },
+    {
+      "setting": "main",
+      "ordering": "cost_unaware_greedy",
+      "k": 9,
+      "test_cells": 2198,
+      "benchpress": 4.525894780440893,
+      "logit_offsets_only": 5.354904141260626
+    },
+    {
+      "setting": "main",
+      "ordering": "cost_unaware_greedy",
+      "k": 10,
+      "test_cells": 2185,
+      "benchpress": 4.3453122707802905,
+      "logit_offsets_only": 5.178321624770724
+    },
+    {
+      "setting": "heldout",
+      "ordering": "cost_unaware_greedy",
+      "k": 1,
+      "test_cells": 698,
+      "benchpress": 6.586043051188305,
+      "logit_offsets_only": 5.9584813538861425,
+      "logit_model_mean": 8.107582108688774
+    },
+    {
+      "setting": "heldout",
+      "ordering": "cost_unaware_greedy",
+      "k": 2,
+      "test_cells": 690,
+      "benchpress": 5.761903255121681,
+      "logit_offsets_only": 5.265712096749461,
+      "logit_model_mean": 7.526645900439503
+    },
+    {
+      "setting": "heldout",
+      "ordering": "cost_unaware_greedy",
+      "k": 3,
+      "test_cells": 681,
+      "benchpress": 5.200485666079274,
+      "logit_offsets_only": 5.642698547700668,
+      "logit_model_mean": 8.310793733815995
+    },
+    {
+      "setting": "heldout",
+      "ordering": "cost_unaware_greedy",
+      "k": 4,
+      "test_cells": 661,
+      "benchpress": 5.173442533174896,
+      "logit_offsets_only": 6.206490764808535,
+      "logit_model_mean": 8.429945938300037
+    },
+    {
+      "setting": "heldout",
+      "ordering": "cost_unaware_greedy",
+      "k": 5,
+      "test_cells": 651,
+      "benchpress": 5.322241840671609,
+      "logit_offsets_only": 5.643453830191056,
+      "logit_model_mean": 8.429945938300037
+    },
+    {
+      "setting": "heldout",
+      "ordering": "cost_unaware_greedy",
+      "k": 6,
+      "test_cells": 629,
+      "benchpress": 4.7538061849440325,
+      "logit_offsets_only": 5.069253413817336,
+      "logit_model_mean": 9.093300941952968
+    },
+    {
+      "setting": "heldout",
+      "ordering": "cost_unaware_greedy",
+      "k": 7,
+      "test_cells": 623,
+      "benchpress": 4.504606818038901,
+      "logit_offsets_only": 5.207633646813646,
+      "logit_model_mean": 9.083921131655842
+    },
+    {
+      "setting": "heldout",
+      "ordering": "cost_unaware_greedy",
+      "k": 8,
+      "test_cells": 614,
+      "benchpress": 4.419272775543725,
+      "logit_offsets_only": 5.245297360577897,
+      "logit_model_mean": 9.012030767840702
+    },
+    {
+      "setting": "heldout",
+      "ordering": "cost_unaware_greedy",
+      "k": 9,
+      "test_cells": 607,
+      "benchpress": 4.44503065883336,
+      "logit_offsets_only": 5.027173268727211,
+      "logit_model_mean": 8.969182273761106
+    },
+    {
+      "setting": "heldout",
+      "ordering": "cost_unaware_greedy",
+      "k": 10,
+      "test_cells": 603,
+      "benchpress": 4.2613254445659905,
+      "logit_offsets_only": 4.950151465072622,
+      "logit_model_mean": 8.8044413108274
+    },
+    {
+      "setting": "main",
+      "ordering": "cost_aware_greedy",
+      "k": 1,
+      "test_cells": 2522,
+      "benchpress": 6.2662460570424585,
+      "logit_offsets_only": 5.91776127174699
+    },
+    {
+      "setting": "main",
+      "ordering": "cost_aware_greedy",
+      "k": 2,
+      "test_cells": 2464,
+      "benchpress": 5.970777254562471,
+      "logit_offsets_only": 6.116578964870257
+    },
+    {
+      "setting": "main",
+      "ordering": "cost_aware_greedy",
+      "k": 3,
+      "test_cells": 2432,
+      "benchpress": 5.655457855695801,
+      "logit_offsets_only": 5.820692973154117
+    },
+    {
+      "setting": "main",
+      "ordering": "cost_aware_greedy",
+      "k": 4,
+      "test_cells": 2400,
+      "benchpress": 5.495903966982297,
+      "logit_offsets_only": 5.988134835296005
+    },
+    {
+      "setting": "main",
+      "ordering": "cost_aware_greedy",
+      "k": 5,
+      "test_cells": 2385,
+      "benchpress": 5.318363028966047,
+      "logit_offsets_only": 5.810589750678787
+    },
+    {
+      "setting": "main",
+      "ordering": "cost_aware_greedy",
+      "k": 6,
+      "test_cells": 2338,
+      "benchpress": 5.250480096926501,
+      "logit_offsets_only": 5.704219994175703
+    },
+    {
+      "setting": "main",
+      "ordering": "cost_aware_greedy",
+      "k": 7,
+      "test_cells": 2315,
+      "benchpress": 5.040483149555982,
+      "logit_offsets_only": 5.733964393838718
+    },
+    {
+      "setting": "main",
+      "ordering": "cost_aware_greedy",
+      "k": 8,
+      "test_cells": 2285,
+      "benchpress": 4.968423595679496,
+      "logit_offsets_only": 5.923884028734369
+    },
+    {
+      "setting": "main",
+      "ordering": "cost_aware_greedy",
+      "k": 9,
+      "test_cells": 2271,
+      "benchpress": 4.918917283277356,
+      "logit_offsets_only": 5.833834034726976
+    },
+    {
+      "setting": "main",
+      "ordering": "cost_aware_greedy",
+      "k": 10,
+      "test_cells": 2248,
+      "benchpress": 4.91871390346939,
+      "logit_offsets_only": 5.731777787100533
+    },
+    {
+      "setting": "heldout",
+      "ordering": "cost_aware_greedy",
+      "k": 1,
+      "test_cells": 698,
+      "benchpress": 6.586043051188305,
+      "logit_offsets_only": 5.9584813538861425,
+      "logit_model_mean": 8.107582108688774
+    },
+    {
+      "setting": "heldout",
+      "ordering": "cost_aware_greedy",
+      "k": 2,
+      "test_cells": 689,
+      "benchpress": 6.270693065245371,
+      "logit_offsets_only": 6.304243027226278,
+      "logit_model_mean": 8.286607644558316
+    },
+    {
+      "setting": "heldout",
+      "ordering": "cost_aware_greedy",
+      "k": 3,
+      "test_cells": 683,
+      "benchpress": 6.397128757035674,
+      "logit_offsets_only": 6.441568689076128,
+      "logit_model_mean": 8.39528332524445
+    },
+    {
+      "setting": "heldout",
+      "ordering": "cost_aware_greedy",
+      "k": 4,
+      "test_cells": 661,
+      "benchpress": 5.953342180612651,
+      "logit_offsets_only": 6.094867393396555,
+      "logit_model_mean": 9.32481520351799
+    },
+    {
+      "setting": "heldout",
+      "ordering": "cost_aware_greedy",
+      "k": 5,
+      "test_cells": 657,
+      "benchpress": 5.233111253091707,
+      "logit_offsets_only": 5.777013257095909,
+      "logit_model_mean": 9.102995415319356
+    },
+    {
+      "setting": "heldout",
+      "ordering": "cost_aware_greedy",
+      "k": 6,
+      "test_cells": 647,
+      "benchpress": 5.260932282734544,
+      "logit_offsets_only": 5.685754184097014,
+      "logit_model_mean": 8.961805755155467
+    },
+    {
+      "setting": "heldout",
+      "ordering": "cost_aware_greedy",
+      "k": 7,
+      "test_cells": 637,
+      "benchpress": 5.354940869239712,
+      "logit_offsets_only": 5.777013257095909,
+      "logit_model_mean": 8.959067034057469
+    },
+    {
+      "setting": "heldout",
+      "ordering": "cost_aware_greedy",
+      "k": 8,
+      "test_cells": 632,
+      "benchpress": 5.602060781327394,
+      "logit_offsets_only": 5.743482555452136,
+      "logit_model_mean": 8.743218639789799
+    },
+    {
+      "setting": "heldout",
+      "ordering": "cost_aware_greedy",
+      "k": 9,
+      "test_cells": 627,
+      "benchpress": 5.545216542112101,
+      "logit_offsets_only": 5.428634080933556,
+      "logit_model_mean": 8.771539239674937
+    },
+    {
+      "setting": "heldout",
+      "ordering": "cost_aware_greedy",
+      "k": 10,
+      "test_cells": 623,
+      "benchpress": 5.5396305719732055,
+      "logit_offsets_only": 5.437534363423907,
+      "logit_model_mean": 8.87765785171927
+    }
+  ]
+}

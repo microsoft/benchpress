@@ -170,8 +170,16 @@ requires an anonymous figure link or revised-paper appendix reference.
 Adding `--layout row` writes `bp_heldout_probe_baselines_both_row` with all four
 panels in one row. It identifies the 59/25 split in its title and uses the same
 metric axis ranges as `all_known/figures/bp_main_probe_offsets_both_row`.
-This single-row PNG is the current embedded version in the local rebuttal.
+This single-row PNG is an alternative layout.
 All 120 values are unchanged from the original held-out baseline summaries.
+
+The current rebuttal uses `python plot_settings_comparison.py`:
+`figures/bp_main_vs_heldout_medae.{pdf,png}` with caption and data companions.
+This is one MedAE-only 2-by-2 figure, with the main 84-model experiment on top
+and the 59/25 held-out experiment below; columns are cost-unaware and cost-aware
+greedy. Axes are identical. Main panels compare BenchPress and offsets only;
+held-out panels also include model mean. All 100 values match the saved source
+summaries, and the data companion records each source hash and test-cell count.
 
 ## Matched revealed-count comparison
 
