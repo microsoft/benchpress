@@ -178,7 +178,9 @@ The current rebuttal uses `python plot_settings_comparison.py`:
 This is one MedAE-only 2-by-2 figure, with the main 84-model experiment on top
 and the 59/25 held-out experiment below; columns are cost-unaware and cost-aware
 greedy. Axes are identical. All four panels compare BenchPress, offsets only,
-and logit-space model mean. All 120 values match the saved source
+and logit-space model mean. Method colors are identical across panels:
+magenta for BenchPress, violet for offsets only, and gray for model mean.
+All 120 values match the saved source
 summaries, and the data companion records each source hash and test-cell count.
 Vertical error bars are pointwise 95% percentile intervals for pooled MedAE,
 computed from 2,000 whole-model bootstrap resamples with seed 42 using

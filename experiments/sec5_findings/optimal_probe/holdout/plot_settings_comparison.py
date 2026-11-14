@@ -12,8 +12,7 @@ if REPO_ROOT not in sys.path:
 from benchpress.io_utils import load_json, write_json_atomic
 from benchpress.stats import cluster_bootstrap_median
 from benchpress.plot_helpers.visual_identity import (
-    ANSWER_VIOLET, CHARCOAL, GRAY, PROBE_COST_AWARE_STYLE,
-    PROBE_COST_UNAWARE_STYLE, apply_single, save_fig,
+    ANSWER_VIOLET, CHARCOAL, GRAY, MEMENTO_MAGENTA, apply_single, save_fig,
 )
 import matplotlib.pyplot as plt
 from matplotlib.colors import to_rgba
@@ -25,8 +24,8 @@ STEM = 'bp_main_vs_heldout_medae'
 def main():
     names = ('benchpress', 'logit_offsets_only', 'logit_model_mean')
     panels = (
-        ('medae_any', 'cost_unaware_greedy', 'Cost-unaware greedy', PROBE_COST_UNAWARE_STYLE),
-        ('medae_low_cost', 'cost_aware_greedy', 'Cost-aware greedy', PROBE_COST_AWARE_STYLE),
+        ('medae_any', 'cost_unaware_greedy', 'Cost-unaware greedy'),
+        ('medae_low_cost', 'cost_aware_greedy', 'Cost-aware greedy'),
     )
     heldout_path = os.path.join(HERE, 'results', 'heldout_baselines_s42.json.gz')
     heldout = load_json(heldout_path)
@@ -41,7 +40,7 @@ def main():
              va='top', fontsize=25, color=CHARCOAL)
     fig.text(0.535, 0.519, 'Held-out validation: 59 selection / 25 test models',
              ha='center', va='top', fontsize=25, color=CHARCOAL)
-    for column, (main_order, heldout_order, title, style) in enumerate(panels):
+    for column, (main_order, heldout_order, title) in enumerate(panels):
         main_series = {}
         main_cells = {}
         for method, suffix in (('benchpress', ''), ('logit_offsets_only', '_rank0'),
@@ -105,7 +104,7 @@ def main():
             if [r['k'] for r in rows] != list(range(1, 11)):
                 raise ValueError('Expected all ten requested-probe budgets')
             series = [
-                ('benchpress', 'BenchPress', style['color'], '-', 'o'),
+                ('benchpress', 'BenchPress', MEMENTO_MAGENTA, '-', 'o'),
                 ('logit_offsets_only', 'Offsets only', ANSWER_VIOLET, '--', 's'),
                 ('logit_model_mean', 'Model mean', GRAY, ':', '^'),
             ]
