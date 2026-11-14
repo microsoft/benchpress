@@ -4,6 +4,11 @@
 The hybrid reliability estimator and its conformal scales are fit once on the
 May matrix (the Section 6.2 procedure) and then applied unchanged to the
 prospective May-to-August cells of `sec5_findings/prospective_update`.
+
+August-only models are evaluated under one of two protocols:
+`probe_prefix` reveals the first k probes of a greedy ordering, and
+`model_folds` applies the Section 4.2 per-model 3-fold holdout to every
+August-only model that passes the main matrix's per-model filter.
 """
 
 import argparse
@@ -20,6 +25,10 @@ REPO_ROOT = os.path.abspath(os.path.join(HERE, "..", "..", ".."))
 PROSPECTIVE_RUN = os.path.join(
     REPO_ROOT, "experiments", "sec5_findings", "prospective_update", "run.py")
 DEFAULT_OUT_DIR = os.path.join(HERE, "results", "prospective_coverage")
+OUT_DIRS = {
+    "probe_prefix": DEFAULT_OUT_DIR,
+    "model_folds": os.path.join(HERE, "results", "prospective_coverage_model_folds"),
+}
 METHOD = "combined_risk_model"
 FOLD_SPEC = {"n_seeds": 10, "n_folds": 3, "base_seed": 42, "min_scores": 1}
 TERCILES = ("low_risk", "medium_risk", "high_risk")
@@ -33,14 +42,24 @@ def parse_args():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--may-json", required=True, help="May 2026 score JSON (training).")
     parser.add_argument("--aug-json", required=True, help="August 26, 2026 score JSON.")
-    parser.add_argument("--out-dir", default=DEFAULT_OUT_DIR)
+    parser.add_argument("--new-model-protocol", choices=list(OUT_DIRS), default="probe_prefix",
+                        help="How August-only models reveal scores: greedy probe prefixes "
+                             "or the Section 4.2 per-model 3-fold holdout.")
+    parser.add_argument("--out-dir", default=None,
+                        help="Default: results/prospective_coverage for probe_prefix, "
+                             "results/prospective_coverage_model_folds for model_folds.")
+    parser.add_argument("--calibrator-dir", default=DEFAULT_OUT_DIR,
+                        help="Directory holding frozen_calibrator.pkl and may_crossfit.npz.")
     parser.add_argument("--orderings", nargs="+", default=["medae_any", "medae_low_cost"],
                         choices=list(prospective.FIXED_ORDERING_KEYS))
     parser.add_argument("--probe-order-json", default=prospective.DEFAULT_ORDER_PATH)
     parser.add_argument("--seed", type=int, default=42,
                         help="Risk-model seed (Section 6.2 uses 42).")
     parser.add_argument("--workers", type=int, default=os.cpu_count())
-    return parser.parse_args()
+    args = parser.parse_args()
+    if args.out_dir is None:
+        args.out_dir = OUT_DIRS[args.new_model_protocol]
+    return args
 
 
 def fold_crossfit(task):
@@ -65,7 +84,7 @@ def frozen_unit_risk(task):
     return pred, np.asarray(out["uncertainty"], dtype=float)
 
 
-def fit_frozen_calibrator(out_dir, seed, executor):
+def fit_frozen_calibrator(calibrator_dir, seed, executor):
     """Fit (or reload) the May hybrid calibrator and its leave-fold-out risks."""
     from benchpress.evaluation_harness import (
         BENCH_IDS, BENCH_METRICS, M_FULL, load_folds, matrix_identity_sha256)
@@ -73,8 +92,8 @@ def fit_frozen_calibrator(out_dir, seed, executor):
     from benchpress.methods.confidence import (
         confidence_training_records, fit_default_confidence_calibrator)
 
-    calibrator_path = os.path.join(out_dir, "frozen_calibrator.pkl")
-    crossfit_path = os.path.join(out_dir, "may_crossfit.npz")
+    calibrator_path = os.path.join(calibrator_dir, "frozen_calibrator.pkl")
+    crossfit_path = os.path.join(calibrator_dir, "may_crossfit.npz")
     if os.path.exists(calibrator_path) and os.path.exists(crossfit_path):
         with open(calibrator_path, "rb") as f:
             artifact = pickle.load(f)
@@ -116,7 +135,7 @@ def fit_frozen_calibrator(out_dir, seed, executor):
         "predicted": records["predicted"].astype(float),
         "uncertainty": uncertainty,
     }
-    os.makedirs(out_dir, exist_ok=True)
+    os.makedirs(calibrator_dir, exist_ok=True)
     write_npz_compressed_atomic(crossfit_path, **crossfit)
     artifact = fit_default_confidence_calibrator(
         records, M_FULL, methods=[METHOD], artifact_path=calibrator_path,
@@ -244,6 +263,11 @@ def interval_fields(pred, risk, actual, scales):
 def main():
     args = parse_args()
     args.out_dir = os.path.abspath(os.path.expanduser(args.out_dir))
+    args.calibrator_dir = os.path.abspath(os.path.expanduser(args.calibrator_dir))
+    if (args.new_model_protocol == "model_folds"
+            and not os.path.exists(os.path.join(args.calibrator_dir, "frozen_calibrator.pkl"))):
+        raise FileNotFoundError(
+            f"model_folds reuses the frozen calibrator; none found in {args.calibrator_dir}")
     bp = prospective.bootstrap_benchpress(args.may_json)
     cfg = prospective.load_json_file(prospective.DEFAULT_CONFIG_PATH)
     may = prospective.load_snapshot(args.may_json, bp["load_score_matrix"])
@@ -256,7 +280,7 @@ def main():
 
     with concurrent.futures.ProcessPoolExecutor(max_workers=args.workers) as executor:
         artifact, crossfit, calibrator_path = fit_frozen_calibrator(
-            args.out_dir, args.seed, executor)
+            args.calibrator_dir, args.seed, executor)
         calibrator = artifact["calibrators"][METHOD]
         scales = calibrator["conformal_scales"]
         if not np.isclose(scales["0.90"], calibrator["conformal_scale"]):
@@ -275,25 +299,59 @@ def main():
         part_i_cells = [(model_idx[r["model_id"]], bench_idx[r["benchmark_id"]])
                         for r in part_i_rows]
         units.append({"group": "new_cells_existing_models", "ordering": None, "k": None,
+                      "seed": None, "fold": None,
                       "model_id": None, "prefix": None, "rows": part_i_rows,
                       "train": may["matrix"], "cells": part_i_cells})
 
         new_models = [mid for mid in aug["model_ids"] if mid not in model_idx]
-        for ordering in args.orderings:
-            order_ids = orderings[ordering]["benchmark_ids"]
-            for k in cfg["k_values"]:
-                prefix = order_ids[:k]
-                for mid in new_models:
-                    observed = prospective.observed_aug_values_for_may_benchmarks(aug, mid, bids)
-                    if not prospective.probe_unit_included(observed, prefix):
-                        continue
-                    train = prospective.append_target_row(may, observed, prefix)
-                    target = train.shape[0] - 1
-                    cells = [(int(target), int(j))
-                             for j in np.flatnonzero(~np.isfinite(train[target]))]
-                    units.append({"group": "new_models", "ordering": ordering, "k": int(k),
-                                  "model_id": mid, "prefix": prefix, "rows": None,
-                                  "train": train, "cells": cells})
+        targets = []
+        if args.new_model_protocol == "probe_prefix":
+            for ordering in args.orderings:
+                order_ids = orderings[ordering]["benchmark_ids"]
+                for k in cfg["k_values"]:
+                    prefix = order_ids[:k]
+                    for mid in new_models:
+                        observed = prospective.observed_aug_values_for_may_benchmarks(aug, mid, bids)
+                        if not prospective.probe_unit_included(observed, prefix):
+                            continue
+                        train = prospective.append_target_row(may, observed, prefix)
+                        target = train.shape[0] - 1
+                        cells = [(int(target), int(j))
+                                 for j in np.flatnonzero(~np.isfinite(train[target]))]
+                        units.append({"group": "new_models", "ordering": ordering, "k": int(k),
+                                      "seed": None, "fold": None,
+                                      "model_id": mid, "prefix": prefix, "rows": None,
+                                      "train": train, "cells": cells})
+        else:
+            # Section 4.2 holdout on the August-only rows that pass the main
+            # matrix's per-model filter; each fold reveals the other two folds.
+            from benchpress.build_benchmark_matrix.build_benchmark_matrix import (
+                DEFAULT_M_THRESHOLD)
+            from benchpress.evaluation_harness import holdout_per_model
+            target_rows = []
+            for mid in new_models:
+                observed = prospective.observed_aug_values_for_may_benchmarks(aug, mid, bids)
+                if len(observed) >= DEFAULT_M_THRESHOLD:
+                    row = np.full(len(bids), np.nan, dtype=float)
+                    for bid, value in observed.items():
+                        row[bench_idx[bid]] = value
+                    targets.append(mid)
+                    target_rows.append(row)
+            target_matrix = np.vstack(target_rows)
+            for seed_offset in range(FOLD_SPEC["n_seeds"]):
+                seed = FOLD_SPEC["base_seed"] + seed_offset
+                folds = holdout_per_model(
+                    min_scores=FOLD_SPEC["min_scores"], n_folds=FOLD_SPEC["n_folds"],
+                    seed=seed, M=target_matrix)
+                for fold, (fold_train, test_set) in enumerate(folds):
+                    for t, mid in enumerate(targets):
+                        train = np.vstack([may["matrix"], fold_train[t:t + 1]])
+                        target = train.shape[0] - 1
+                        cells = [(int(target), int(j)) for i, j in test_set if i == t]
+                        units.append({"group": "new_models", "ordering": None, "k": None,
+                                      "seed": int(seed), "fold": int(fold),
+                                      "model_id": mid, "prefix": None, "rows": None,
+                                      "train": train, "cells": cells})
 
         print(f"Applying frozen calibrator to {len(units)} prediction units", flush=True)
         outputs = executor.map(frozen_unit_risk, [
@@ -307,12 +365,23 @@ def main():
                 for row, cell in zip(rows, unit["cells"]):
                     if row["pred"] is not None and not np.isclose(pred[cell], row["pred"], atol=1e-9):
                         raise RuntimeError("Part (i) prediction differs from prospective_update")
-            else:
+            elif args.new_model_protocol == "probe_prefix":
                 rows = []
                 target = unit["train"].shape[0] - 1
                 prospective.add_part_ii_rows(
                     rows, may, aug, unit["model_id"], "benchpress_fixed_order", unit["k"],
                     unit["ordering"], None, unit["prefix"], pred[target, :])
+            else:
+                mid = unit["model_id"]
+                observed = prospective.observed_aug_values_for_may_benchmarks(aug, mid, bids)
+                rows = [{
+                    "model_id": mid,
+                    "model_name": aug["model_names"].get(mid, mid),
+                    "benchmark_id": bids[j],
+                    "benchmark_category": may["benchmark_categories"].get(bids[j], "Unknown"),
+                    "actual": observed[bids[j]],
+                    "pred": prospective.finite_or_none(pred[i, j]),
+                } for i, j in unit["cells"]]
             for row in rows:
                 if unit["group"] == "new_models":
                     row_index = unit["train"].shape[0] - 1
@@ -326,6 +395,8 @@ def main():
                     "group": unit["group"],
                     "ordering": unit["ordering"],
                     "k": unit["k"],
+                    "seed": unit["seed"],
+                    "fold": unit["fold"],
                     "model_id": row["model_id"],
                     "model_name": row["model_name"],
                     "benchmark_id": row["benchmark_id"],
@@ -340,6 +411,23 @@ def main():
         reproduction = may_crossfit_reproduction(crossfit, list(scales), cuts)
 
     level_keys = list(scales)
+    new_model_records = [r for r in records if r["group"] == "new_models"]
+    if args.new_model_protocol == "probe_prefix":
+        new_model_summary = {
+            ordering: {
+                "pooled_k": group_summary(
+                    [r for r in new_model_records if r["ordering"] == ordering], level_keys),
+                "by_k": {
+                    str(k): group_summary(
+                        [r for r in new_model_records
+                         if r["ordering"] == ordering and r["k"] == k], level_keys)
+                    for k in cfg["k_values"]
+                },
+            }
+            for ordering in args.orderings
+        }
+    else:
+        new_model_summary = {"model_folds": group_summary(new_model_records, level_keys)}
     summary = {
         "frozen_calibrator": {
             "method": METHOD,
@@ -351,26 +439,40 @@ def main():
         "may_leave_fold_out_reproduction": reproduction,
         "new_cells_existing_models": group_summary(
             [r for r in records if r["group"] == "new_cells_existing_models"], level_keys),
-        "new_models": {
-            ordering: {
-                "pooled_k": group_summary(
-                    [r for r in records if r["group"] == "new_models"
-                     and r["ordering"] == ordering], level_keys),
-                "by_k": {
-                    str(k): group_summary(
-                        [r for r in records if r["group"] == "new_models"
-                         and r["ordering"] == ordering and r["k"] == k], level_keys)
-                    for k in cfg["k_values"]
-                },
-            }
-            for ordering in args.orderings
-        },
+        "new_models": new_model_summary,
     }
 
     from benchpress.evaluation_harness import (
         BENCH_IDS, BENCH_METRICS, M_FULL, benchmark_metric_identity_sha256)
     with open(calibrator_path, "rb") as f:
         calibrator_sha256 = hashlib.sha256(f.read()).hexdigest()
+    config = {
+        "method": METHOD,
+        "fold_spec": FOLD_SPEC,
+        "seed": int(args.seed),
+        "final_risk_model_seed": int(args.seed) + 2000,
+        "conformal_levels": level_keys,
+        "new_model_protocol": args.new_model_protocol,
+        "workers": int(args.workers),
+        "point_predictor": "predict_benchpress_scores (Logit Bias ALS, rank=2, lambda=0.1)",
+    }
+    if args.new_model_protocol == "probe_prefix":
+        config.update({
+            "orderings": list(args.orderings),
+            "k_values": cfg["k_values"],
+            "probe_order_json": os.path.relpath(
+                os.path.abspath(os.path.expanduser(args.probe_order_json)), REPO_ROOT),
+            "inclusion_rule_new_models": "prospective_update.probe_unit_included",
+        })
+    else:
+        config.update({
+            "inclusion_rule_new_models":
+                "at least DEFAULT_M_THRESHOLD observed scores on May benchmarks",
+            "min_target_scores": int(DEFAULT_M_THRESHOLD),
+            "targets": targets,
+            "holdout": "evaluation_harness.holdout_per_model on the target rows, seeds "
+                       "base_seed..base_seed+n_seeds-1; each fold reveals the other folds",
+        })
     manifest = {
         "git_commit": prospective.git_commit(),
         "may_json": os.path.abspath(os.path.expanduser(args.may_json)),
@@ -386,20 +488,7 @@ def main():
         "frozen_calibrator_sha256": calibrator_sha256,
         "crossfit_selected_risk_model_by_fold":
             artifact["crossfit_selected_risk_model_by_fold"][METHOD],
-        "config": {
-            "method": METHOD,
-            "fold_spec": FOLD_SPEC,
-            "seed": int(args.seed),
-            "final_risk_model_seed": int(args.seed) + 2000,
-            "conformal_levels": level_keys,
-            "orderings": list(args.orderings),
-            "k_values": cfg["k_values"],
-            "probe_order_json": os.path.relpath(
-                os.path.abspath(os.path.expanduser(args.probe_order_json)), REPO_ROOT),
-            "workers": int(args.workers),
-            "point_predictor": "predict_benchpress_scores (Logit Bias ALS, rank=2, lambda=0.1)",
-            "inclusion_rule_new_models": "prospective_update.probe_unit_included",
-        },
+        "config": config,
         "n_records": int(len(records)),
     }
 

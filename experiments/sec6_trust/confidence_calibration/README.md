@@ -154,3 +154,15 @@ python run_prospective_coverage.py \
 Outputs under `results/prospective_coverage/`: `frozen_calibrator.pkl` and `may_crossfit.npz` (reused on rerun if they match the May matrix and seed), `raw_records.json.gz` (per cell: group, ordering, k, model, benchmark, actual, pred, risk, risk tercile, lower/upper/covered per level), `manifest.json` (git commit, matrix identity hashes, calibrator sha256, config), and `summary.json` (May leave-fold-out reproduction, which should match the hybrid row above, plus coverage, median width, miss direction, and risk-tercile breakdown per group). Run on a CHTC CPU node, not the local Mac.
 
 Last valid result (CHTC CPU job 7925236, github commit `7996392`, May harness identity `9603f902…`, August identity `94696a24…`, calibrator sha256 `17256bcf…`). The May leave-fold-out reproduction matches the hybrid row (90% coverage 0.899; terciles 0.884 / 0.903 / 0.911). Frozen 90% intervals: 178 new cells of May models 84.3% coverage, median width 22.4 (terciles 84.9 / 86.4 / 81.2%; 86% of misses below the interval; MedAE 4.44); August-only models pooled over k, `medae_any` 80.3% / width 34.3 on 2,023 cells (k = 1 / 3 / 5 / 10: 70.6 / 82.9 / 82.6 / 84.5%; terciles 55.0 / 82.0 / 88.6%; 72% of misses above), `medae_low_cost` 73.1% / width 31.9 on 2,014 cells (terciles 51.7 / 75.2 / 83.0%).
+
+### Per-model 3-fold holdout on August-only models (`--new-model-protocol model_folds`)
+
+Evaluates August-only models with the same holdout as the Section 4.2 / 6.2 May evaluation instead of greedy probe prefixes. Targets are August-only models with at least `DEFAULT_M_THRESHOLD` (15) observed scores on May benchmarks, the per-model filter of the main matrix. `evaluation_harness.holdout_per_model` splits the target rows into 3 folds for seeds 42 to 51; each (seed, fold, target) unit appends the target row with the other two folds revealed to the frozen May matrix, predicts the held-out fold with BenchPress, and applies the frozen calibrator from `results/prospective_coverage/` unchanged. Coverage pools all held-out cells, as in the May evaluation. The script refuses to run if the frozen calibrator is missing; the 178 new cells of May models are recomputed in the same run as a check against the probe-prefix result.
+
+```bash
+python run_prospective_coverage.py --new-model-protocol model_folds \
+  --may-json "$DATA/may.json" --aug-json "$DATA/aug.json" \
+  --calibrator-dir results/prospective_coverage --workers 32
+```
+
+Outputs go to `results/prospective_coverage_model_folds/` with the same `raw_records.json.gz` (plus `seed` and `fold`), `manifest.json` (target list, calibrator sha256), and `summary.json` (`new_models.model_folds`).
