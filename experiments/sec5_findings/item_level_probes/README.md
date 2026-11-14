@@ -71,14 +71,16 @@ mean is assigned to every hidden question in that subtask before thresholding.
 The legend marks these six curves. The remaining seven curves use their
 individual-question predictions.
 
-The frozen rank-8 files contain subtask means. Regenerate only its sixty fits
-with `variants.py fit --methods logit --rank 8`, preserving all original
-settings and saving the per-question NPZs. Accuracy scoring requires every
+The frozen rank-8 files contain subtask means. Its recovered per-question
+NPZs are retained under configuration `8e7e521f9645ce06`; reuse these files.
+If they are unavailable, rebuild only its sixty fits with
+`variants.py fit --methods logit --rank 8`, preserving all original settings.
+Accuracy scoring requires every
 regenerated subtask mean to reproduce the frozen rank-8 prediction within
 absolute tolerance `1e-12`. Other methods reuse their existing predictions.
 
 ```bash
-python variants.py accuracy --variant-hashes <rank8-hash> 577115b7edd126a2 \
+python variants.py accuracy --variant-hashes 8e7e521f9645ce06 577115b7edd126a2 \
   37f038ab59473936 3e45aded7c84be36 84605c28993268f9 6efd14d29c34e248 \
   --code-commit "$(git rev-parse HEAD)"
 python plot.py --summary results/accuracy/<accuracy-hash>/summary.json \
@@ -440,3 +442,108 @@ python plot.py --summary results/variants/rank40_comparison.json \
 Lines show five-seed means; shaded bands show one sample standard deviation,
 not confidence intervals. The default predictor, evaluation runner,
 rebuttal, and Overleaf text are unchanged.
+
+## Binary question-prediction accuracy results (2026-11-14)
+
+Accuracy is the percentage of hidden binary answers predicted correctly:
+100 times the number of correct predictions divided by the number of hidden
+model/question pairs. Higher is better. A predicted score greater than 0.5
+gives label 1; all other scores give label 0. This measures prediction of
+answer correctness, rather than a model's benchmark score.
+
+The frozen 425-model, 21,176-question matrix, 298/127 model split, 37 subtasks,
+two selections, six budgets, and five selection seeds are unchanged.
+All methods share the hidden questions within each setting. The hidden
+question population changes with budget. Each entry below is the mean
+accuracy (%) over five seeds; the JSON retains sample standard deviations.
+These results use the same exploratory model split as the method comparisons
+above. The Bernoulli fits retain their documented iteration-limit status.
+
+Rank 40 has the highest mean accuracy at 6400 questions under both selections:
+85.437% for random questions and 85.668% for anchors. Rank 8 is better at
+200, 400, and 800 questions. Two pairs have identical accuracy in all sixty
+settings: BenchPress rank 8 and raw ALS, and the logit/raw ALS variants with
+subtask offsets. Both members of each pair remain in the figure and legend.
+
+Methods marked with a dagger use the subtask-constant convention described
+above: their hidden-subtask mean is broadcast before classification. Their
+accuracy evaluates that adaptation of the aggregate estimator.
+
+### Random questions
+
+| Method | 200 | 400 | 800 | 1600 | 3200 | 6400 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| BenchPress (rank 8) | 81.201 | 81.408 | 81.717 | 81.948 | 82.071 | 83.565 |
+| BenchPress (rank 40) | 79.574 | 80.616 | 81.443 | 81.908 | 81.760 | 85.437 |
+| Random-Sampling † | 68.927 | 70.410 | 70.945 | 71.192 | 71.583 | 71.826 |
+| Random-Sampling-Learn † | 70.925 | 71.131 | 71.277 | 71.469 | 71.746 | 71.932 |
+| AIPW † | 69.543 | 70.725 | 71.191 | 71.414 | 71.695 | 71.963 |
+| GP-IRT † | 68.248 | 68.144 | 69.600 | 71.329 | 71.710 | 71.933 |
+| Raw ALS (rank 8) | 81.201 | 81.408 | 81.717 | 81.948 | 82.071 | 83.565 |
+| Logit ALS + subtask offsets | 79.218 | 80.525 | 81.408 | 81.750 | 82.169 | 83.784 |
+| Raw ALS + subtask offsets | 79.218 | 80.525 | 81.408 | 81.750 | 82.169 | 83.784 |
+| Bernoulli + subtask offsets | 79.689 | 80.008 | 80.410 | 80.944 | 80.986 | 84.123 |
+| Raw ALS + shrunk residuals | 81.258 | 81.487 | 81.832 | 82.093 | 82.229 | 83.758 |
+| Subtask-mean ridge † | 71.218 | 71.284 | 71.388 | 71.477 | 71.676 | 71.925 |
+| Subtask ridge + item PCs † | 71.274 | 71.347 | 71.412 | 71.536 | 71.737 | 71.974 |
+
+### GP-IRT anchor questions
+
+| Method | 200 | 400 | 800 | 1600 | 3200 | 6400 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| BenchPress (rank 8) | 81.244 | 81.607 | 81.853 | 81.991 | 82.187 | 83.815 |
+| BenchPress (rank 40) | 79.788 | 80.692 | 81.578 | 82.110 | 82.004 | 85.668 |
+| Random-Sampling † | 67.934 | 70.685 | 70.743 | 71.070 | 71.622 | 71.924 |
+| Random-Sampling-Learn † | 70.974 | 71.218 | 71.343 | 71.543 | 71.918 | 72.415 |
+| AIPW † | 69.467 | 70.812 | 71.106 | 71.506 | 71.934 | 72.440 |
+| GP-IRT † | 67.162 | 70.397 | 70.315 | 71.356 | 71.907 | 72.433 |
+| Raw ALS (rank 8) | 81.244 | 81.607 | 81.853 | 81.991 | 82.187 | 83.815 |
+| Logit ALS + subtask offsets | 79.669 | 81.025 | 81.762 | 82.079 | 82.372 | 84.049 |
+| Raw ALS + subtask offsets | 79.669 | 81.025 | 81.762 | 82.079 | 82.372 | 84.049 |
+| Bernoulli + subtask offsets | 79.686 | 80.207 | 80.586 | 81.074 | 81.187 | 84.400 |
+| Raw ALS + shrunk residuals | 81.298 | 81.696 | 81.978 | 82.140 | 82.349 | 84.007 |
+| Subtask-mean ridge † | 71.181 | 71.340 | 71.491 | 71.580 | 71.857 | 72.402 |
+| Subtask ridge + item PCs † | 71.244 | 71.421 | 71.546 | 71.595 | 71.919 | 72.442 |
+
+### Provenance and artifacts
+
+Rank-8 recovery used source
+`d58184dbc15ed91d4041b83eb0865f4863dedce7`, configuration
+`8e7e521f9645ce06`, canary job `8564504`, and 59-job cluster `8565335`.
+Every job exited successfully. All sixty recovered fits reproduce the frozen
+subtask predictions within `1e-12`. Recorded fit times ranged from 636.8 to
+2574.6 seconds. Each worker used one CPU; the canary requested 8 GB RAM and
+the remaining workers requested 4 GB. The Python and package versions match
+the fixed-rank run above.
+
+Scoring job `8567764` used source
+`138c6632b5d0b5dd9881188f298bb30c1ab67882`, one CPU, and 8 GB RAM.
+It completed in 1751 seconds of allocated wall time, including transfers,
+using 230 MB peak memory. It checked 540 per-question prediction arrays and
+reused the four frozen baseline estimators. No GPU or new model inference
+was used.
+
+The complete result is
+`results/accuracy/9dfdbee8f2ea1b35/summary.json`, with SHA256
+`4ac12db82bf150ac260a6718a1c76d07a99db99801a83945d2062bdb66cc5937`.
+It contains 780 unique seed-level records and 156 five-seed table cells,
+with `complete_grid=true` and `frozen_rank8_reproduced=true`. Every setting
+has identical masks and denominators across methods. All prediction-source
+digests are full SHA256 values. The frozen reference-summary hash remains
+`fb2691b637170ceadbb820c414eaed6a270a3b57a3330a68836f23525581f89a`.
+
+Persistent outputs are under `CHTC:$STAGING/bp_iclr/question_accuracy/`:
+`summary.tar.gz` holds the compact result; sixty
+`out_variant_logit_r8_<selection>_s<seed>_B<budget>.tar.gz` files hold recovered
+rank-8 NPZs and manifests. The other raw sources remain at their paths
+documented above. The scorer records all six source configurations.
+
+```bash
+python plot.py --summary results/accuracy/9dfdbee8f2ea1b35/summary.json \
+  --name bp_question_accuracy_all
+```
+
+The figure contains all thirteen curves in both panels, with `Accuracy (%)`
+on the y-axis and one sample-standard-deviation band per curve. Outputs are
+`figures/bp_question_accuracy_all.{pdf,png}`. The earlier MedAE outputs,
+rebuttal, and Overleaf files remain separate and unchanged.
