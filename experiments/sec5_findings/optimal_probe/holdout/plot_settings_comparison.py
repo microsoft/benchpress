@@ -10,11 +10,14 @@ if REPO_ROOT not in sys.path:
     sys.path.insert(0, REPO_ROOT)
 
 from benchpress.io_utils import load_json, write_json_atomic
+from benchpress.stats import cluster_bootstrap_median
 from benchpress.plot_helpers.visual_identity import (
     ANSWER_VIOLET, CHARCOAL, GRAY, PROBE_COST_AWARE_STYLE,
     PROBE_COST_UNAWARE_STYLE, apply_single, save_fig,
 )
 import matplotlib.pyplot as plt
+from matplotlib.colors import to_rgba
+import numpy as np
 
 STEM = 'bp_main_vs_heldout_medae'
 
@@ -39,6 +42,7 @@ def main():
              ha='center', va='top', fontsize=25, color=CHARCOAL)
     for column, (main_order, heldout_order, title, style) in enumerate(panels):
         main_series = {}
+        main_cells = {}
         for method, suffix in (('benchpress', ''), ('logit_offsets_only', '_rank0')):
             path = os.path.join(HERE, '..', 'all_known', 'results',
                                 f'fixed_order_{main_order}{suffix}_hidden_only.json.gz')
@@ -47,8 +51,17 @@ def main():
             if data['config']['n_models'] != 84:
                 raise ValueError('Main experiment must contain 84 models')
             main_series[method] = {row['k']: row for row in data['summary_by_k']}
+            raw = [r for r in data['raw_predictions'] if not r['is_revealed']]
+            main_cells[method] = {
+                (r['k'], r['target_model_id'], r['benchmark_id']): r for r in raw
+            }
+            if len(main_cells[method]) != len(raw):
+                raise ValueError('Duplicate main-experiment prediction cells')
+        if main_cells['benchpress'].keys() != main_cells['logit_offsets_only'].keys():
+            raise ValueError('Main methods must be bootstrapped on identical cells')
         for row_index in range(2):
             ax = axes[row_index, column]
+            panel_records = {}
             if row_index == 0:
                 rows = []
                 for k in range(1, 11):
@@ -61,6 +74,19 @@ def main():
                     rows.append({'k': k, 'test_cells': bp['hidden_only']['n'],
                                  'benchpress': bp['hidden_only']['medae'],
                                  'logit_offsets_only': offsets['hidden_only']['medae']})
+                    panel_records[k] = []
+                    for key in sorted(main_cells['benchpress']):
+                        if key[0] != k:
+                            continue
+                        bp_cell = main_cells['benchpress'][key]
+                        offset_cell = main_cells['logit_offsets_only'][key]
+                        if bp_cell['actual'] != offset_cell['actual']:
+                            raise ValueError('Main methods have different test labels')
+                        panel_records[k].append({
+                            'model_id': key[1], 'true': bp_cell['actual'],
+                            'benchpress': bp_cell['pred'],
+                            'logit_offsets_only': offset_cell['pred'],
+                        })
             else:
                 source = sorted((r for r in heldout['summary']
                                  if r['method'] == heldout_order), key=lambda r: r['k'])
@@ -71,13 +97,40 @@ def main():
                         raise ValueError('Held-out prediction coverage differs across methods')
                     rows.append({'k': r['k'], 'test_cells': r['n_cells_in_prediction_payload'],
                                  **{name: r[name]['medae'] for name in names}})
+                    panel_records[r['k']] = [
+                        {'model_id': cell['model_id'], 'true': cell['true'],
+                         **{name: cell[name + '_pred'] for name in names}}
+                        for cell in heldout['raw_cells']
+                        if cell['method'] == heldout_order and cell['k'] == r['k']
+                    ]
             if [r['k'] for r in rows] != list(range(1, 11)):
                 raise ValueError('Expected all ten requested-probe budgets')
             series = [
                 ('benchpress', 'BenchPress', style['color'], '-', 'o'),
                 ('logit_offsets_only', 'Offsets only', ANSWER_VIOLET, '--', 's'),
             ]
+            for row in rows:
+                records = panel_records[row['k']]
+                if len(records) != row['test_cells']:
+                    raise ValueError('Raw prediction count does not match the plotted statistic')
+                clusters = [cell['model_id'] for cell in records]
+                expected_models = 84 if row_index == 0 else 25
+                if len(set(clusters)) != expected_models:
+                    raise ValueError('Unexpected model cohort in bootstrap')
+                row['bootstrap'] = {}
+                for name, *_ in series:
+                    errors = [abs(cell[name] - cell['true']) for cell in records]
+                    interval = cluster_bootstrap_median(errors, clusters)
+                    if not np.isclose(interval['median'], row[name], atol=1e-10, rtol=0):
+                        raise ValueError('Bootstrap estimand differs from the reported pooled MedAE')
+                    row['bootstrap'][name] = interval
             for name, label, color, linestyle, marker in series:
+                lower = np.array([r['bootstrap'][name]['ci_lower'] for r in rows])
+                upper = np.array([r['bootstrap'][name]['ci_upper'] for r in rows])
+                ax.errorbar([r['k'] for r in rows], (lower + upper) / 2,
+                            yerr=(upper - lower) / 2, fmt='none',
+                            ecolor=to_rgba(color, 0.55), elinewidth=1.1,
+                            capsize=3, capthick=1.1, zorder=2)
                 ax.plot([r['k'] for r in rows], [r[name] for r in rows], label=label,
                         color=color, linestyle=linestyle, marker=marker, linewidth=2.6,
                         markersize=7.2, markeredgecolor='white', markeredgewidth=1.1,
@@ -99,6 +152,11 @@ def main():
                 ax.set_xlabel(r'Requested probes ($k$)', fontsize=22, labelpad=9)
             plotted.extend({'setting': 'main' if row_index == 0 else 'heldout',
                             'ordering': heldout_order, **r} for r in rows)
+    intervals = [interval for r in plotted for interval in r['bootstrap'].values()]
+    lower_limit = min(4, np.floor(min(r['ci_lower'] for r in intervals)))
+    upper_limit = max(10, np.ceil(max(r['ci_upper'] for r in intervals)))
+    axes[0, 0].set_ylim(lower_limit, upper_limit)
+    axes[0, 0].set_yticks(np.arange(lower_limit, upper_limit + 1))
     save_fig(STEM)
     sources = []
     for path in source_paths:
@@ -107,6 +165,12 @@ def main():
         sources.append({'path': os.path.relpath(path, HERE), 'sha256': digest})
     write_json_atomic(os.path.join(HERE, 'figures', STEM + '_data.json'), {
         'metric': 'pooled MedAE on unrevealed observed cells',
+        'uncertainty': {
+            'method': 'pointwise percentile model-cluster bootstrap',
+            'confidence': 0.95, 'n_resamples': 2000, 'seed': 42,
+            'paired_draws': 'same model resamples across methods and budgets within each setting',
+            'fixed': 'model split, selected probe orderings, and fitted predictions',
+        },
         'sources': sources, 'data': plotted,
     }, indent=2)
     caption = (
@@ -121,7 +185,10 @@ def main():
         'The settings use different probe sets and evaluation cells. Requested '
         'probes may be unavailable, and newly revealed scores leave the test set. '
         'All four panels compare BenchPress with offsets only, which removes '
-        'the two latent factors.\n')
+        'the two latent factors. Bars are pointwise 95% percentile intervals '
+        'from 2,000 model-cluster bootstrap resamples (seed 42), paired across '
+        'methods and budgets within each setting. Model splits, probe '
+        'orderings, and fitted predictions remain fixed.\n')
     with open(os.path.join(HERE, 'figures', STEM + '_caption.md'), 'w') as handle:
         handle.write(caption)
 

@@ -180,6 +180,19 @@ and the 59/25 held-out experiment below; columns are cost-unaware and cost-aware
 greedy. Axes are identical. All four panels compare BenchPress and offsets only.
 All 80 values match the saved source
 summaries, and the data companion records each source hash and test-cell count.
+Vertical error bars are pointwise 95% percentile intervals for pooled MedAE,
+computed from 2,000 whole-model bootstrap resamples with seed 42 using
+`benchpress.stats.cluster_bootstrap_median`. Each sampled model contributes all
+its hidden-cell errors, including multiplicity when sampled repeatedly. The
+same model draws pair the two methods and all budgets within each setting.
+The 84-model and 25-model cohorts are bootstrapped separately. The split,
+selected probes, and fitted predictions are fixed; these bars do not estimate
+uncertainty from refitting or probe selection. The JSON data companion stores
+every interval and its configuration. The four axes expand together if needed
+to keep all intervals visible. Validation covers uneven cluster sizes,
+constant errors, deterministic paired draws, and invalid inputs; all point
+estimates reproduce the existing figure. The analysis reads cached predictions
+only and is safe locally.
 
 ## Matched revealed-count comparison
 
