@@ -1,0 +1,180 @@
+{
+  "source": "results/heldout_baselines_s42.json.gz",
+  "source_sha256": "f64bf11b8f96bd787e603c04d8430cc7fea7699fdc60373e1f49276612847fef",
+  "source_manifest": {
+    "git_commit": "7996392179ecd2db3776c125ab22e98e148cb201",
+    "matrix_identity_sha256": "9603f902534fb79bf9e8ae042297268ee54d8e60e5647397d15f71562d3889f8",
+    "benchmark_metric_identity_sha256": "6443d8f298a17ffe1d40b46447548e9b0e4235d127720120477a8ee68fa21ae1",
+    "matrix_shape": [
+      84,
+      133
+    ],
+    "n_observed": 2604,
+    "generated_at_utc": "2026-11-07T04:39:23.118378+00:00"
+  },
+  "metric": "pooled MedAPE on unrevealed observed cells with nonzero true score",
+  "n_selection_models": 59,
+  "n_heldout_models": 25,
+  "data": [
+    {
+      "ordering": "cost_unaware_greedy",
+      "requested_probes": 1,
+      "test_cells": 698,
+      "benchpress": 11.565438626760963,
+      "logit_offsets_only": 10.284508569441897,
+      "logit_model_mean": 15.096095086384286
+    },
+    {
+      "ordering": "cost_unaware_greedy",
+      "requested_probes": 2,
+      "test_cells": 690,
+      "benchpress": 9.970257882825537,
+      "logit_offsets_only": 9.07342675972191,
+      "logit_model_mean": 13.691338854469407
+    },
+    {
+      "ordering": "cost_unaware_greedy",
+      "requested_probes": 3,
+      "test_cells": 681,
+      "benchpress": 8.93597963311639,
+      "logit_offsets_only": 10.110337796448492,
+      "logit_model_mean": 14.424490459564653
+    },
+    {
+      "ordering": "cost_unaware_greedy",
+      "requested_probes": 4,
+      "test_cells": 661,
+      "benchpress": 9.416786672223875,
+      "logit_offsets_only": 10.53540026300625,
+      "logit_model_mean": 15.808418816013248
+    },
+    {
+      "ordering": "cost_unaware_greedy",
+      "requested_probes": 5,
+      "test_cells": 651,
+      "benchpress": 9.767517704270833,
+      "logit_offsets_only": 10.095069493285436,
+      "logit_model_mean": 14.962876814549853
+    },
+    {
+      "ordering": "cost_unaware_greedy",
+      "requested_probes": 6,
+      "test_cells": 629,
+      "benchpress": 8.412598348865782,
+      "logit_offsets_only": 8.682400627601282,
+      "logit_model_mean": 17.07410107792291
+    },
+    {
+      "ordering": "cost_unaware_greedy",
+      "requested_probes": 7,
+      "test_cells": 623,
+      "benchpress": 7.970134298473301,
+      "logit_offsets_only": 8.782327692144364,
+      "logit_model_mean": 17.084349756882457
+    },
+    {
+      "ordering": "cost_unaware_greedy",
+      "requested_probes": 8,
+      "test_cells": 614,
+      "benchpress": 7.876516348726076,
+      "logit_offsets_only": 8.877631388793313,
+      "logit_model_mean": 16.196880531475742
+    },
+    {
+      "ordering": "cost_unaware_greedy",
+      "requested_probes": 9,
+      "test_cells": 607,
+      "benchpress": 7.707466043441652,
+      "logit_offsets_only": 8.764410208591773,
+      "logit_model_mean": 16.177319344385328
+    },
+    {
+      "ordering": "cost_unaware_greedy",
+      "requested_probes": 10,
+      "test_cells": 603,
+      "benchpress": 7.798546998116443,
+      "logit_offsets_only": 8.852671080672158,
+      "logit_model_mean": 16.288082116283935
+    },
+    {
+      "ordering": "cost_aware_greedy",
+      "requested_probes": 1,
+      "test_cells": 698,
+      "benchpress": 11.565438626760963,
+      "logit_offsets_only": 10.284508569441897,
+      "logit_model_mean": 15.096095086384286
+    },
+    {
+      "ordering": "cost_aware_greedy",
+      "requested_probes": 2,
+      "test_cells": 689,
+      "benchpress": 10.689461847222178,
+      "logit_offsets_only": 10.459307840071084,
+      "logit_model_mean": 15.369097621028862
+    },
+    {
+      "ordering": "cost_aware_greedy",
+      "requested_probes": 3,
+      "test_cells": 683,
+      "benchpress": 10.954754029023757,
+      "logit_offsets_only": 10.752528457471659,
+      "logit_model_mean": 15.655704935431913
+    },
+    {
+      "ordering": "cost_aware_greedy",
+      "requested_probes": 4,
+      "test_cells": 661,
+      "benchpress": 9.957305053641338,
+      "logit_offsets_only": 11.001524043180211,
+      "logit_model_mean": 17.141701407295855
+    },
+    {
+      "ordering": "cost_aware_greedy",
+      "requested_probes": 5,
+      "test_cells": 657,
+      "benchpress": 9.187107416490411,
+      "logit_offsets_only": 9.83750661722443,
+      "logit_model_mean": 16.911700228083483
+    },
+    {
+      "ordering": "cost_aware_greedy",
+      "requested_probes": 6,
+      "test_cells": 647,
+      "benchpress": 9.834395312286146,
+      "logit_offsets_only": 10.147314331345047,
+      "logit_model_mean": 16.3625959774415
+    },
+    {
+      "ordering": "cost_aware_greedy",
+      "requested_probes": 7,
+      "test_cells": 637,
+      "benchpress": 10.215927581600038,
+      "logit_offsets_only": 10.40365154260123,
+      "logit_model_mean": 16.232602324996186
+    },
+    {
+      "ordering": "cost_aware_greedy",
+      "requested_probes": 8,
+      "test_cells": 632,
+      "benchpress": 10.59570995246931,
+      "logit_offsets_only": 10.368254461243394,
+      "logit_model_mean": 15.778330779266533
+    },
+    {
+      "ordering": "cost_aware_greedy",
+      "requested_probes": 9,
+      "test_cells": 627,
+      "benchpress": 10.27224108097644,
+      "logit_offsets_only": 9.08907989507646,
+      "logit_model_mean": 16.12148046660484
+    },
+    {
+      "ordering": "cost_aware_greedy",
+      "requested_probes": 10,
+      "test_cells": 623,
+      "benchpress": 10.27224108097644,
+      "logit_offsets_only": 9.249007729945877,
+      "logit_model_mean": 16.29028747926416
+    }
+  ]
+}

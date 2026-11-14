@@ -140,6 +140,7 @@ across predictors within a budget but change across budgets.
 
 ```bash
 python plot_baselines.py
+python plot_baselines.py --metric medape
 ```
 
 Outputs: `figures/bp_heldout_probe_baselines.pdf` and `.png`, plus
@@ -150,6 +151,11 @@ The figure uses the shared visual identity: policy colors for BenchPress,
 violet dashed lines for offsets only, and gray dotted lines for model mean.
 Both panels use the same axes. It is a standalone figure for the rebuttal
 discussion, with no manuscript placement applied.
+
+The `--metric medape` variant writes the same four files with stem
+`bp_heldout_probe_baselines_medape`. It keeps the MedAE-selected probes and
+changes only the plotted metric. MedAPE excludes zero true scores. All 60
+plotted values are checked against the saved baseline summaries.
 
 ## Matched revealed-count comparison
 

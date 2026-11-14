@@ -39,7 +39,10 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--input', default=os.path.join(
         HERE, 'results', 'heldout_baselines_s42.json.gz'))
+    parser.add_argument('--metric', choices=('medae', 'medape'), default='medae')
     args = parser.parse_args()
+    stem = STEM if args.metric == 'medae' else STEM + '_medape'
+    metric_label = 'MedAE (score points)' if args.metric == 'medae' else 'MedAPE (%)'
     data = load_json(args.input)
     if data['config']['protocol'] != 'heldout_baselines_v2':
         raise ValueError('Expected the original held-out baseline protocol')
@@ -68,7 +71,7 @@ def main():
             ('logit_model_mean', 'Model mean', GRAY, ':', '^'),
         )
         for name, label, color, linestyle, marker in series:
-            ax.plot([r['k'] for r in rows], [r[name]['medae'] for r in rows],
+            ax.plot([r['k'] for r in rows], [r[name][args.metric] for r in rows],
                     label=label, color=color, linestyle=linestyle, marker=marker,
                     linewidth=2.6, markersize=7.2, markeredgewidth=1.1,
                     markeredgecolor='white', zorder=4 if name == 'benchpress' else 3)
@@ -79,30 +82,43 @@ def main():
         ax.set_xlabel(r'Requested probes ($k$)', fontsize=22, labelpad=9)
         ax.set_xticks(range(1, 11))
         ax.set_xlim(0.7, 10.3)
-        ax.set_ylim(4, 10)
-        ax.set_yticks(range(4, 11))
+        if args.metric == 'medae':
+            ax.set_ylim(4, 10)
+            ax.set_yticks(range(4, 11))
+        else:
+            ax.set_ylim(7, 18)
+            ax.set_yticks(range(8, 19, 2))
         ax.tick_params(axis='both', labelsize=18)
         ax.grid(axis='y', color=GRAY, linewidth=0.75, alpha=0.22)
         plotted.extend({
             'ordering': ordering, 'requested_probes': r['k'],
             'test_cells': r['n_cells_in_prediction_payload'],
-            **{name: r[name]['medae'] for name, *_ in series},
+            **{name: r[name][args.metric] for name, *_ in series},
         } for r in rows)
-    axes[0].set_ylabel('MedAE (score points)', fontsize=22, labelpad=12)
-    save_fig(STEM)
+    axes[0].set_ylabel(metric_label, fontsize=22, labelpad=12)
+    save_fig(stem)
     figures = os.path.join(HERE, 'figures')
     with open(args.input, 'rb') as handle:
         source_hash = hashlib.sha256(handle.read()).hexdigest()
-    write_json_atomic(os.path.join(figures, STEM + '_data.json'), {
+    write_json_atomic(os.path.join(figures, stem + '_data.json'), {
         'source': os.path.relpath(args.input, HERE),
         'source_sha256': source_hash,
         'source_manifest': data['manifest'],
-        'metric': 'pooled MedAE on unrevealed observed cells',
+        'metric': ('pooled MedAE on unrevealed observed cells' if args.metric == 'medae'
+                   else 'pooled MedAPE on unrevealed observed cells with nonzero true score'),
         'n_selection_models': 59, 'n_heldout_models': 25,
         'data': plotted,
     }, indent=2)
-    with open(os.path.join(figures, STEM + '_caption.md'), 'w') as handle:
-        handle.write(CAPTION)
+    caption = CAPTION
+    if args.metric == 'medape':
+        caption = caption.replace('median absolute error (MedAE,',
+                                  'median absolute percentage error (MedAPE,')
+        caption = caption.rstrip() + (
+            ' Percentage errors use absolute error divided by the absolute true '
+            'score, multiplied by 100; cells with zero true scores are excluded. '
+            'Probe orderings remain those selected using MedAE.\n')
+    with open(os.path.join(figures, stem + '_caption.md'), 'w') as handle:
+        handle.write(caption)
 
 
 if __name__ == '__main__':
