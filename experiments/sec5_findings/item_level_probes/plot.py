@@ -16,7 +16,7 @@ if REPO_ROOT not in sys.path:
 
 from benchpress.plot_helpers.visual_identity import (  # noqa: E402
     ANSWER_VIOLET, CYAN_TEAL, DEEP_BLUE, GRAY, LAVENDER, MEMENTO_MAGENTA,
-    ROSE, VANILLA_BLUE, apply_single, save_fig,
+    PROBE_RANDOM_STYLE, ROSE, VANILLA_BLUE, apply_single, save_fig,
 )
 
 STYLES = {
@@ -41,6 +41,50 @@ STYLES = {
 }
 
 
+def plot_selection(summary, name):
+    table = summary['table']
+    policies = {
+        'random': dict(PROBE_RANDOM_STYLE, label='Random questions'),
+        'benchpress_anchors': {
+            'label': 'BenchPress-selected questions', 'color': MEMENTO_MAGENTA,
+            'linestyle': '-', 'marker': 's',
+        },
+    }
+    if (not summary['complete_grid']
+            or summary['config']['metric']['name'] != 'binary_accuracy'
+            or set(table) != {'benchpress_r8', 'benchpress_r40'}
+            or any(set(rows) != set(policies) for rows in table.values())):
+        raise ValueError('selection figure requires the complete two-policy, two-rank comparison')
+    apply_single()
+    fig, axes = plt.subplots(1, 2, figsize=(14, 6.5), sharey=True)
+    for ax, rank in zip(axes, (8, 40)):
+        for policy, style in policies.items():
+            rows = table[f'benchpress_r{rank}'][policy]
+            budgets = sorted(map(int, rows))
+            mean = np.array([rows[str(b)]['accuracy_mean'] for b in budgets])
+            std = np.array([rows[str(b)]['accuracy_std'] for b in budgets])
+            ax.plot(budgets, mean, **style)
+            ax.fill_between(budgets, mean - std, mean + std,
+                            color=style['color'], alpha=0.15, linewidth=0)
+        ax.set_title(f'BenchPress predictor: rank {rank}')
+        ax.set_xscale('log', base=2)
+        ax.set_xticks(budgets)
+        ax.set_xticklabels([str(b) for b in budgets])
+        ax.set_xlabel('Evaluated questions per model')
+        ax.grid(alpha=0.3)
+    lower, upper = axes[0].get_ylim()
+    axes[0].set_ylim(max(0, lower), min(100, upper))
+    axes[0].set_ylabel('Accuracy (%)')
+    fig.legend(*axes[0].get_legend_handles_labels(), loc='lower center',
+               bbox_to_anchor=(0.5, 0.07), ncol=2, frameon=False, fontsize=14)
+    fig.subplots_adjust(bottom=0.28)
+    fig.text(0.5, 0.01,
+             '127 held-out models; identical unrevealed questions within each budget/seed.'
+             '\nPredict 1 iff score >0.5. Mean and one sample SD over five selection seeds.',
+             ha='center', fontsize=10)
+    save_fig(name)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument('--summary', default=os.path.join(HERE, 'results', 'summary.json'))
@@ -50,6 +94,11 @@ def main():
 
     with open(args.summary) as f:
         summary = json.load(f)
+    if summary.get('config', {}).get('comparison') == 'question_selection':
+        if args.methods is not None:
+            raise ValueError('the selection comparison always plots both policies and ranks')
+        plot_selection(summary, args.name or 'bp_question_selection')
+        return
     table = summary['table']
     metric = summary.get('config', {}).get('metric', {})
     accuracy = metric.get('name') == 'binary_accuracy'
