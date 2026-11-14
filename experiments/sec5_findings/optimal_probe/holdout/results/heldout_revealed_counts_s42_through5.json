@@ -1,0 +1,1843 @@
+{
+  "protocol": "heldout_fixed_cells_revealed_counts_v1",
+  "revealed_counts": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "selection": "Within each ordering, retain models with cached predictions at every exact count 1, 2, 3, 4, 5. Use the earliest requested-probe prefix reaching each count. Evaluate every predictor at every count on the intersection of those hidden test cells, once per model-benchmark pair. Cohort selection uses availability only, never prediction errors.",
+  "source": "results/heldout_baselines_s42.json.gz",
+  "source_sha256": "f64bf11b8f96bd787e603c04d8430cc7fea7699fdc60373e1f49276612847fef",
+  "source_manifest": {
+    "git_commit": "7996392179ecd2db3776c125ab22e98e148cb201",
+    "matrix_identity_sha256": "9603f902534fb79bf9e8ae042297268ee54d8e60e5647397d15f71562d3889f8",
+    "benchmark_metric_identity_sha256": "6443d8f298a17ffe1d40b46447548e9b0e4235d127720120477a8ee68fa21ae1",
+    "matrix_shape": [
+      84,
+      133
+    ],
+    "n_observed": 2604,
+    "generated_at_utc": "2026-11-07T04:39:23.118378+00:00"
+  },
+  "groups": [
+    {
+      "ordering": "cost_aware_greedy",
+      "retained_models": [
+        {
+          "model_id": "claude-opus-4.6",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 4,
+            "3": 5,
+            "4": 7,
+            "5": 8
+          },
+          "test_benchmark_ids": [
+            "aa_intelligence_index",
+            "aime_2026",
+            "arc_agi_1",
+            "arc_agi_2",
+            "babyvision",
+            "browsecomp",
+            "bullshit_pushback",
+            "charxiv_reasoning",
+            "chatbot_arena_elo",
+            "chinese_simpleqa",
+            "critpt",
+            "cybergym",
+            "deepsearchqa_acc",
+            "finance_agent",
+            "frontiermath",
+            "gdpval_aa_elo",
+            "gpqa_main",
+            "hle",
+            "hle_text",
+            "hmmt_feb_2026",
+            "hmmt_nov_2025",
+            "ifbench",
+            "imo_answerbench",
+            "livecodebench",
+            "mathvision",
+            "mcpatlas",
+            "mcpmark",
+            "mmmlu",
+            "mmmu_pro",
+            "mrcr_v1",
+            "mrcr_v2",
+            "mrcr_v2_8needle",
+            "nl2repo_bench",
+            "ojbench",
+            "osworld",
+            "scicode",
+            "simpleqa_verified",
+            "swe_bench_multilingual",
+            "swe_bench_pro",
+            "swe_bench_verified",
+            "tau2_bench_retail",
+            "tau2_bench_telecom",
+            "tau3_bench",
+            "terminal_bench",
+            "toolathlon",
+            "usamo_2025",
+            "vending_bench_2"
+          ],
+          "n_test_cells": 47
+        },
+        {
+          "model_id": "claude-sonnet-4",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 2,
+            "3": 4,
+            "4": 6,
+            "5": 7
+          },
+          "test_benchmark_ids": [
+            "aa_intelligence_index",
+            "aa_lcr",
+            "aime_2024",
+            "arc_agi_1",
+            "arc_agi_2",
+            "artifactsbench",
+            "browsecomp",
+            "browsecomp_zh",
+            "bullshit_pushback",
+            "finsearchcomp_global",
+            "gaia",
+            "gpqa_main",
+            "hle",
+            "hmmt_feb_2025",
+            "ifbench",
+            "ifeval",
+            "livecodebench",
+            "mmmlu",
+            "mmmu",
+            "multi_swe_bench",
+            "scicode",
+            "simpleqa",
+            "swe_bench_multilingual",
+            "swe_bench_pro",
+            "swe_bench_verified",
+            "tau2_bench_airline",
+            "tau2_bench_retail",
+            "tau2_bench_telecom",
+            "tau_bench_airline",
+            "tau_bench_retail",
+            "terminal_bench",
+            "terminal_bench_1",
+            "terminal_bench_hard",
+            "xbench_deepsearch"
+          ],
+          "n_test_cells": 34
+        },
+        {
+          "model_id": "deepseek-r1-0528",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 3,
+            "3": 4,
+            "4": 5,
+            "5": 7
+          },
+          "test_benchmark_ids": [
+            "aime_2024",
+            "arc_agi_1",
+            "arc_agi_2",
+            "brumo_2025",
+            "chatbot_arena_elo",
+            "cmimc_2025",
+            "cnmo_2024",
+            "codeforces_rating",
+            "frames",
+            "hle",
+            "hmmt_feb_2025",
+            "ifeval",
+            "livecodebench",
+            "simpleqa",
+            "smt_2025",
+            "swe_bench_verified",
+            "tau_bench_airline",
+            "tau_bench_retail",
+            "usamo_2025"
+          ],
+          "n_test_cells": 19
+        },
+        {
+          "model_id": "gemini-2.5-pro",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 3,
+            "3": 4,
+            "4": 6,
+            "5": 7
+          },
+          "test_benchmark_ids": [
+            "aa_intelligence_index",
+            "aa_lcr",
+            "aider_polyglot_whole",
+            "aime_2024",
+            "arc_agi_1",
+            "arc_agi_2",
+            "artifactsbench",
+            "beyond_aime",
+            "browsecomp",
+            "browsecomp_zh",
+            "brumo_2025",
+            "bullshit_pushback",
+            "charxiv_reasoning",
+            "chatbot_arena_elo",
+            "cmimc_2025",
+            "codeforces_rating",
+            "collie",
+            "critpt",
+            "facts_grounding",
+            "finsearchcomp_global",
+            "frontiermath",
+            "gaia",
+            "global_piqa",
+            "gpqa_main",
+            "hle",
+            "hle_text",
+            "hmmt_feb_2025",
+            "hmmt_nov_2025",
+            "ifbench",
+            "ifeval",
+            "livebench",
+            "livecodebench",
+            "mcpatlas",
+            "mmmlu",
+            "mmmu",
+            "mmmu_pro",
+            "mrcr_v1",
+            "mrcr_v2",
+            "mrcr_v2_8needle",
+            "mt_aime_2024",
+            "omnidocbench",
+            "omnidocbench_1.5",
+            "scicode",
+            "screenspot_pro",
+            "simpleqa",
+            "simpleqa_verified",
+            "smt_2025",
+            "supergpqa",
+            "swe_bench_verified",
+            "tau2_bench_telecom",
+            "terminal_bench",
+            "terminal_bench_1",
+            "terminal_bench_hard",
+            "toolathlon",
+            "usamo_2025",
+            "vending_bench_2",
+            "vibe_eval",
+            "video_mme",
+            "video_mmmu",
+            "xbench_deepsearch"
+          ],
+          "n_test_cells": 60
+        },
+        {
+          "model_id": "gpt-4.1",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 2,
+            "3": 3,
+            "4": 4,
+            "5": 6
+          },
+          "test_benchmark_ids": [
+            "aider_polyglot_whole",
+            "aime_2024",
+            "aime_2025",
+            "arc_agi_1",
+            "arc_agi_2",
+            "browsecomp_long_context_128k",
+            "bullshit_pushback",
+            "charxiv_descriptive",
+            "charxiv_reasoning",
+            "collie",
+            "complexfuncbench",
+            "erqa",
+            "factscore",
+            "gpqa_main",
+            "graphwalks_bfs_0k_128k",
+            "graphwalks_parents_0k_128k",
+            "hle",
+            "hle_text",
+            "hmmt_feb_2025",
+            "ifeval",
+            "internal_api_if_hard",
+            "livecodebench",
+            "longfact_concepts",
+            "longfact_objects",
+            "mathvista",
+            "mmmlu",
+            "mmmu",
+            "mmmu_pro",
+            "mrcr_v2_2needle_128k",
+            "mt_aime_2024",
+            "multi_if",
+            "multichallenge",
+            "multichallenge_o3mini_grader",
+            "simpleqa",
+            "swelancer_freelance_dollars",
+            "tau2_bench_airline",
+            "tau2_bench_retail",
+            "tau2_bench_telecom",
+            "tau_bench_airline",
+            "tau_bench_retail",
+            "terminal_bench_1",
+            "video_mme",
+            "video_mmmu"
+          ],
+          "n_test_cells": 43
+        },
+        {
+          "model_id": "gpt-4o",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 2,
+            "3": 3,
+            "4": 4,
+            "5": 6
+          },
+          "test_benchmark_ids": [
+            "aider_polyglot_whole",
+            "aime_2024",
+            "arc_agi_1",
+            "arc_agi_2",
+            "charxiv_descriptive",
+            "charxiv_reasoning",
+            "collie",
+            "complexfuncbench",
+            "drop",
+            "erqa",
+            "gpqa_main",
+            "graphwalks_bfs_0k_128k",
+            "graphwalks_parents_0k_128k",
+            "hle",
+            "hle_text",
+            "humaneval",
+            "ifeval",
+            "internal_api_if_hard",
+            "livecodebench",
+            "math",
+            "mathvista",
+            "mgsm",
+            "mmmlu",
+            "mmmu",
+            "mmmu_pro",
+            "mrcr_v2_2needle_128k",
+            "mt_aime_2024",
+            "multi_if",
+            "multichallenge",
+            "multichallenge_o3mini_grader",
+            "multipl_e_avg",
+            "simpleqa",
+            "swe_bench_verified",
+            "swelancer",
+            "tau_bench_airline",
+            "tau_bench_retail",
+            "video_mmmu"
+          ],
+          "n_test_cells": 37
+        },
+        {
+          "model_id": "gpt-4o-mini",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 2,
+            "3": 3,
+            "4": 4,
+            "5": 6
+          },
+          "test_benchmark_ids": [
+            "aider_polyglot_whole",
+            "aime_2024",
+            "alpacaeval_2",
+            "arc_agi_2",
+            "bigbench_hard",
+            "charxiv_descriptive",
+            "charxiv_reasoning",
+            "collie",
+            "complexfuncbench",
+            "drop",
+            "gpqa_main",
+            "graphwalks_bfs_0k_128k",
+            "graphwalks_parents_0k_128k",
+            "gsm8k",
+            "humaneval",
+            "ifeval",
+            "internal_api_if_hard",
+            "livebench",
+            "math",
+            "mathvista",
+            "mgsm",
+            "mmmlu",
+            "mmmu",
+            "mrcr_v2_2needle_128k",
+            "multi_if",
+            "multichallenge",
+            "multichallenge_o3mini_grader",
+            "popqa",
+            "safety",
+            "simpleqa",
+            "tau_bench_airline",
+            "tau_bench_retail",
+            "truthfulqa"
+          ],
+          "n_test_cells": 33
+        }
+      ],
+      "excluded_model_ids": [
+        "claude-sonnet-4.6",
+        "command-a",
+        "gemini-1.5-pro",
+        "gemini-2.0-flash",
+        "gemini-3.1-pro",
+        "gemma-2-27b",
+        "gemma-2-9b",
+        "gemma-3-1b-it",
+        "glm-4.6",
+        "gpt-4.5",
+        "grok-3-beta",
+        "kimi-k2.6",
+        "llama-3.1-8b",
+        "llama-3.3-70b-instruct",
+        "qwen-2.5-32b",
+        "qwen-2.5-7b",
+        "qwen3-32b",
+        "qwen3.6-plus"
+      ],
+      "summary": [
+        {
+          "revealed_scores": 1,
+          "n_models": 7,
+          "n_test_cells": 273,
+          "metrics": {
+            "benchpress": {
+              "medae": 7.641850085314168,
+              "medape": 15.140338797192165,
+              "n": 273
+            },
+            "logit_offsets_only": {
+              "medae": 6.624012009020653,
+              "medape": 13.963351079767229,
+              "n": 273
+            },
+            "logit_model_mean": {
+              "medae": 9.139948220705179,
+              "medape": 19.578974911907256,
+              "n": 273
+            }
+          },
+          "benchpress_model_wins": {
+            "logit_offsets_only": 4,
+            "logit_model_mean": 6
+          },
+          "per_model_medae": [
+            {
+              "model_id": "claude-opus-4.6",
+              "benchpress": 9.994039700843246,
+              "logit_offsets_only": 10.662948716383944,
+              "logit_model_mean": 3.7771302684775634
+            },
+            {
+              "model_id": "claude-sonnet-4",
+              "benchpress": 5.56672533429257,
+              "logit_offsets_only": 2.791606024918188,
+              "logit_model_mean": 6.8289822081233105
+            },
+            {
+              "model_id": "deepseek-r1-0528",
+              "benchpress": 5.831288402569413,
+              "logit_offsets_only": 6.388768605709405,
+              "logit_model_mean": 8.823083402362101
+            },
+            {
+              "model_id": "gemini-2.5-pro",
+              "benchpress": 8.473724624261035,
+              "logit_offsets_only": 8.48440975490772,
+              "logit_model_mean": 12.6666282169653
+            },
+            {
+              "model_id": "gpt-4.1",
+              "benchpress": 6.7470008758906275,
+              "logit_offsets_only": 5.443900849251335,
+              "logit_model_mean": 10.113521948408717
+            },
+            {
+              "model_id": "gpt-4o",
+              "benchpress": 7.0081565008641,
+              "logit_offsets_only": 6.169727996465721,
+              "logit_model_mean": 7.73421191999493
+            },
+            {
+              "model_id": "gpt-4o-mini",
+              "benchpress": 5.101604171271685,
+              "logit_offsets_only": 5.798983055434775,
+              "logit_model_mean": 13.031218832363791
+            }
+          ]
+        },
+        {
+          "revealed_scores": 2,
+          "n_models": 7,
+          "n_test_cells": 273,
+          "metrics": {
+            "benchpress": {
+              "medae": 7.1668139188786455,
+              "medape": 14.50772048356001,
+              "n": 273
+            },
+            "logit_offsets_only": {
+              "medae": 7.098689634436923,
+              "medape": 15.420276459699043,
+              "n": 273
+            },
+            "logit_model_mean": {
+              "medae": 9.364321462501408,
+              "medape": 19.677069984570533,
+              "n": 273
+            }
+          },
+          "benchpress_model_wins": {
+            "logit_offsets_only": 3,
+            "logit_model_mean": 6
+          },
+          "per_model_medae": [
+            {
+              "model_id": "claude-opus-4.6",
+              "benchpress": 10.751674541621398,
+              "logit_offsets_only": 12.048086753606526,
+              "logit_model_mean": 3.2972351927323302
+            },
+            {
+              "model_id": "claude-sonnet-4",
+              "benchpress": 5.663177921875771,
+              "logit_offsets_only": 5.345054192683321,
+              "logit_model_mean": 6.745030466753001
+            },
+            {
+              "model_id": "deepseek-r1-0528",
+              "benchpress": 6.2982789773632835,
+              "logit_offsets_only": 6.361082929353643,
+              "logit_model_mean": 10.02716591229138
+            },
+            {
+              "model_id": "gemini-2.5-pro",
+              "benchpress": 9.03117889962834,
+              "logit_offsets_only": 8.69680216385823,
+              "logit_model_mean": 12.70014581366532
+            },
+            {
+              "model_id": "gpt-4.1",
+              "benchpress": 5.399217460255215,
+              "logit_offsets_only": 6.4309096166808075,
+              "logit_model_mean": 10.253392260827354
+            },
+            {
+              "model_id": "gpt-4o",
+              "benchpress": 6.968854612268814,
+              "logit_offsets_only": 6.228072212228767,
+              "logit_model_mean": 8.865566646095829
+            },
+            {
+              "model_id": "gpt-4o-mini",
+              "benchpress": 5.128600873558096,
+              "logit_offsets_only": 4.9311992884019205,
+              "logit_model_mean": 12.711707536157384
+            }
+          ]
+        },
+        {
+          "revealed_scores": 3,
+          "n_models": 7,
+          "n_test_cells": 273,
+          "metrics": {
+            "benchpress": {
+              "medae": 6.504112637597302,
+              "medape": 12.857677431411702,
+              "n": 273
+            },
+            "logit_offsets_only": {
+              "medae": 6.74970636572489,
+              "medape": 13.202083752837165,
+              "n": 273
+            },
+            "logit_model_mean": {
+              "medae": 9.635687916418995,
+              "medape": 20.352696467863247,
+              "n": 273
+            }
+          },
+          "benchpress_model_wins": {
+            "logit_offsets_only": 1,
+            "logit_model_mean": 6
+          },
+          "per_model_medae": [
+            {
+              "model_id": "claude-opus-4.6",
+              "benchpress": 5.1471403461583165,
+              "logit_offsets_only": 6.601647540595096,
+              "logit_model_mean": 3.634854224169402
+            },
+            {
+              "model_id": "claude-sonnet-4",
+              "benchpress": 4.220136067441384,
+              "logit_offsets_only": 2.7342672394599496,
+              "logit_model_mean": 7.294704040914102
+            },
+            {
+              "model_id": "deepseek-r1-0528",
+              "benchpress": 7.943740327773494,
+              "logit_offsets_only": 6.352567034190244,
+              "logit_model_mean": 10.419634776381574
+            },
+            {
+              "model_id": "gemini-2.5-pro",
+              "benchpress": 8.828053589145394,
+              "logit_offsets_only": 8.303426084719945,
+              "logit_model_mean": 12.61041866163756
+            },
+            {
+              "model_id": "gpt-4.1",
+              "benchpress": 5.366545119589617,
+              "logit_offsets_only": 5.304140333724892,
+              "logit_model_mean": 11.211281881534184
+            },
+            {
+              "model_id": "gpt-4o",
+              "benchpress": 5.997054697984524,
+              "logit_offsets_only": 5.907702797692494,
+              "logit_model_mean": 8.798434047102369
+            },
+            {
+              "model_id": "gpt-4o-mini",
+              "benchpress": 8.994724192248896,
+              "logit_offsets_only": 7.583502408414688,
+              "logit_model_mean": 12.864241571796654
+            }
+          ]
+        },
+        {
+          "revealed_scores": 4,
+          "n_models": 7,
+          "n_test_cells": 273,
+          "metrics": {
+            "benchpress": {
+              "medae": 6.091266285539859,
+              "medape": 12.746265478464808,
+              "n": 273
+            },
+            "logit_offsets_only": {
+              "medae": 6.839712049250508,
+              "medape": 14.11764609475592,
+              "n": 273
+            },
+            "logit_model_mean": {
+              "medae": 9.575431322437229,
+              "medape": 19.583023687411565,
+              "n": 273
+            }
+          },
+          "benchpress_model_wins": {
+            "logit_offsets_only": 3,
+            "logit_model_mean": 5
+          },
+          "per_model_medae": [
+            {
+              "model_id": "claude-opus-4.6",
+              "benchpress": 6.91470387046401,
+              "logit_offsets_only": 8.780265044588106,
+              "logit_model_mean": 3.4226189796023476
+            },
+            {
+              "model_id": "claude-sonnet-4",
+              "benchpress": 5.519936969790024,
+              "logit_offsets_only": 7.445976767800042,
+              "logit_model_mean": 6.44941102547924
+            },
+            {
+              "model_id": "deepseek-r1-0528",
+              "benchpress": 7.786884205109274,
+              "logit_offsets_only": 6.173360058148212,
+              "logit_model_mean": 7.188212818986656
+            },
+            {
+              "model_id": "gemini-2.5-pro",
+              "benchpress": 9.216530492233796,
+              "logit_offsets_only": 7.667779981884692,
+              "logit_model_mean": 12.459171220549113
+            },
+            {
+              "model_id": "gpt-4.1",
+              "benchpress": 6.76207054108729,
+              "logit_offsets_only": 6.252417031121453,
+              "logit_model_mean": 11.069556432092917
+            },
+            {
+              "model_id": "gpt-4o",
+              "benchpress": 5.089402634154496,
+              "logit_offsets_only": 4.8426419034254735,
+              "logit_model_mean": 10.134117822397997
+            },
+            {
+              "model_id": "gpt-4o-mini",
+              "benchpress": 4.185963190421333,
+              "logit_offsets_only": 6.876387672577749,
+              "logit_model_mean": 12.706608370408283
+            }
+          ]
+        },
+        {
+          "revealed_scores": 5,
+          "n_models": 7,
+          "n_test_cells": 273,
+          "metrics": {
+            "benchpress": {
+              "medae": 6.1561438796803,
+              "medape": 11.903841620841316,
+              "n": 273
+            },
+            "logit_offsets_only": {
+              "medae": 6.5078099584780205,
+              "medape": 14.186806709574732,
+              "n": 273
+            },
+            "logit_model_mean": {
+              "medae": 9.924356407031794,
+              "medape": 16.895030168651548,
+              "n": 273
+            }
+          },
+          "benchpress_model_wins": {
+            "logit_offsets_only": 5,
+            "logit_model_mean": 5
+          },
+          "per_model_medae": [
+            {
+              "model_id": "claude-opus-4.6",
+              "benchpress": 6.531422526109765,
+              "logit_offsets_only": 8.835585573214495,
+              "logit_model_mean": 4.7042795841166765
+            },
+            {
+              "model_id": "claude-sonnet-4",
+              "benchpress": 4.853771082609125,
+              "logit_offsets_only": 7.44690641412917,
+              "logit_model_mean": 4.943251761826517
+            },
+            {
+              "model_id": "deepseek-r1-0528",
+              "benchpress": 9.171636263445134,
+              "logit_offsets_only": 6.192989536383827,
+              "logit_model_mean": 7.619511013532609
+            },
+            {
+              "model_id": "gemini-2.5-pro",
+              "benchpress": 6.983135929381248,
+              "logit_offsets_only": 7.692544823474083,
+              "logit_model_mean": 12.238052317810237
+            },
+            {
+              "model_id": "gpt-4.1",
+              "benchpress": 4.052858435050219,
+              "logit_offsets_only": 5.867076736637884,
+              "logit_model_mean": 11.123379347898783
+            },
+            {
+              "model_id": "gpt-4o",
+              "benchpress": 6.510439867342953,
+              "logit_offsets_only": 5.428634080933556,
+              "logit_model_mean": 13.038231390094552
+            },
+            {
+              "model_id": "gpt-4o-mini",
+              "benchpress": 5.324855273368243,
+              "logit_offsets_only": 5.58843840683744,
+              "logit_model_mean": 13.778421935390714
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "ordering": "cost_unaware_greedy",
+      "retained_models": [
+        {
+          "model_id": "claude-opus-4.6",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 2,
+            "3": 4,
+            "4": 5,
+            "5": 6
+          },
+          "test_benchmark_ids": [
+            "aa_intelligence_index",
+            "aa_lcr",
+            "aime_2025",
+            "aime_2026",
+            "arc_agi_2",
+            "babyvision",
+            "browsecomp",
+            "bullshit_pushback",
+            "charxiv_reasoning",
+            "chatbot_arena_elo",
+            "chinese_simpleqa",
+            "critpt",
+            "cybergym",
+            "deepsearchqa_acc",
+            "finance_agent",
+            "frontiermath",
+            "gdpval_aa_elo",
+            "gpqa_main",
+            "hle",
+            "hle_text",
+            "hmmt_feb_2026",
+            "hmmt_nov_2025",
+            "ifbench",
+            "imo_answerbench",
+            "matharena_apex_2025",
+            "mathvision",
+            "mcpatlas",
+            "mcpmark",
+            "mmmlu",
+            "mmmu_pro",
+            "mrcr_v1",
+            "mrcr_v2",
+            "mrcr_v2_8needle",
+            "nl2repo_bench",
+            "ojbench",
+            "osworld",
+            "scicode",
+            "simpleqa_verified",
+            "swe_bench_multilingual",
+            "swe_bench_pro",
+            "swe_bench_verified",
+            "tau2_bench_retail",
+            "tau2_bench_telecom",
+            "tau3_bench",
+            "toolathlon",
+            "usamo_2025",
+            "vending_bench_2"
+          ],
+          "n_test_cells": 47
+        },
+        {
+          "model_id": "claude-sonnet-4",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 2,
+            "3": 3,
+            "4": 4,
+            "5": 5
+          },
+          "test_benchmark_ids": [
+            "aa_intelligence_index",
+            "aa_lcr",
+            "aime_2025",
+            "arc_agi_2",
+            "arena_hard",
+            "artifactsbench",
+            "browsecomp",
+            "browsecomp_zh",
+            "bullshit_pushback",
+            "finsearchcomp_global",
+            "gaia",
+            "gpqa_main",
+            "hle",
+            "hmmt_feb_2025",
+            "ifbench",
+            "ifeval",
+            "math_500",
+            "mmlu_pro",
+            "mmmlu",
+            "mmmu",
+            "multi_swe_bench",
+            "scicode",
+            "simpleqa",
+            "swe_bench_multilingual",
+            "swe_bench_pro",
+            "swe_bench_verified",
+            "tau2_bench_airline",
+            "tau2_bench_retail",
+            "tau2_bench_telecom",
+            "tau_bench_airline",
+            "tau_bench_retail",
+            "terminal_bench_1",
+            "terminal_bench_hard",
+            "xbench_deepsearch"
+          ],
+          "n_test_cells": 34
+        },
+        {
+          "model_id": "claude-sonnet-4.6",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 2,
+            "3": 5,
+            "4": 8,
+            "5": 9
+          },
+          "test_benchmark_ids": [
+            "aime_2025",
+            "arc_agi_2",
+            "bullshit_pushback",
+            "cybergym",
+            "finance_agent",
+            "frontiermath",
+            "gdpval_aa_elo",
+            "gpqa_main",
+            "hle",
+            "mcpatlas",
+            "mmmlu",
+            "mmmu_pro",
+            "mrcr_v2",
+            "osworld",
+            "scicode",
+            "swe_bench_verified",
+            "tau2_bench_retail",
+            "tau2_bench_telecom",
+            "vending_bench_2"
+          ],
+          "n_test_cells": 19
+        },
+        {
+          "model_id": "deepseek-r1-0528",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 3,
+            "3": 4,
+            "4": 5,
+            "5": 6
+          },
+          "test_benchmark_ids": [
+            "aider_polyglot_diff",
+            "aime_2025",
+            "arc_agi_2",
+            "brumo_2025",
+            "chatbot_arena_elo",
+            "cmimc_2025",
+            "cnmo_2024",
+            "codeforces_rating",
+            "frames",
+            "hle",
+            "hmmt_feb_2025",
+            "ifeval",
+            "matharena_apex_2025",
+            "simpleqa",
+            "smt_2025",
+            "swe_bench_verified",
+            "tau_bench_airline",
+            "tau_bench_retail",
+            "usamo_2025"
+          ],
+          "n_test_cells": 19
+        },
+        {
+          "model_id": "gemini-2.5-pro",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 2,
+            "3": 3,
+            "4": 4,
+            "5": 5
+          },
+          "test_benchmark_ids": [
+            "aa_intelligence_index",
+            "aa_lcr",
+            "aider_polyglot_diff",
+            "aider_polyglot_whole",
+            "aime_2025",
+            "arc_agi_2",
+            "arena_hard",
+            "artifactsbench",
+            "beyond_aime",
+            "browsecomp",
+            "browsecomp_zh",
+            "brumo_2025",
+            "bullshit_pushback",
+            "charxiv_reasoning",
+            "chatbot_arena_elo",
+            "cmimc_2025",
+            "codeforces_rating",
+            "collie",
+            "critpt",
+            "facts_grounding",
+            "finsearchcomp_global",
+            "frontiermath",
+            "gaia",
+            "global_piqa",
+            "gpqa_main",
+            "hle",
+            "hle_text",
+            "hmmt_feb_2025",
+            "hmmt_nov_2025",
+            "ifbench",
+            "ifeval",
+            "livebench",
+            "mcpatlas",
+            "mmlu_pro",
+            "mmmlu",
+            "mmmu",
+            "mmmu_pro",
+            "mrcr_v1",
+            "mrcr_v2",
+            "mrcr_v2_8needle",
+            "mt_aime_2024",
+            "omnidocbench",
+            "omnidocbench_1.5",
+            "scicode",
+            "screenspot_pro",
+            "simpleqa",
+            "simpleqa_verified",
+            "smt_2025",
+            "supergpqa",
+            "swe_bench_verified",
+            "tau2_bench_telecom",
+            "terminal_bench_1",
+            "terminal_bench_hard",
+            "toolathlon",
+            "usamo_2025",
+            "vending_bench_2",
+            "vibe_eval",
+            "video_mme",
+            "video_mmmu",
+            "xbench_deepsearch"
+          ],
+          "n_test_cells": 60
+        },
+        {
+          "model_id": "gemini-3.1-pro",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 2,
+            "3": 4,
+            "4": 5,
+            "5": 6
+          },
+          "test_benchmark_ids": [
+            "aa_intelligence_index",
+            "aime_2026",
+            "arc_agi_2",
+            "babyvision",
+            "browsecomp",
+            "charxiv_reasoning",
+            "chatbot_arena_elo",
+            "chinese_simpleqa",
+            "codeforces_rating",
+            "critpt",
+            "cybergym",
+            "deepsearchqa_acc",
+            "finance_agent",
+            "frontiermath",
+            "frontiermath_tier4",
+            "gdpval_aa_elo",
+            "gpqa_main",
+            "hle",
+            "hle_text",
+            "hmmt_feb_2026",
+            "hmmt_nov_2025",
+            "imo_answerbench",
+            "matharena_apex_2025",
+            "mathvision",
+            "mcpatlas",
+            "mcpmark",
+            "mmmlu",
+            "mmmu_pro",
+            "mrcr_v1",
+            "mrcr_v2",
+            "mrcr_v2_8needle",
+            "nl2repo_bench",
+            "ojbench",
+            "scicode",
+            "simpleqa_verified",
+            "swe_bench_multilingual",
+            "swe_bench_pro",
+            "swe_bench_verified",
+            "tau2_bench_retail",
+            "tau2_bench_telecom",
+            "tau3_bench",
+            "toolathlon",
+            "vending_bench_2"
+          ],
+          "n_test_cells": 43
+        },
+        {
+          "model_id": "glm-4.6",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 2,
+            "3": 4,
+            "4": 6,
+            "5": 8
+          },
+          "test_benchmark_ids": [
+            "aa_intelligence_index",
+            "aa_lcr",
+            "aime_2025",
+            "artifactsbench",
+            "browsecomp",
+            "browsecomp_zh",
+            "finsearchcomp_global",
+            "gaia",
+            "gpqa_main",
+            "hle",
+            "hle_tools",
+            "hmmt_feb_2025",
+            "hmmt_nov_2025",
+            "ifbench",
+            "imo_answerbench",
+            "multi_swe_bench",
+            "scicode",
+            "swe_bench_multilingual",
+            "swe_bench_verified",
+            "tau2_bench_telecom",
+            "terminal_bench_hard",
+            "xbench_deepsearch"
+          ],
+          "n_test_cells": 22
+        },
+        {
+          "model_id": "gpt-4.1",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 3,
+            "3": 4,
+            "4": 5,
+            "5": 6
+          },
+          "test_benchmark_ids": [
+            "aider_polyglot_diff",
+            "aider_polyglot_whole",
+            "aime_2025",
+            "arc_agi_2",
+            "arena_hard",
+            "browsecomp_long_context_128k",
+            "bullshit_pushback",
+            "charxiv_descriptive",
+            "charxiv_reasoning",
+            "collie",
+            "complexfuncbench",
+            "erqa",
+            "factscore",
+            "gpqa_main",
+            "graphwalks_bfs_0k_128k",
+            "graphwalks_parents_0k_128k",
+            "hle",
+            "hle_text",
+            "hmmt_feb_2025",
+            "ifeval",
+            "internal_api_if_hard",
+            "longfact_concepts",
+            "longfact_objects",
+            "math_500",
+            "mathvista",
+            "mmmlu",
+            "mmmu",
+            "mmmu_pro",
+            "mrcr_v2_2needle_128k",
+            "mt_aime_2024",
+            "multi_if",
+            "multichallenge",
+            "multichallenge_o3mini_grader",
+            "simpleqa",
+            "swelancer_freelance_dollars",
+            "tau2_bench_airline",
+            "tau2_bench_retail",
+            "tau2_bench_telecom",
+            "tau_bench_airline",
+            "tau_bench_retail",
+            "terminal_bench_1",
+            "video_mme",
+            "video_mmmu"
+          ],
+          "n_test_cells": 43
+        },
+        {
+          "model_id": "gpt-4o",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 3,
+            "3": 4,
+            "4": 5,
+            "5": 6
+          },
+          "test_benchmark_ids": [
+            "aider_polyglot_diff",
+            "aider_polyglot_whole",
+            "arc_agi_2",
+            "arena_hard",
+            "charxiv_descriptive",
+            "charxiv_reasoning",
+            "collie",
+            "complexfuncbench",
+            "drop",
+            "erqa",
+            "gpqa_main",
+            "graphwalks_bfs_0k_128k",
+            "graphwalks_parents_0k_128k",
+            "hle",
+            "hle_text",
+            "humaneval",
+            "ifeval",
+            "internal_api_if_hard",
+            "math",
+            "math_500",
+            "mathvista",
+            "mgsm",
+            "mmmlu",
+            "mmmu",
+            "mmmu_pro",
+            "mrcr_v2_2needle_128k",
+            "mt_aime_2024",
+            "multi_if",
+            "multichallenge",
+            "multichallenge_o3mini_grader",
+            "multipl_e_avg",
+            "simpleqa",
+            "swe_bench_verified",
+            "swelancer",
+            "tau_bench_airline",
+            "tau_bench_retail",
+            "video_mmmu"
+          ],
+          "n_test_cells": 37
+        },
+        {
+          "model_id": "grok-3-beta",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 3,
+            "3": 4,
+            "4": 5,
+            "5": 6
+          },
+          "test_benchmark_ids": [
+            "aime_2025",
+            "arc_agi_2",
+            "chatbot_arena_elo",
+            "collie",
+            "gpqa_main",
+            "hle",
+            "humaneval",
+            "ifeval",
+            "math_500",
+            "mmmu",
+            "mt_aime_2024",
+            "simpleqa",
+            "supergpqa",
+            "swe_bench_verified",
+            "terminal_bench_1",
+            "usamo_2025"
+          ],
+          "n_test_cells": 16
+        },
+        {
+          "model_id": "kimi-k2.6",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 2,
+            "3": 4,
+            "4": 6,
+            "5": 8
+          },
+          "test_benchmark_ids": [
+            "aime_2026",
+            "babyvision",
+            "browsecomp",
+            "charxiv_reasoning",
+            "chinese_simpleqa",
+            "deepsearchqa_acc",
+            "gdpval_aa_elo",
+            "gpqa_main",
+            "hle",
+            "hmmt_feb_2026",
+            "imo_answerbench",
+            "matharena_apex_2025",
+            "mathvision",
+            "mcpatlas",
+            "mcpmark",
+            "mmmu_pro",
+            "ojbench",
+            "osworld",
+            "scicode",
+            "simpleqa_verified",
+            "swe_bench_multilingual",
+            "swe_bench_pro",
+            "swe_bench_verified",
+            "toolathlon",
+            "widesearch"
+          ],
+          "n_test_cells": 25
+        },
+        {
+          "model_id": "qwen3.6-plus",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 2,
+            "3": 4,
+            "4": 6,
+            "5": 8
+          },
+          "test_benchmark_ids": [
+            "aa_lcr",
+            "aime_2026",
+            "c_eval",
+            "erqa",
+            "global_piqa",
+            "gpqa_main",
+            "hle",
+            "hmmt_feb_2025",
+            "hmmt_feb_2026",
+            "hmmt_nov_2025",
+            "ifbench",
+            "ifeval",
+            "imo_answerbench",
+            "longbench_v2",
+            "mathvision",
+            "mcpatlas",
+            "mcpmark",
+            "mmmlu",
+            "mmmu",
+            "mmmu_pro",
+            "nl2repo_bench",
+            "omnidocbench_1.5",
+            "screenspot_pro",
+            "supergpqa",
+            "swe_bench_multilingual",
+            "swe_bench_pro",
+            "swe_bench_verified",
+            "tau3_bench",
+            "toolathlon",
+            "vending_bench_2",
+            "video_mme",
+            "video_mmmu",
+            "widesearch"
+          ],
+          "n_test_cells": 33
+        }
+      ],
+      "excluded_model_ids": [
+        "command-a",
+        "gemini-1.5-pro",
+        "gemini-2.0-flash",
+        "gemma-2-27b",
+        "gemma-2-9b",
+        "gemma-3-1b-it",
+        "gpt-4.5",
+        "gpt-4o-mini",
+        "llama-3.1-8b",
+        "llama-3.3-70b-instruct",
+        "qwen-2.5-32b",
+        "qwen-2.5-7b",
+        "qwen3-32b"
+      ],
+      "summary": [
+        {
+          "revealed_scores": 1,
+          "n_models": 12,
+          "n_test_cells": 398,
+          "metrics": {
+            "benchpress": {
+              "medae": 5.885769936720202,
+              "medape": 9.909243675864868,
+              "n": 398
+            },
+            "logit_offsets_only": {
+              "medae": 5.740916885968872,
+              "medape": 8.593579830083975,
+              "n": 398
+            },
+            "logit_model_mean": {
+              "medae": 6.586206598516878,
+              "medape": 11.211114544203534,
+              "n": 398
+            }
+          },
+          "benchpress_model_wins": {
+            "logit_offsets_only": 4,
+            "logit_model_mean": 10
+          },
+          "per_model_medae": [
+            {
+              "model_id": "claude-opus-4.6",
+              "benchpress": 9.994039700843246,
+              "logit_offsets_only": 9.157088065790603,
+              "logit_model_mean": 3.7771302684775634
+            },
+            {
+              "model_id": "claude-sonnet-4",
+              "benchpress": 5.56672533429257,
+              "logit_offsets_only": 3.331565142341667,
+              "logit_model_mean": 6.202883074264786
+            },
+            {
+              "model_id": "claude-sonnet-4.6",
+              "benchpress": 6.350172524363288,
+              "logit_offsets_only": 6.134654093580963,
+              "logit_model_mean": 6.384774435936336
+            },
+            {
+              "model_id": "deepseek-r1-0528",
+              "benchpress": 5.173868393541255,
+              "logit_offsets_only": 5.534512383506016,
+              "logit_model_mean": 8.785912239892582
+            },
+            {
+              "model_id": "gemini-2.5-pro",
+              "benchpress": 7.487403118775141,
+              "logit_offsets_only": 7.399357940173804,
+              "logit_model_mean": 11.205413105272655
+            },
+            {
+              "model_id": "gemini-3.1-pro",
+              "benchpress": 5.047127102059221,
+              "logit_offsets_only": 5.19621503499755,
+              "logit_model_mean": 6.545067453731107
+            },
+            {
+              "model_id": "glm-4.6",
+              "benchpress": 4.601630212343434,
+              "logit_offsets_only": 5.16801508892614,
+              "logit_model_mean": 9.992120957529941
+            },
+            {
+              "model_id": "gpt-4.1",
+              "benchpress": 6.722805085582834,
+              "logit_offsets_only": 5.362264266947207,
+              "logit_model_mean": 10.058702074957408
+            },
+            {
+              "model_id": "gpt-4o",
+              "benchpress": 7.689317643038677,
+              "logit_offsets_only": 6.454926971070819,
+              "logit_model_mean": 9.927998753162218
+            },
+            {
+              "model_id": "grok-3-beta",
+              "benchpress": 5.56951319204858,
+              "logit_offsets_only": 6.847376988426461,
+              "logit_model_mean": 9.925315734361433
+            },
+            {
+              "model_id": "kimi-k2.6",
+              "benchpress": 8.2526782102751,
+              "logit_offsets_only": 6.370505602896408,
+              "logit_model_mean": 3.3176002604425037
+            },
+            {
+              "model_id": "qwen3.6-plus",
+              "benchpress": 2.1772957176481924,
+              "logit_offsets_only": 1.9078001766361012,
+              "logit_model_mean": 4.419161283356544
+            }
+          ]
+        },
+        {
+          "revealed_scores": 2,
+          "n_models": 12,
+          "n_test_cells": 398,
+          "metrics": {
+            "benchpress": {
+              "medae": 4.73593282734705,
+              "medape": 8.297552169656976,
+              "n": 398
+            },
+            "logit_offsets_only": {
+              "medae": 4.746654313822891,
+              "medape": 9.096045317101458,
+              "n": 398
+            },
+            "logit_model_mean": {
+              "medae": 5.920096688650425,
+              "medape": 10.172621093161696,
+              "n": 398
+            }
+          },
+          "benchpress_model_wins": {
+            "logit_offsets_only": 3,
+            "logit_model_mean": 8
+          },
+          "per_model_medae": [
+            {
+              "model_id": "claude-opus-4.6",
+              "benchpress": 6.451207665490202,
+              "logit_offsets_only": 5.858543995168773,
+              "logit_model_mean": 3.484672595931457
+            },
+            {
+              "model_id": "claude-sonnet-4",
+              "benchpress": 5.684261074093492,
+              "logit_offsets_only": 3.2667169629492854,
+              "logit_model_mean": 4.859222644394443
+            },
+            {
+              "model_id": "claude-sonnet-4.6",
+              "benchpress": 5.3643288812252266,
+              "logit_offsets_only": 4.310659090276701,
+              "logit_model_mean": 4.807769302913002
+            },
+            {
+              "model_id": "deepseek-r1-0528",
+              "benchpress": 6.275047316145788,
+              "logit_offsets_only": 5.810604851869158,
+              "logit_model_mean": 14.876108786757968
+            },
+            {
+              "model_id": "gemini-2.5-pro",
+              "benchpress": 6.038423956447135,
+              "logit_offsets_only": 5.898240899729988,
+              "logit_model_mean": 7.011396380450293
+            },
+            {
+              "model_id": "gemini-3.1-pro",
+              "benchpress": 5.268272657363852,
+              "logit_offsets_only": 4.333491767018366,
+              "logit_model_mean": 6.914936635488161
+            },
+            {
+              "model_id": "glm-4.6",
+              "benchpress": 4.816871333884208,
+              "logit_offsets_only": 4.732834385654934,
+              "logit_model_mean": 5.3599647492957985
+            },
+            {
+              "model_id": "gpt-4.1",
+              "benchpress": 4.951844683496162,
+              "logit_offsets_only": 5.030068099577768,
+              "logit_model_mean": 9.375887992791672
+            },
+            {
+              "model_id": "gpt-4o",
+              "benchpress": 7.652949627343215,
+              "logit_offsets_only": 9.688222529972052,
+              "logit_model_mean": 9.02959073591581
+            },
+            {
+              "model_id": "grok-3-beta",
+              "benchpress": 5.447118235061894,
+              "logit_offsets_only": 5.365312239627107,
+              "logit_model_mean": 7.88114780581617
+            },
+            {
+              "model_id": "kimi-k2.6",
+              "benchpress": 3.055196732177343,
+              "logit_offsets_only": 2.8585044466152283,
+              "logit_model_mean": 2.977176946566786
+            },
+            {
+              "model_id": "qwen3.6-plus",
+              "benchpress": 1.6019567510017652,
+              "logit_offsets_only": 1.9284153405956914,
+              "logit_model_mean": 2.7021184959515807
+            }
+          ]
+        },
+        {
+          "revealed_scores": 3,
+          "n_models": 12,
+          "n_test_cells": 398,
+          "metrics": {
+            "benchpress": {
+              "medae": 4.675916295057249,
+              "medape": 8.000421886997197,
+              "n": 398
+            },
+            "logit_offsets_only": {
+              "medae": 4.8237755539490585,
+              "medape": 9.023261599916262,
+              "n": 398
+            },
+            "logit_model_mean": {
+              "medae": 6.559784733355427,
+              "medape": 10.690600787133144,
+              "n": 398
+            }
+          },
+          "benchpress_model_wins": {
+            "logit_offsets_only": 3,
+            "logit_model_mean": 10
+          },
+          "per_model_medae": [
+            {
+              "model_id": "claude-opus-4.6",
+              "benchpress": 7.327689631963793,
+              "logit_offsets_only": 7.307588161722393,
+              "logit_model_mean": 3.906633343340019
+            },
+            {
+              "model_id": "claude-sonnet-4",
+              "benchpress": 4.590178475845523,
+              "logit_offsets_only": 5.852277767955874,
+              "logit_model_mean": 5.536786923412443
+            },
+            {
+              "model_id": "claude-sonnet-4.6",
+              "benchpress": 4.29061682270779,
+              "logit_offsets_only": 3.7348215702588163,
+              "logit_model_mean": 4.739736891557428
+            },
+            {
+              "model_id": "deepseek-r1-0528",
+              "benchpress": 5.0806304996790885,
+              "logit_offsets_only": 4.468161373461726,
+              "logit_model_mean": 13.801484751526527
+            },
+            {
+              "model_id": "gemini-2.5-pro",
+              "benchpress": 6.311416210886666,
+              "logit_offsets_only": 6.006972884352365,
+              "logit_model_mean": 10.210682364468145
+            },
+            {
+              "model_id": "gemini-3.1-pro",
+              "benchpress": 5.11450410058265,
+              "logit_offsets_only": 3.9153296843417422,
+              "logit_model_mean": 6.992546271007342
+            },
+            {
+              "model_id": "glm-4.6",
+              "benchpress": 4.72627258444852,
+              "logit_offsets_only": 4.709033152026958,
+              "logit_model_mean": 7.652308518512246
+            },
+            {
+              "model_id": "gpt-4.1",
+              "benchpress": 5.14156823891485,
+              "logit_offsets_only": 5.976628675075304,
+              "logit_model_mean": 10.482380176419593
+            },
+            {
+              "model_id": "gpt-4o",
+              "benchpress": 6.940823640516843,
+              "logit_offsets_only": 8.574422464974205,
+              "logit_model_mean": 9.471295200381004
+            },
+            {
+              "model_id": "grok-3-beta",
+              "benchpress": 5.996766061322963,
+              "logit_offsets_only": 5.387121932229591,
+              "logit_model_mean": 6.942466384061987
+            },
+            {
+              "model_id": "kimi-k2.6",
+              "benchpress": 3.498421362821489,
+              "logit_offsets_only": 3.4234011779236226,
+              "logit_model_mean": 3.4442109094102307
+            },
+            {
+              "model_id": "qwen3.6-plus",
+              "benchpress": 1.8728953800478934,
+              "logit_offsets_only": 1.2915598452175878,
+              "logit_model_mean": 2.816885243059062
+            }
+          ]
+        },
+        {
+          "revealed_scores": 4,
+          "n_models": 12,
+          "n_test_cells": 398,
+          "metrics": {
+            "benchpress": {
+              "medae": 4.723978060478872,
+              "medape": 8.365409934138707,
+              "n": 398
+            },
+            "logit_offsets_only": {
+              "medae": 4.998991674434979,
+              "medape": 8.862357151126682,
+              "n": 398
+            },
+            "logit_model_mean": {
+              "medae": 6.136926685342694,
+              "medape": 10.541387722402657,
+              "n": 398
+            }
+          },
+          "benchpress_model_wins": {
+            "logit_offsets_only": 4,
+            "logit_model_mean": 11
+          },
+          "per_model_medae": [
+            {
+              "model_id": "claude-opus-4.6",
+              "benchpress": 6.953920573710157,
+              "logit_offsets_only": 5.67898238939976,
+              "logit_model_mean": 4.015837396748388
+            },
+            {
+              "model_id": "claude-sonnet-4",
+              "benchpress": 4.079810891874484,
+              "logit_offsets_only": 6.280844830906785,
+              "logit_model_mean": 5.6090039319914435
+            },
+            {
+              "model_id": "claude-sonnet-4.6",
+              "benchpress": 3.9139083034277533,
+              "logit_offsets_only": 3.1962916749199195,
+              "logit_model_mean": 4.792611568192896
+            },
+            {
+              "model_id": "deepseek-r1-0528",
+              "benchpress": 5.034321494747569,
+              "logit_offsets_only": 4.5605134631613105,
+              "logit_model_mean": 8.505652006461009
+            },
+            {
+              "model_id": "gemini-2.5-pro",
+              "benchpress": 5.8926517795139866,
+              "logit_offsets_only": 5.73558879261536,
+              "logit_model_mean": 9.62328489566196
+            },
+            {
+              "model_id": "gemini-3.1-pro",
+              "benchpress": 5.895456343381447,
+              "logit_offsets_only": 5.029770303456964,
+              "logit_model_mean": 7.346445844622366
+            },
+            {
+              "model_id": "glm-4.6",
+              "benchpress": 5.083372880746509,
+              "logit_offsets_only": 4.223679307945726,
+              "logit_model_mean": 7.969808426258403
+            },
+            {
+              "model_id": "gpt-4.1",
+              "benchpress": 7.816263510643713,
+              "logit_offsets_only": 5.219734898011303,
+              "logit_model_mean": 8.812756648070618
+            },
+            {
+              "model_id": "gpt-4o",
+              "benchpress": 5.910481827195198,
+              "logit_offsets_only": 7.573910690779307,
+              "logit_model_mean": 10.089405059623093
+            },
+            {
+              "model_id": "grok-3-beta",
+              "benchpress": 5.900258549260811,
+              "logit_offsets_only": 5.360499149196215,
+              "logit_model_mean": 6.232887987331386
+            },
+            {
+              "model_id": "kimi-k2.6",
+              "benchpress": 2.433154127070722,
+              "logit_offsets_only": 5.152369942305867,
+              "logit_model_mean": 2.547814659823345
+            },
+            {
+              "model_id": "qwen3.6-plus",
+              "benchpress": 1.4571757784392645,
+              "logit_offsets_only": 1.671286593637035,
+              "logit_model_mean": 2.7233536323005723
+            }
+          ]
+        },
+        {
+          "revealed_scores": 5,
+          "n_models": 12,
+          "n_test_cells": 398,
+          "metrics": {
+            "benchpress": {
+              "medae": 4.569275869577851,
+              "medape": 7.889443040263361,
+              "n": 398
+            },
+            "logit_offsets_only": {
+              "medae": 4.917173732235517,
+              "medape": 7.794955752670345,
+              "n": 398
+            },
+            "logit_model_mean": {
+              "medae": 6.015295061728198,
+              "medape": 9.827918626491227,
+              "n": 398
+            }
+          },
+          "benchpress_model_wins": {
+            "logit_offsets_only": 5,
+            "logit_model_mean": 10
+          },
+          "per_model_medae": [
+            {
+              "model_id": "claude-opus-4.6",
+              "benchpress": 5.544031582326809,
+              "logit_offsets_only": 7.460138012693896,
+              "logit_model_mean": 3.659195685046953
+            },
+            {
+              "model_id": "claude-sonnet-4",
+              "benchpress": 3.0054691879932847,
+              "logit_offsets_only": 5.486955195536069,
+              "logit_model_mean": 5.660842535105555
+            },
+            {
+              "model_id": "claude-sonnet-4.6",
+              "benchpress": 4.452969758063084,
+              "logit_offsets_only": 3.5601129212162306,
+              "logit_model_mean": 4.6474446574197685
+            },
+            {
+              "model_id": "deepseek-r1-0528",
+              "benchpress": 5.444160920651106,
+              "logit_offsets_only": 5.039873699900115,
+              "logit_model_mean": 8.890278852219495
+            },
+            {
+              "model_id": "gemini-2.5-pro",
+              "benchpress": 6.823025347970415,
+              "logit_offsets_only": 6.088093049905112,
+              "logit_model_mean": 8.410819149518453
+            },
+            {
+              "model_id": "gemini-3.1-pro",
+              "benchpress": 3.94180590260234,
+              "logit_offsets_only": 4.350553930641652,
+              "logit_model_mean": 7.10728368620623
+            },
+            {
+              "model_id": "glm-4.6",
+              "benchpress": 5.003896004679422,
+              "logit_offsets_only": 4.223239712701169,
+              "logit_model_mean": 7.39954897977114
+            },
+            {
+              "model_id": "gpt-4.1",
+              "benchpress": 4.862184645546492,
+              "logit_offsets_only": 4.555967685132266,
+              "logit_model_mean": 8.863776863593174
+            },
+            {
+              "model_id": "gpt-4o",
+              "benchpress": 5.217032060079532,
+              "logit_offsets_only": 6.325065792753051,
+              "logit_model_mean": 9.788197897425452
+            },
+            {
+              "model_id": "grok-3-beta",
+              "benchpress": 5.873950864467146,
+              "logit_offsets_only": 5.343281141574582,
+              "logit_model_mean": 6.211907693529691
+            },
+            {
+              "model_id": "kimi-k2.6",
+              "benchpress": 2.4771559607612375,
+              "logit_offsets_only": 5.5538843109450085,
+              "logit_model_mean": 1.573549940336676
+            },
+            {
+              "model_id": "qwen3.6-plus",
+              "benchpress": 2.007427922954747,
+              "logit_offsets_only": 1.7605503936608784,
+              "logit_model_mean": 2.4042897447094447
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

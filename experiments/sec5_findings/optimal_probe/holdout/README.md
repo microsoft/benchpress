@@ -162,5 +162,30 @@ Validation: the same earliest-prefix/common-cell procedure reproduces all six
 BenchPress/model-mean pairs in the W1 table (11 models / 162 cells and 8 models /
 134 cells). The canonical metric also reproduces all 60 pooled MedAE values in
 the original held-out baseline artifact. These matched results support a gain
-over model mean in this subset, with mixed gains over offsets only. They appear
-in ICLR rebuttal R-sCbk Q1 and W1-2.
+over model mean in this subset, with mixed gains over offsets only.
+
+For exactly 1 through 5 revealed scores, use:
+
+```bash
+python summarize_revealed_counts.py --max-revealed 5
+```
+
+This writes `results/heldout_revealed_counts_s42_through5.json`. The default
+three-count artifact is unchanged. Requiring all five counts retains 12 models /
+398 fixed test cells under cost-unaware selection and 7 models / 273 fixed test
+cells under cost-aware selection. All five rows use these same cohorts and
+cells; rows 1 to 3 therefore differ from the wider-cohort table above.
+
+| Revealed scores | Cost-unaware probes | Cost-aware probes |
+|---|---|---|
+| 1 | 5.89 / 5.74 / 6.59 | 7.64 / 6.62 / 9.14 |
+| 2 | 4.74 / 4.75 / 5.92 | 7.17 / 7.10 / 9.36 |
+| 3 | 4.68 / 4.82 / 6.56 | 6.50 / 6.75 / 9.64 |
+| 4 | 4.72 / 5.00 / 6.14 | 6.09 / 6.84 / 9.58 |
+| 5 | 4.57 / 4.92 / 6.02 | 6.16 / 6.51 / 9.92 |
+
+The order remains BenchPress / offsets only / model mean. The five-count table
+is used in ICLR rebuttal R-sCbk Q1 and W1-2. Its small, availability-selected
+cohorts limit generalization; the reported advantage is in pooled MedAE and
+does not imply a majority of per-model wins. The parameterized summarizer
+reproduces the original three-count JSON byte for byte.

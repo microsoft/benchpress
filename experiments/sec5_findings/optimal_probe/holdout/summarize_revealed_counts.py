@@ -1,4 +1,4 @@
-"""Compare cached predictors at 1, 2, 3 reveals on fixed models and test cells."""
+"""Compare cached predictors by revealed count on fixed models and test cells."""
 
 import argparse
 import hashlib
@@ -16,11 +16,10 @@ if REPO_ROOT not in sys.path:
 from benchpress.evaluation_harness import compute_prediction_error
 from benchpress.io_utils import load_json, write_json_atomic
 
-COUNTS = (1, 2, 3)
 PREDICTORS = ('benchpress', 'logit_offsets_only', 'logit_model_mean')
 
 
-def summarize_revealed_counts(raw_cells):
+def summarize_revealed_counts(raw_cells, counts):
     """Select earliest prefixes at exact counts; score their common hidden cells."""
     units = defaultdict(dict)
     for row in raw_cells:
@@ -43,35 +42,35 @@ def summarize_revealed_counts(raw_cells):
         if len(observed_counts) != 1:
             raise ValueError(f'Inconsistent count within target: {ordering}, {model}, {k}')
         count = observed_counts.pop()
-        if count in COUNTS:
+        if count in counts:
             selected[(ordering, model)].setdefault(count, (k, cells))
 
     groups = []
     for ordering in sorted({key[0] for key in units}):
         retained = []
         excluded = []
-        rows_by_count = {count: [] for count in COUNTS}
-        per_model = {count: [] for count in COUNTS}
+        rows_by_count = {count: [] for count in counts}
+        per_model = {count: [] for count in counts}
         for (target_ordering, model), states in sorted(selected.items()):
             if target_ordering != ordering:
                 continue
-            if not all(count in states for count in COUNTS):
+            if not all(count in states for count in counts):
                 excluded.append(model)
                 continue
-            common = set.intersection(*(set(states[count][1]) for count in COUNTS))
+            common = set.intersection(*(set(states[count][1]) for count in counts))
             if not common:
                 raise ValueError(f'No common hidden cells: {ordering}, {model}')
-            if common != set(states[COUNTS[-1]][1]):
+            if common != set(states[counts[-1]][1]):
                 raise ValueError(f'Test cells are not nested: {ordering}, {model}')
             benchmarks = sorted(common)
-            truth = [states[COUNTS[-1]][1][b]['true'] for b in benchmarks]
+            truth = [states[counts[-1]][1][b]['true'] for b in benchmarks]
             retained.append({
                 'model_id': model,
-                'source_k_by_count': {str(c): states[c][0] for c in COUNTS},
+                'source_k_by_count': {str(c): states[c][0] for c in counts},
                 'test_benchmark_ids': benchmarks,
                 'n_test_cells': len(benchmarks),
             })
-            for count in COUNTS:
+            for count in counts:
                 rows = [states[count][1][b] for b in benchmarks]
                 if [r['true'] for r in rows] != truth:
                     raise ValueError(f'Test labels changed: {ordering}, {model}')
@@ -88,7 +87,7 @@ def summarize_revealed_counts(raw_cells):
                     **{name: float(metrics[name]['medae']) for name in PREDICTORS},
                 })
         summaries = []
-        for count in COUNTS:
+        for count in counts:
             rows = rows_by_count[count]
             if not rows:
                 raise ValueError(f'Empty matched cohort: {ordering}')
@@ -126,18 +125,24 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--input', default=os.path.join(
         HERE, 'results', 'heldout_baselines_s42.json.gz'))
-    parser.add_argument('--out', default=os.path.join(
-        HERE, 'results', 'heldout_revealed_counts_s42.json'))
+    parser.add_argument('--max-revealed', type=int, default=3)
+    parser.add_argument('--out')
     args = parser.parse_args()
+    if args.max_revealed < 1:
+        parser.error('--max-revealed must be positive')
+    counts = tuple(range(1, args.max_revealed + 1))
+    if args.out is None:
+        suffix = '' if args.max_revealed == 3 else f'_through{args.max_revealed}'
+        args.out = os.path.join(HERE, 'results', f'heldout_revealed_counts_s42{suffix}.json')
     source = load_json(args.input)
     with open(args.input, 'rb') as handle:
         source_hash = hashlib.sha256(handle.read()).hexdigest()
     payload = {
         'protocol': 'heldout_fixed_cells_revealed_counts_v1',
-        'revealed_counts': list(COUNTS),
+        'revealed_counts': list(counts),
         'selection': (
             'Within each ordering, retain models with cached predictions at every '
-            'exact count 1, 2, 3. Use the earliest requested-probe prefix reaching '
+            f'exact count {", ".join(map(str, counts))}. Use the earliest requested-probe prefix reaching '
             'each count. Evaluate every predictor at every count on the intersection '
             'of those hidden test cells, once per model-benchmark pair. Cohort '
             'selection uses availability only, never prediction errors.'
@@ -145,7 +150,7 @@ def main():
         'source': os.path.relpath(args.input, HERE),
         'source_sha256': source_hash,
         'source_manifest': source['manifest'],
-        'groups': summarize_revealed_counts(source['raw_cells']),
+        'groups': summarize_revealed_counts(source['raw_cells'], counts),
     }
     write_json_atomic(args.out, payload, indent=2)
     for group in payload['groups']:
