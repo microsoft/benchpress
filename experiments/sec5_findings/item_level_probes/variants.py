@@ -11,7 +11,7 @@ import numpy as np
 from run import (
     BP_LAM, DEFAULT_DATA, DEFAULT_OUT, ESTIMATORS, Context, benchpress_path,
     compute_prediction_error, config_hash, int_list, load_benchpress_manifest,
-    load_coresets, read_unit, sha256_file,
+    load_coresets, load_question_predictions, read_unit, sha256_file,
 )
 from benchpress.io_utils import write_json_atomic, write_npz_compressed_atomic
 from benchpress.evaluation_harness import compute_binary_accuracy
@@ -107,30 +107,6 @@ def fit(args):
                     })
                     print(f'done {method} {selection} s={seed} B={budget} '
                           f'seconds={time.time() - start:.1f} config={chash}', flush=True)
-
-
-def load_question_predictions(ctx, path, chash, observed):
-    """Read one checked question-prediction array and its unit metadata."""
-    unit = read_unit(path, chash)
-    mask_hash = config_hash({'targets': ctx.held,
-                             'observed': [o.tolist() for o in observed]})
-    if unit is None or unit['targets'] != ctx.held or unit['mask_hash'] != mask_hash:
-        raise ValueError(f'missing or mismatched predictions: {path}')
-    if sha256_file(path[:-5] + '.npz') != unit['question_pred_sha256']:
-        raise ValueError(f'corrupt question predictions: {path}')
-    revealed = np.concatenate(observed)
-    with np.load(path[:-5] + '.npz') as raw:
-        np.testing.assert_array_equal(raw['targets'], ctx.held)
-        np.testing.assert_array_equal(raw['revealed'], revealed)
-        pred = raw['pred']
-    if pred.shape != (len(ctx.held), ctx.data.answers.shape[1]) or not np.isfinite(pred).all():
-        raise ValueError(f'invalid question prediction shape/values: {path}')
-    np.testing.assert_array_equal(
-        pred[:, revealed], 100. * ctx.data.answers[np.ix_(ctx.held, revealed)])
-    hidden = [np.setdiff1d(q, o) for q, o in zip(ctx.data.col_questions, observed)]
-    means = np.stack([pred[:, h].mean(1) for h in hidden], axis=1)
-    np.testing.assert_allclose(means, unit['pred'], rtol=0, atol=1e-12)
-    return pred, unit
 
 
 def summarize(args):

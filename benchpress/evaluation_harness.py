@@ -1012,6 +1012,7 @@ def make_score_predictor(completion_fn, transform_name, *, metric=None,
         completion_fn: callable(M_z, **kwargs) -> M_pred_z (operates in z-scored space)
         transform_name: key in TRANSFORMS dict (e.g., 'logit', 'probit', 'none')
         **completion_kwargs: kwargs passed to completion_fn
+            preserve_observed=False also disables restoration in the inverse transform.
 
     Returns:
         predict_fn(M_train) -> M_pred in original scale
@@ -1033,7 +1034,8 @@ def make_score_predictor(completion_fn, transform_name, *, metric=None,
         M_pred_z = completion_fn(M_z, **completion_kwargs)
         return invert_transform(M_pred_z, M_train, to_fn, from_fn, pct_only, obs, is_pct,
                                 col_mu, col_std, metric=matrix_metric,
-                                benchmark_ids=matrix_benchmark_ids)
+                                benchmark_ids=matrix_benchmark_ids,
+                                preserve_observed=completion_kwargs.get('preserve_observed', True))
     return predict_fn
 
 FOLDS_DIR = os.path.join(os.path.dirname(__file__), 'evaluation', 'folds')

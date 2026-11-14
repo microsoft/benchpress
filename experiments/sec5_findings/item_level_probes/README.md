@@ -54,6 +54,52 @@ and the mean and sample std across the five seeds.
 
 ## How to run
 
+### BenchPress question selection versus random
+
+`selection.py` compares only two question-selection policies, with the same
+BenchPress predictor at ranks 8 and 40. It reuses the frozen random-selection
+predictions (`8e7e521f9645ce06` and `577115b7edd126a2`); it never refits random
+or runs GP-IRT/AIPW. The split, budgets, five seeds, and per-subtask allocation
+remain fixed.
+
+One training-only rank-40 fit produces a fitted response profile for each
+question across the 298 training models. Observed-answer restoration is
+disabled in both ALS and the inverse transform. The profiles include all
+latent coordinates and offsets through their fitted responses; latent factors
+from different ensemble initializations are not averaged. No held-out answers
+enter this selection fit.
+
+Within each subtask, MiniBatchKMeans clusters these profiles into its allocated
+number of questions: k-means++ initialization, three initializations, batches
+of 1024, at most 100 iterations, ten non-improving batches before stopping,
+and seed `1000*selection_seed+subtask`. Each center contributes its nearest
+unused actual question, with index-order tie breaking. Duplicate profiles
+therefore cannot reduce the allocated budget. Both predictor ranks use exactly
+the same selected IDs. Each prediction fit sees the training rows and all
+127 held-out rows' selected answers, as in the frozen random runs.
+
+For each seed and budget, both policies and ranks are scored on the same
+questions: those unrevealed by either policy. `compute_binary_accuracy` uses
+the existing strict `>0.5` rule. The old random scalar accuracies are not reused:
+their raw predictions are rescored on this paired mask. Evaluation populations
+can change across seeds and budgets; gains are paired within each setting.
+Summary tables report mean accuracy, sample standard deviation, and the mean
+and sample standard deviation of paired percentage-point gains. This remains
+an exploratory comparison on the previously used fixed model split.
+
+From the repository root, run `python -m
+experiments.sec5_findings.item_level_probes.selection` with stages `profiles`,
+`select`, `fit`, and `summarize`, each with `--code-commit <source-commit>`.
+Stages after `profiles` require `--selection-hash <hash>`; `--seeds`,
+`--budgets`, and `fit --ranks` restrict units for canaries/resume.
+Use Python 3.11.18 with `requirements-selection.txt`, matching the frozen
+random fits' numerical-library versions. Outputs under
+`results/question_selection/<hash>/` include the training-profile NPZ,
+manifest, selected global question IDs and timings, per-setting prediction
+NPZs/checksums, exact evaluation question IDs, and `summary.json`
+(`pilot_summary.json` for an incomplete grid). Existing predictions, figures,
+MedAE summaries, rebuttal, and Overleaf text remain unchanged.
+
 ### Binary question-prediction accuracy
 
 `baselines.py summarize` scores the individual binary answers on unrevealed

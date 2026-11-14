@@ -28,11 +28,11 @@ def predict_probit_bias_als_scores(M_train, rank=2, lam=0.1, metric=None,
 
 
 def predict_logit_bias_als_scores(M_train, rank=2, lam=0.1, metric=None,
-                                  benchmark_ids=None):
-    """Score predictor: Logit transform + Bias ALS completion."""
+                                  benchmark_ids=None, preserve_observed=True):
+    """Logit Bias ALS scores; optionally return fitted values at observed cells."""
     predict_fn = make_score_predictor(
         complete_bias_als, 'logit', metric=metric, benchmark_ids=benchmark_ids,
-        rank=rank, lam=lam, normalize=False)
+        rank=rank, lam=lam, normalize=False, preserve_observed=preserve_observed)
     return predict_fn(M_train)
 
 

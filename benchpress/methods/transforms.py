@@ -197,18 +197,20 @@ def apply_transform(M, to_fn, pct_only, metric=None, benchmark_ids=None):
     return M_z, obs, is_pct, col_mu, col_std
 
 def invert_transform(M_pred, M_train, to_fn, from_fn, pct_only, obs, is_pct,
-                     col_mu, col_std, metric=None, benchmark_ids=None):
-    """Invert z-score then feature transform on predicted (missing) entries.
+                     col_mu, col_std, metric=None, benchmark_ids=None,
+                     preserve_observed=True):
+    """Invert z-score and feature transform, normally only at missing entries.
 
     Pipeline: z-score⁻¹ → transform⁻¹ → clip [0,100] for pct benchmarks.
     Re-runs to_fn per column to restore stateful transform state (e.g., quantile).
+    With preserve_observed=False, invert fitted values at observed entries too.
     """
     if metric is None:
         metric = getattr(M_train, 'metric', None)
     if benchmark_ids is None:
         benchmark_ids = getattr(M_train, 'benchmark_ids', None)
     M_train = np.asarray(M_train, dtype=float)
-    M_out = M_train.copy()
+    M_out = M_train.copy() if preserve_observed else np.full_like(M_train, np.nan)
     n_models, n_bench = M_train.shape
     for j in range(n_bench):
         should_transform = (not pct_only) or is_pct[j]
@@ -218,7 +220,7 @@ def invert_transform(M_pred, M_train, to_fn, from_fn, pct_only, obs, is_pct,
             if valid.any():
                 to_fn(M_train[valid, j])
         for i in range(n_models):
-            if obs[i, j]:
+            if preserve_observed and obs[i, j]:
                 continue
             val = M_pred[i, j]
             if not np.isfinite(val):

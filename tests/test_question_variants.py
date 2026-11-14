@@ -99,6 +99,28 @@ class QuestionVariantTests(unittest.TestCase):
         np.testing.assert_array_equal(fitted[np.isnan(matrix)], completed[np.isnan(matrix)])
         np.testing.assert_array_equal(completed[np.isfinite(matrix)], matrix[np.isfinite(matrix)])
 
+    def test_fitted_logit_profiles_invert_observed_cells_without_restoring_labels(self):
+        matrix = np.array([[0., 100.], [100., 0.], [0., np.nan]])
+        ids = ['a', 'b']
+        metric = {q: {'type': 'pct', 'range': [0, 100]} for q in ids}
+        with patch('benchpress.methods.predictors.complete_bias_als',
+                   return_value=np.zeros_like(matrix)) as fit:
+            fitted = predict_logit_bias_als_scores(
+                matrix, metric=metric, benchmark_ids=ids, preserve_observed=False)
+            self.assertFalse(fit.call_args.kwargs['preserve_observed'])
+            completed = predict_logit_bias_als_scores(matrix, metric=metric, benchmark_ids=ids)
+        self.assertTrue(np.all((fitted > 0) & (fitted < 100)))
+        np.testing.assert_array_equal(fitted[np.isnan(matrix)], completed[np.isnan(matrix)])
+        np.testing.assert_array_equal(completed[np.isfinite(matrix)], matrix[np.isfinite(matrix)])
+        np.testing.assert_allclose(fitted[:, 0], fitted[0, 0])
+
+    def test_nonfinite_fitted_profiles_do_not_fall_back_to_observed_labels(self):
+        matrix = np.array([[0.], [100.]])
+        with patch('benchpress.methods.predictors.complete_bias_als',
+                   return_value=np.full_like(matrix, np.nan)):
+            fitted = predict_logit_bias_als_scores(matrix, preserve_observed=False)
+        self.assertTrue(np.isnan(fitted).all())
+
     def test_group_mean_ridge_learns_cross_group_relation(self):
         matrix = np.array([[0., 20., 80., 100.], [20., 40., 60., 80.],
                            [40., 60., 40., 60.], [60., 80., 20., 40.],
