@@ -127,3 +127,40 @@ On the May `84 x 133` matrix, predictor-fit counts are:
   train models, plus `500` validation fits).
 - Random baseline: `2,500` fits (`10` k values x `10` seeds x `25` validation
   models).
+
+## Matched revealed-count comparison
+
+`summarize_revealed_counts.py` re-analyzes `results/heldout_baselines_s42.json.gz`
+without fitting any predictors; it is safe to run locally. It follows the W1
+comparison at exactly 1, 2, and 3 revealed scores. Within each ordering, it
+retains models with predictions at all three counts, chooses the earliest
+requested-probe prefix reaching each count, and evaluates all three predictors
+on the intersection of the hidden test cells. Each model-benchmark pair is
+counted once per revealed count. Selection uses availability only.
+
+```bash
+python summarize_revealed_counts.py
+```
+
+Output: `results/heldout_revealed_counts_s42.json`, including the source SHA-256,
+source manifest, retained model IDs, selected prefix at each count, common test
+benchmark IDs, pooled metrics, and per-model MedAE. The split and source
+predictions remain those of `heldout_baselines_v2` (CHTC job 7925132, commit
+`7996392`). The re-analysis runs on cached predictions only.
+
+The fixed cohorts contain 22 models / 608 cells for cost-unaware probes and
+19 models / 564 cells for cost-aware probes. MedAE in original score units,
+ordered BenchPress / offsets only / model mean:
+
+| Revealed scores | Cost-unaware probes | Cost-aware probes |
+|---|---|---|
+| 1 | 6.01 / 5.67 / 8.24 | 6.61 / 6.10 / 7.88 |
+| 2 | 4.92 / 5.59 / 8.47 | 6.43 / 6.53 / 8.21 |
+| 3 | 5.11 / 5.51 / 8.65 | 6.18 / 6.06 / 8.56 |
+
+Validation: the same earliest-prefix/common-cell procedure reproduces all six
+BenchPress/model-mean pairs in the W1 table (11 models / 162 cells and 8 models /
+134 cells). The canonical metric also reproduces all 60 pooled MedAE values in
+the original held-out baseline artifact. These matched results support a gain
+over model mean in this subset, with mixed gains over offsets only. They appear
+in ICLR rebuttal R-sCbk Q1 and W1-2.

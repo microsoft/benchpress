@@ -1,0 +1,2580 @@
+{
+  "protocol": "heldout_fixed_cells_revealed_counts_v1",
+  "revealed_counts": [
+    1,
+    2,
+    3
+  ],
+  "selection": "Within each ordering, retain models with cached predictions at every exact count 1, 2, 3. Use the earliest requested-probe prefix reaching each count. Evaluate every predictor at every count on the intersection of those hidden test cells, once per model-benchmark pair. Cohort selection uses availability only, never prediction errors.",
+  "source": "results/heldout_baselines_s42.json.gz",
+  "source_sha256": "f64bf11b8f96bd787e603c04d8430cc7fea7699fdc60373e1f49276612847fef",
+  "source_manifest": {
+    "git_commit": "7996392179ecd2db3776c125ab22e98e148cb201",
+    "matrix_identity_sha256": "9603f902534fb79bf9e8ae042297268ee54d8e60e5647397d15f71562d3889f8",
+    "benchmark_metric_identity_sha256": "6443d8f298a17ffe1d40b46447548e9b0e4235d127720120477a8ee68fa21ae1",
+    "matrix_shape": [
+      84,
+      133
+    ],
+    "n_observed": 2604,
+    "generated_at_utc": "2026-11-07T04:39:23.118378+00:00"
+  },
+  "groups": [
+    {
+      "ordering": "cost_aware_greedy",
+      "retained_models": [
+        {
+          "model_id": "claude-opus-4.6",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 4,
+            "3": 5
+          },
+          "test_benchmark_ids": [
+            "aa_intelligence_index",
+            "aa_lcr",
+            "aime_2025",
+            "aime_2026",
+            "arc_agi_1",
+            "arc_agi_2",
+            "babyvision",
+            "browsecomp",
+            "bullshit_pushback",
+            "charxiv_reasoning",
+            "chatbot_arena_elo",
+            "chinese_simpleqa",
+            "critpt",
+            "cybergym",
+            "deepsearchqa_acc",
+            "finance_agent",
+            "frontiermath",
+            "gdpval_aa_elo",
+            "gpqa_main",
+            "hle",
+            "hle_text",
+            "hmmt_feb_2026",
+            "hmmt_nov_2025",
+            "ifbench",
+            "imo_answerbench",
+            "livecodebench",
+            "mathvision",
+            "mcpatlas",
+            "mcpmark",
+            "mmmlu",
+            "mmmu_pro",
+            "mrcr_v1",
+            "mrcr_v2",
+            "mrcr_v2_8needle",
+            "nl2repo_bench",
+            "ojbench",
+            "osworld",
+            "scicode",
+            "simpleqa_verified",
+            "swe_bench_multilingual",
+            "swe_bench_pro",
+            "swe_bench_verified",
+            "tau2_bench_retail",
+            "tau2_bench_telecom",
+            "tau3_bench",
+            "terminal_bench",
+            "toolathlon",
+            "usamo_2025",
+            "vending_bench_2"
+          ],
+          "n_test_cells": 49
+        },
+        {
+          "model_id": "claude-sonnet-4",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 2,
+            "3": 4
+          },
+          "test_benchmark_ids": [
+            "aa_intelligence_index",
+            "aa_lcr",
+            "aime_2024",
+            "aime_2025",
+            "arc_agi_1",
+            "arc_agi_2",
+            "arena_hard",
+            "artifactsbench",
+            "browsecomp",
+            "browsecomp_zh",
+            "bullshit_pushback",
+            "finsearchcomp_global",
+            "gaia",
+            "gpqa_main",
+            "hle",
+            "hmmt_feb_2025",
+            "ifbench",
+            "ifeval",
+            "livecodebench",
+            "mmmlu",
+            "mmmu",
+            "multi_swe_bench",
+            "scicode",
+            "simpleqa",
+            "swe_bench_multilingual",
+            "swe_bench_pro",
+            "swe_bench_verified",
+            "tau2_bench_airline",
+            "tau2_bench_retail",
+            "tau2_bench_telecom",
+            "tau_bench_airline",
+            "tau_bench_retail",
+            "terminal_bench",
+            "terminal_bench_1",
+            "terminal_bench_hard",
+            "xbench_deepsearch"
+          ],
+          "n_test_cells": 36
+        },
+        {
+          "model_id": "claude-sonnet-4.6",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 7,
+            "3": 9
+          },
+          "test_benchmark_ids": [
+            "arc_agi_1",
+            "arc_agi_2",
+            "browsecomp",
+            "cybergym",
+            "finance_agent",
+            "frontiermath",
+            "gdpval_aa_elo",
+            "gpqa_main",
+            "hle",
+            "hle_text",
+            "mcpatlas",
+            "mmmlu",
+            "mmmu_pro",
+            "mrcr_v2",
+            "osworld",
+            "scicode",
+            "swe_bench_verified",
+            "tau2_bench_retail",
+            "tau2_bench_telecom",
+            "terminal_bench",
+            "vending_bench_2"
+          ],
+          "n_test_cells": 21
+        },
+        {
+          "model_id": "deepseek-r1-0528",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 3,
+            "3": 4
+          },
+          "test_benchmark_ids": [
+            "aime_2024",
+            "aime_2025",
+            "arc_agi_1",
+            "arc_agi_2",
+            "brumo_2025",
+            "chatbot_arena_elo",
+            "cmimc_2025",
+            "cnmo_2024",
+            "codeforces_rating",
+            "frames",
+            "hle",
+            "hmmt_feb_2025",
+            "ifeval",
+            "livecodebench",
+            "matharena_apex_2025",
+            "simpleqa",
+            "smt_2025",
+            "swe_bench_verified",
+            "tau_bench_airline",
+            "tau_bench_retail",
+            "usamo_2025"
+          ],
+          "n_test_cells": 21
+        },
+        {
+          "model_id": "gemini-2.0-flash",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 4,
+            "3": 6
+          },
+          "test_benchmark_ids": [
+            "arc_agi_2",
+            "bigcodebench",
+            "bird_sql",
+            "facts_grounding",
+            "gpqa_main",
+            "livecodebench",
+            "math",
+            "mmmu",
+            "mrcr_v1",
+            "mt_aime_2024",
+            "simpleqa",
+            "vibe_eval"
+          ],
+          "n_test_cells": 12
+        },
+        {
+          "model_id": "gemini-2.5-pro",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 3,
+            "3": 4
+          },
+          "test_benchmark_ids": [
+            "aa_intelligence_index",
+            "aa_lcr",
+            "aider_polyglot_whole",
+            "aime_2024",
+            "aime_2025",
+            "arc_agi_1",
+            "arc_agi_2",
+            "arena_hard",
+            "artifactsbench",
+            "beyond_aime",
+            "browsecomp",
+            "browsecomp_zh",
+            "brumo_2025",
+            "bullshit_pushback",
+            "charxiv_reasoning",
+            "chatbot_arena_elo",
+            "cmimc_2025",
+            "codeforces_rating",
+            "collie",
+            "critpt",
+            "facts_grounding",
+            "finsearchcomp_global",
+            "frontiermath",
+            "gaia",
+            "global_piqa",
+            "gpqa_main",
+            "hle",
+            "hle_text",
+            "hmmt_feb_2025",
+            "hmmt_nov_2025",
+            "ifbench",
+            "ifeval",
+            "livebench",
+            "livecodebench",
+            "mcpatlas",
+            "mmmlu",
+            "mmmu",
+            "mmmu_pro",
+            "mrcr_v1",
+            "mrcr_v2",
+            "mrcr_v2_8needle",
+            "mt_aime_2024",
+            "omnidocbench",
+            "omnidocbench_1.5",
+            "scicode",
+            "screenspot_pro",
+            "simpleqa",
+            "simpleqa_verified",
+            "smt_2025",
+            "supergpqa",
+            "swe_bench_verified",
+            "tau2_bench_telecom",
+            "terminal_bench",
+            "terminal_bench_1",
+            "terminal_bench_hard",
+            "toolathlon",
+            "usamo_2025",
+            "vending_bench_2",
+            "vibe_eval",
+            "video_mme",
+            "video_mmmu",
+            "xbench_deepsearch"
+          ],
+          "n_test_cells": 62
+        },
+        {
+          "model_id": "gemini-3.1-pro",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 4,
+            "3": 5
+          },
+          "test_benchmark_ids": [
+            "aa_intelligence_index",
+            "aime_2026",
+            "arc_agi_1",
+            "arc_agi_2",
+            "babyvision",
+            "browsecomp",
+            "charxiv_reasoning",
+            "chatbot_arena_elo",
+            "chinese_simpleqa",
+            "codeforces_rating",
+            "critpt",
+            "cybergym",
+            "deepsearchqa_acc",
+            "finance_agent",
+            "frontiermath",
+            "frontiermath_tier4",
+            "gdpval_aa_elo",
+            "gpqa_main",
+            "hle",
+            "hle_text",
+            "hmmt_feb_2026",
+            "hmmt_nov_2025",
+            "imo_answerbench",
+            "livecodebench",
+            "mathvision",
+            "mcpatlas",
+            "mcpmark",
+            "mmmlu",
+            "mmmu_pro",
+            "mrcr_v1",
+            "mrcr_v2",
+            "mrcr_v2_8needle",
+            "nl2repo_bench",
+            "ojbench",
+            "scicode",
+            "simpleqa_verified",
+            "swe_bench_multilingual",
+            "swe_bench_pro",
+            "swe_bench_verified",
+            "tau2_bench_retail",
+            "tau2_bench_telecom",
+            "tau3_bench",
+            "terminal_bench",
+            "toolathlon",
+            "vending_bench_2"
+          ],
+          "n_test_cells": 45
+        },
+        {
+          "model_id": "gemma-3-1b-it",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 2,
+            "3": 4
+          },
+          "test_benchmark_ids": [
+            "aime_2025",
+            "alpacaeval_2",
+            "bfcl_v3",
+            "bigbench_hard",
+            "bird_sql",
+            "drop",
+            "facts_grounding",
+            "gpqa_main",
+            "gsm8k",
+            "humaneval",
+            "ifbench",
+            "ifeval",
+            "livecodebench",
+            "math",
+            "multi_if",
+            "popqa",
+            "safety",
+            "simpleqa",
+            "truthfulqa"
+          ],
+          "n_test_cells": 19
+        },
+        {
+          "model_id": "glm-4.6",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 4,
+            "3": 7
+          },
+          "test_benchmark_ids": [
+            "aa_intelligence_index",
+            "aa_lcr",
+            "artifactsbench",
+            "browsecomp",
+            "browsecomp_zh",
+            "finsearchcomp_global",
+            "gaia",
+            "gpqa_main",
+            "hle",
+            "hle_text",
+            "hle_tools",
+            "hmmt_feb_2025",
+            "hmmt_nov_2025",
+            "ifbench",
+            "imo_answerbench",
+            "livecodebench",
+            "multi_swe_bench",
+            "scicode",
+            "swe_bench_multilingual",
+            "swe_bench_verified",
+            "tau2_bench_telecom",
+            "terminal_bench",
+            "terminal_bench_hard",
+            "xbench_deepsearch"
+          ],
+          "n_test_cells": 24
+        },
+        {
+          "model_id": "gpt-4.1",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 2,
+            "3": 3
+          },
+          "test_benchmark_ids": [
+            "aider_polyglot_whole",
+            "aime_2024",
+            "aime_2025",
+            "arc_agi_1",
+            "arc_agi_2",
+            "arena_hard",
+            "browsecomp_long_context_128k",
+            "bullshit_pushback",
+            "charxiv_descriptive",
+            "charxiv_reasoning",
+            "collie",
+            "complexfuncbench",
+            "erqa",
+            "factscore",
+            "gpqa_main",
+            "graphwalks_bfs_0k_128k",
+            "graphwalks_parents_0k_128k",
+            "hle",
+            "hle_text",
+            "hmmt_feb_2025",
+            "ifeval",
+            "internal_api_if_hard",
+            "livecodebench",
+            "longfact_concepts",
+            "longfact_objects",
+            "mathvista",
+            "mmlu_pro",
+            "mmmlu",
+            "mmmu",
+            "mmmu_pro",
+            "mrcr_v2_2needle_128k",
+            "mt_aime_2024",
+            "multi_if",
+            "multichallenge",
+            "multichallenge_o3mini_grader",
+            "simpleqa",
+            "swelancer_freelance_dollars",
+            "tau2_bench_airline",
+            "tau2_bench_retail",
+            "tau2_bench_telecom",
+            "tau_bench_airline",
+            "tau_bench_retail",
+            "terminal_bench_1",
+            "video_mme",
+            "video_mmmu"
+          ],
+          "n_test_cells": 45
+        },
+        {
+          "model_id": "gpt-4.5",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 3,
+            "3": 6
+          },
+          "test_benchmark_ids": [
+            "aime_2024",
+            "arc_agi_1",
+            "arc_agi_2",
+            "charxiv_descriptive",
+            "charxiv_reasoning",
+            "collie",
+            "complexfuncbench",
+            "gpqa_main",
+            "graphwalks_bfs_0k_128k",
+            "graphwalks_parents_0k_128k",
+            "gsm8k",
+            "ifeval",
+            "internal_api_if_hard",
+            "mathvista",
+            "mmmlu",
+            "mmmu",
+            "mrcr_v2_2needle_128k",
+            "mt_aime_2024",
+            "multi_if",
+            "multichallenge",
+            "multichallenge_o3mini_grader",
+            "swe_bench_verified",
+            "swelancer",
+            "tau_bench_airline",
+            "tau_bench_retail"
+          ],
+          "n_test_cells": 25
+        },
+        {
+          "model_id": "gpt-4o",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 2,
+            "3": 3
+          },
+          "test_benchmark_ids": [
+            "aider_polyglot_whole",
+            "aime_2024",
+            "arc_agi_1",
+            "arc_agi_2",
+            "arena_hard",
+            "charxiv_descriptive",
+            "charxiv_reasoning",
+            "collie",
+            "complexfuncbench",
+            "drop",
+            "erqa",
+            "gpqa_main",
+            "graphwalks_bfs_0k_128k",
+            "graphwalks_parents_0k_128k",
+            "hle",
+            "hle_text",
+            "humaneval",
+            "ifeval",
+            "internal_api_if_hard",
+            "livecodebench",
+            "math",
+            "mathvista",
+            "mgsm",
+            "mmlu_pro",
+            "mmmlu",
+            "mmmu",
+            "mmmu_pro",
+            "mrcr_v2_2needle_128k",
+            "mt_aime_2024",
+            "multi_if",
+            "multichallenge",
+            "multichallenge_o3mini_grader",
+            "multipl_e_avg",
+            "simpleqa",
+            "swe_bench_verified",
+            "swelancer",
+            "tau_bench_airline",
+            "tau_bench_retail",
+            "video_mmmu"
+          ],
+          "n_test_cells": 39
+        },
+        {
+          "model_id": "gpt-4o-mini",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 2,
+            "3": 3
+          },
+          "test_benchmark_ids": [
+            "aider_polyglot_whole",
+            "aime_2024",
+            "alpacaeval_2",
+            "arc_agi_2",
+            "arena_hard",
+            "bigbench_hard",
+            "charxiv_descriptive",
+            "charxiv_reasoning",
+            "collie",
+            "complexfuncbench",
+            "drop",
+            "gpqa_main",
+            "graphwalks_bfs_0k_128k",
+            "graphwalks_parents_0k_128k",
+            "gsm8k",
+            "humaneval",
+            "ifeval",
+            "internal_api_if_hard",
+            "livebench",
+            "math",
+            "mathvista",
+            "mgsm",
+            "mmlu_pro",
+            "mmmlu",
+            "mmmu",
+            "mrcr_v2_2needle_128k",
+            "multi_if",
+            "multichallenge",
+            "multichallenge_o3mini_grader",
+            "popqa",
+            "safety",
+            "simpleqa",
+            "tau_bench_airline",
+            "tau_bench_retail",
+            "truthfulqa"
+          ],
+          "n_test_cells": 35
+        },
+        {
+          "model_id": "grok-3-beta",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 2,
+            "3": 4
+          },
+          "test_benchmark_ids": [
+            "aime_2024",
+            "aime_2025",
+            "arc_agi_1",
+            "arc_agi_2",
+            "chatbot_arena_elo",
+            "collie",
+            "gpqa_main",
+            "hle",
+            "humaneval",
+            "ifeval",
+            "livecodebench",
+            "mmmu",
+            "mt_aime_2024",
+            "simpleqa",
+            "supergpqa",
+            "swe_bench_verified",
+            "terminal_bench_1",
+            "usamo_2025"
+          ],
+          "n_test_cells": 18
+        },
+        {
+          "model_id": "kimi-k2.6",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 4,
+            "3": 5
+          },
+          "test_benchmark_ids": [
+            "aime_2026",
+            "babyvision",
+            "browsecomp",
+            "charxiv_reasoning",
+            "chinese_simpleqa",
+            "deepsearchqa_acc",
+            "gdpval_aa_elo",
+            "gpqa_main",
+            "hle",
+            "hle_text",
+            "hmmt_feb_2026",
+            "imo_answerbench",
+            "livecodebench",
+            "mathvision",
+            "mcpatlas",
+            "mcpmark",
+            "mmmu_pro",
+            "ojbench",
+            "osworld",
+            "scicode",
+            "simpleqa_verified",
+            "swe_bench_multilingual",
+            "swe_bench_pro",
+            "swe_bench_verified",
+            "terminal_bench",
+            "toolathlon",
+            "widesearch"
+          ],
+          "n_test_cells": 27
+        },
+        {
+          "model_id": "llama-3.3-70b-instruct",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 2,
+            "3": 4
+          },
+          "test_benchmark_ids": [
+            "alpacaeval_2",
+            "arena_hard",
+            "bfcl",
+            "bigbench_hard",
+            "bigcodebench",
+            "bird_sql",
+            "drop",
+            "gpqa_main",
+            "gsm8k",
+            "humaneval",
+            "ifeval",
+            "infobench",
+            "livebench",
+            "livecodebench",
+            "math",
+            "mbpp_plus",
+            "mgsm",
+            "popqa",
+            "repoqa",
+            "safety",
+            "simpleqa",
+            "swe_bench_verified",
+            "truthfulqa"
+          ],
+          "n_test_cells": 23
+        },
+        {
+          "model_id": "qwen-2.5-7b",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 4,
+            "3": 6
+          },
+          "test_benchmark_ids": [
+            "alpacaeval_2",
+            "bigbench_hard",
+            "drop",
+            "gpqa_main",
+            "gsm8k",
+            "humaneval",
+            "ifeval",
+            "livebench",
+            "livecodebench",
+            "math",
+            "multipl_e_avg",
+            "popqa",
+            "safety",
+            "truthfulqa"
+          ],
+          "n_test_cells": 14
+        },
+        {
+          "model_id": "qwen3-32b",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 2,
+            "3": 6
+          },
+          "test_benchmark_ids": [
+            "aime_2024",
+            "aime_2025",
+            "bfcl",
+            "bfcl_v3",
+            "codeforces_rating",
+            "humaneval",
+            "ifbench",
+            "ifeval",
+            "livebench",
+            "livecodebench",
+            "mmmlu",
+            "mt_aime_2024",
+            "multi_if",
+            "terminal_bench_1"
+          ],
+          "n_test_cells": 14
+        },
+        {
+          "model_id": "qwen3.6-plus",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 4,
+            "3": 8
+          },
+          "test_benchmark_ids": [
+            "aime_2026",
+            "c_eval",
+            "erqa",
+            "global_piqa",
+            "gpqa_main",
+            "hle",
+            "hle_text",
+            "hmmt_feb_2025",
+            "hmmt_feb_2026",
+            "hmmt_nov_2025",
+            "ifbench",
+            "ifeval",
+            "imo_answerbench",
+            "livecodebench",
+            "longbench_v2",
+            "mathvision",
+            "mcpatlas",
+            "mcpmark",
+            "mmmlu",
+            "mmmu",
+            "mmmu_pro",
+            "nl2repo_bench",
+            "omnidocbench_1.5",
+            "screenspot_pro",
+            "supergpqa",
+            "swe_bench_multilingual",
+            "swe_bench_pro",
+            "swe_bench_verified",
+            "tau3_bench",
+            "terminal_bench",
+            "toolathlon",
+            "vending_bench_2",
+            "video_mme",
+            "video_mmmu",
+            "widesearch"
+          ],
+          "n_test_cells": 35
+        }
+      ],
+      "excluded_model_ids": [
+        "command-a",
+        "gemini-1.5-pro",
+        "gemma-2-27b",
+        "gemma-2-9b",
+        "llama-3.1-8b",
+        "qwen-2.5-32b"
+      ],
+      "summary": [
+        {
+          "revealed_scores": 1,
+          "n_models": 19,
+          "n_test_cells": 564,
+          "metrics": {
+            "benchpress": {
+              "medae": 6.614386214766654,
+              "medape": 12.045075837442436,
+              "n": 564
+            },
+            "logit_offsets_only": {
+              "medae": 6.101151104694523,
+              "medape": 10.443339261859213,
+              "n": 564
+            },
+            "logit_model_mean": {
+              "medae": 7.88238714530533,
+              "medape": 15.096095086384286,
+              "n": 564
+            }
+          },
+          "benchpress_model_wins": {
+            "logit_offsets_only": 5,
+            "logit_model_mean": 14
+          },
+          "per_model_medae": [
+            {
+              "model_id": "claude-opus-4.6",
+              "benchpress": 9.871369313366188,
+              "logit_offsets_only": 9.157088065790603,
+              "logit_model_mean": 3.5959242960577598
+            },
+            {
+              "model_id": "claude-sonnet-4",
+              "benchpress": 5.800649545316066,
+              "logit_offsets_only": 3.3795433819601612,
+              "logit_model_mean": 7.185881873526853
+            },
+            {
+              "model_id": "claude-sonnet-4.6",
+              "benchpress": 8.016794613255314,
+              "logit_offsets_only": 7.064462952518916,
+              "logit_model_mean": 6.30247733584757
+            },
+            {
+              "model_id": "deepseek-r1-0528",
+              "benchpress": 5.767739536754791,
+              "logit_offsets_only": 5.534512383506016,
+              "logit_model_mean": 8.823083402362101
+            },
+            {
+              "model_id": "gemini-2.0-flash",
+              "benchpress": 7.599912880817033,
+              "logit_offsets_only": 7.774248827117532,
+              "logit_model_mean": 13.812077694140463
+            },
+            {
+              "model_id": "gemini-2.5-pro",
+              "benchpress": 8.296524133199418,
+              "logit_offsets_only": 8.023535696856417,
+              "logit_model_mean": 12.34802388335746
+            },
+            {
+              "model_id": "gemini-3.1-pro",
+              "benchpress": 5.047127102059221,
+              "logit_offsets_only": 5.19621503499755,
+              "logit_model_mean": 6.156544229726151
+            },
+            {
+              "model_id": "gemma-3-1b-it",
+              "benchpress": 10.742490126574383,
+              "logit_offsets_only": 12.247298719729258,
+              "logit_model_mean": 9.818803578669161
+            },
+            {
+              "model_id": "glm-4.6",
+              "benchpress": 5.360421710408488,
+              "logit_offsets_only": 5.354104101663836,
+              "logit_model_mean": 10.52927160562054
+            },
+            {
+              "model_id": "gpt-4.1",
+              "benchpress": 7.102010326350597,
+              "logit_offsets_only": 5.813569101283065,
+              "logit_model_mean": 10.058702074957408
+            },
+            {
+              "model_id": "gpt-4.5",
+              "benchpress": 8.179050504497468,
+              "logit_offsets_only": 4.7455812562716275,
+              "logit_model_mean": 7.021750914609413
+            },
+            {
+              "model_id": "gpt-4o",
+              "benchpress": 7.689317643038677,
+              "logit_offsets_only": 6.581927006027328,
+              "logit_model_mean": 8.425076851963468
+            },
+            {
+              "model_id": "gpt-4o-mini",
+              "benchpress": 6.893469026337954,
+              "logit_offsets_only": 5.798983055434775,
+              "logit_model_mean": 13.031218832363791
+            },
+            {
+              "model_id": "grok-3-beta",
+              "benchpress": 7.3802407625850535,
+              "logit_offsets_only": 8.69355415693871,
+              "logit_model_mean": 12.71640612362088
+            },
+            {
+              "model_id": "kimi-k2.6",
+              "benchpress": 6.397128757035674,
+              "logit_offsets_only": 4.410045768461245,
+              "logit_model_mean": 3.290291177244953
+            },
+            {
+              "model_id": "llama-3.3-70b-instruct",
+              "benchpress": 4.855361876467143,
+              "logit_offsets_only": 3.4760445947461562,
+              "logit_model_mean": 18.376657125690222
+            },
+            {
+              "model_id": "qwen-2.5-7b",
+              "benchpress": 5.897163744114451,
+              "logit_offsets_only": 6.762193892964181,
+              "logit_model_mean": 16.27976331377806
+            },
+            {
+              "model_id": "qwen3-32b",
+              "benchpress": 4.746637323458504,
+              "logit_offsets_only": 3.9374986228094393,
+              "logit_model_mean": 9.32439569353015
+            },
+            {
+              "model_id": "qwen3.6-plus",
+              "benchpress": 2.220709137641421,
+              "logit_offsets_only": 1.9278523607354714,
+              "logit_model_mean": 4.419161283356544
+            }
+          ]
+        },
+        {
+          "revealed_scores": 2,
+          "n_models": 19,
+          "n_test_cells": 564,
+          "metrics": {
+            "benchpress": {
+              "medae": 6.430986841491663,
+              "medape": 11.017637301147372,
+              "n": 564
+            },
+            "logit_offsets_only": {
+              "medae": 6.5321727426432545,
+              "medape": 11.24293686425195,
+              "n": 564
+            },
+            "logit_model_mean": {
+              "medae": 8.21380254648357,
+              "medape": 14.826841140799043,
+              "n": 564
+            }
+          },
+          "benchpress_model_wins": {
+            "logit_offsets_only": 12,
+            "logit_model_mean": 15
+          },
+          "per_model_medae": [
+            {
+              "model_id": "claude-opus-4.6",
+              "benchpress": 9.272295632574007,
+              "logit_offsets_only": 10.496229228403102,
+              "logit_model_mean": 3.1930949806348465
+            },
+            {
+              "model_id": "claude-sonnet-4",
+              "benchpress": 6.115643463747169,
+              "logit_offsets_only": 6.571753093531701,
+              "logit_model_mean": 7.28149094394528
+            },
+            {
+              "model_id": "claude-sonnet-4.6",
+              "benchpress": 10.445356838615801,
+              "logit_offsets_only": 8.319621624990525,
+              "logit_model_mean": 3.8543228426878784
+            },
+            {
+              "model_id": "deepseek-r1-0528",
+              "benchpress": 5.791714113146483,
+              "logit_offsets_only": 5.881290922633033,
+              "logit_model_mean": 10.02716591229138
+            },
+            {
+              "model_id": "gemini-2.0-flash",
+              "benchpress": 5.892463488539256,
+              "logit_offsets_only": 5.058180332161921,
+              "logit_model_mean": 11.294786508994655
+            },
+            {
+              "model_id": "gemini-2.5-pro",
+              "benchpress": 8.536203558432138,
+              "logit_offsets_only": 8.280513044104502,
+              "logit_model_mean": 12.440060313504198
+            },
+            {
+              "model_id": "gemini-3.1-pro",
+              "benchpress": 4.57759839516018,
+              "logit_offsets_only": 5.248936035441446,
+              "logit_model_mean": 5.948021143306136
+            },
+            {
+              "model_id": "gemma-3-1b-it",
+              "benchpress": 10.24133674189444,
+              "logit_offsets_only": 11.165161985473258,
+              "logit_model_mean": 11.19478631568198
+            },
+            {
+              "model_id": "glm-4.6",
+              "benchpress": 5.355562000088442,
+              "logit_offsets_only": 4.964571756665748,
+              "logit_model_mean": 10.43396630357027
+            },
+            {
+              "model_id": "gpt-4.1",
+              "benchpress": 6.293727074993459,
+              "logit_offsets_only": 6.432712246970922,
+              "logit_model_mean": 9.323080653937978
+            },
+            {
+              "model_id": "gpt-4.5",
+              "benchpress": 7.961266825653027,
+              "logit_offsets_only": 5.229057292510596,
+              "logit_model_mean": 6.632930134986431
+            },
+            {
+              "model_id": "gpt-4o",
+              "benchpress": 7.272296597613106,
+              "logit_offsets_only": 7.116300503575971,
+              "logit_model_mean": 9.880873205839798
+            },
+            {
+              "model_id": "gpt-4o-mini",
+              "benchpress": 6.62294673640541,
+              "logit_offsets_only": 5.81916649516409,
+              "logit_model_mean": 12.711707536157384
+            },
+            {
+              "model_id": "grok-3-beta",
+              "benchpress": 7.249878950737219,
+              "logit_offsets_only": 10.709281822118887,
+              "logit_model_mean": 17.96719103378411
+            },
+            {
+              "model_id": "kimi-k2.6",
+              "benchpress": 4.837933458835018,
+              "logit_offsets_only": 5.783317103566922,
+              "logit_model_mean": 2.1617518718212807
+            },
+            {
+              "model_id": "llama-3.3-70b-instruct",
+              "benchpress": 5.595207060156213,
+              "logit_offsets_only": 6.791115419778265,
+              "logit_model_mean": 17.5556694996733
+            },
+            {
+              "model_id": "qwen-2.5-7b",
+              "benchpress": 6.405662414114115,
+              "logit_offsets_only": 7.212785729803308,
+              "logit_model_mean": 16.093900915766174
+            },
+            {
+              "model_id": "qwen3-32b",
+              "benchpress": 3.5574309101790327,
+              "logit_offsets_only": 6.176707905452176,
+              "logit_model_mean": 7.274507708025688
+            },
+            {
+              "model_id": "qwen3.6-plus",
+              "benchpress": 2.1064810168092833,
+              "logit_offsets_only": 2.3464527592717275,
+              "logit_model_mean": 2.961421654560155
+            }
+          ]
+        },
+        {
+          "revealed_scores": 3,
+          "n_models": 19,
+          "n_test_cells": 564,
+          "metrics": {
+            "benchpress": {
+              "medae": 6.184126084209623,
+              "medape": 11.019182249709058,
+              "n": 564
+            },
+            "logit_offsets_only": {
+              "medae": 6.057280976822643,
+              "medape": 10.315719311867921,
+              "n": 564
+            },
+            "logit_model_mean": {
+              "medae": 8.560140327368275,
+              "medape": 16.033580695048684,
+              "n": 564
+            }
+          },
+          "benchpress_model_wins": {
+            "logit_offsets_only": 9,
+            "logit_model_mean": 15
+          },
+          "per_model_medae": [
+            {
+              "model_id": "claude-opus-4.6",
+              "benchpress": 5.067655795160007,
+              "logit_offsets_only": 6.47213246606502,
+              "logit_model_mean": 3.0060876677606245
+            },
+            {
+              "model_id": "claude-sonnet-4",
+              "benchpress": 4.319909156649231,
+              "logit_offsets_only": 3.2893128732264074,
+              "logit_model_mean": 7.356669131292877
+            },
+            {
+              "model_id": "claude-sonnet-4.6",
+              "benchpress": 5.651800966600568,
+              "logit_offsets_only": 2.7529618885112086,
+              "logit_model_mean": 8.283165137191453
+            },
+            {
+              "model_id": "deepseek-r1-0528",
+              "benchpress": 7.237565945892257,
+              "logit_offsets_only": 4.665443753368663,
+              "logit_model_mean": 10.419634776381574
+            },
+            {
+              "model_id": "gemini-2.0-flash",
+              "benchpress": 7.377543584819982,
+              "logit_offsets_only": 9.291278459424092,
+              "logit_model_mean": 13.828944814422268
+            },
+            {
+              "model_id": "gemini-2.5-pro",
+              "benchpress": 8.4606901478761,
+              "logit_offsets_only": 7.674693431255798,
+              "logit_model_mean": 12.334872947077699
+            },
+            {
+              "model_id": "gemini-3.1-pro",
+              "benchpress": 6.151613552653799,
+              "logit_offsets_only": 4.629103782386522,
+              "logit_model_mean": 6.625493924473602
+            },
+            {
+              "model_id": "gemma-3-1b-it",
+              "benchpress": 10.792499661543566,
+              "logit_offsets_only": 7.838590586228982,
+              "logit_model_mean": 8.140258010432369
+            },
+            {
+              "model_id": "glm-4.6",
+              "benchpress": 8.096566843811619,
+              "logit_offsets_only": 6.512968381243191,
+              "logit_model_mean": 11.14657620383872
+            },
+            {
+              "model_id": "gpt-4.1",
+              "benchpress": 5.366545119589617,
+              "logit_offsets_only": 5.654710930736584,
+              "logit_model_mean": 9.995660829150708
+            },
+            {
+              "model_id": "gpt-4.5",
+              "benchpress": 6.858577703768546,
+              "logit_offsets_only": 7.196414974876198,
+              "logit_model_mean": 11.241993848364167
+            },
+            {
+              "model_id": "gpt-4o",
+              "benchpress": 6.260402289648994,
+              "logit_offsets_only": 6.823409042752488,
+              "logit_model_mean": 9.938775789209686
+            },
+            {
+              "model_id": "gpt-4o-mini",
+              "benchpress": 9.16207121630758,
+              "logit_offsets_only": 7.745156908288067,
+              "logit_model_mean": 12.864241571796654
+            },
+            {
+              "model_id": "grok-3-beta",
+              "benchpress": 7.027454213688344,
+              "logit_offsets_only": 8.448543753742896,
+              "logit_model_mean": 14.31475810172643
+            },
+            {
+              "model_id": "kimi-k2.6",
+              "benchpress": 3.272213796392009,
+              "logit_offsets_only": 4.15739471231803,
+              "logit_model_mean": 2.0773607289917493
+            },
+            {
+              "model_id": "llama-3.3-70b-instruct",
+              "benchpress": 5.999368749061141,
+              "logit_offsets_only": 5.459648134561235,
+              "logit_model_mean": 16.9561076051083
+            },
+            {
+              "model_id": "qwen-2.5-7b",
+              "benchpress": 6.32517216509342,
+              "logit_offsets_only": 7.149088171046564,
+              "logit_model_mean": 14.592719891052734
+            },
+            {
+              "model_id": "qwen3-32b",
+              "benchpress": 3.194869588443879,
+              "logit_offsets_only": 8.544107244998415,
+              "logit_model_mean": 7.733393001231647
+            },
+            {
+              "model_id": "qwen3.6-plus",
+              "benchpress": 3.888375540908804,
+              "logit_offsets_only": 3.0546599514981096,
+              "logit_model_mean": 2.3267999983351046
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "ordering": "cost_unaware_greedy",
+      "retained_models": [
+        {
+          "model_id": "claude-opus-4.6",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 2,
+            "3": 4
+          },
+          "test_benchmark_ids": [
+            "aa_intelligence_index",
+            "aa_lcr",
+            "aime_2025",
+            "aime_2026",
+            "arc_agi_1",
+            "arc_agi_2",
+            "babyvision",
+            "browsecomp",
+            "bullshit_pushback",
+            "charxiv_reasoning",
+            "chatbot_arena_elo",
+            "chinese_simpleqa",
+            "critpt",
+            "cybergym",
+            "deepsearchqa_acc",
+            "finance_agent",
+            "frontiermath",
+            "gdpval_aa_elo",
+            "gpqa_main",
+            "hle",
+            "hle_text",
+            "hmmt_feb_2026",
+            "hmmt_nov_2025",
+            "ifbench",
+            "imo_answerbench",
+            "matharena_apex_2025",
+            "mathvision",
+            "mcpatlas",
+            "mcpmark",
+            "mmlu_pro",
+            "mmmlu",
+            "mmmu_pro",
+            "mrcr_v1",
+            "mrcr_v2",
+            "mrcr_v2_8needle",
+            "nl2repo_bench",
+            "ojbench",
+            "osworld",
+            "scicode",
+            "simpleqa_verified",
+            "swe_bench_multilingual",
+            "swe_bench_pro",
+            "swe_bench_verified",
+            "tau2_bench_retail",
+            "tau2_bench_telecom",
+            "tau3_bench",
+            "toolathlon",
+            "usamo_2025",
+            "vending_bench_2"
+          ],
+          "n_test_cells": 49
+        },
+        {
+          "model_id": "claude-sonnet-4",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 2,
+            "3": 3
+          },
+          "test_benchmark_ids": [
+            "aa_intelligence_index",
+            "aa_lcr",
+            "aime_2025",
+            "arc_agi_1",
+            "arc_agi_2",
+            "arena_hard",
+            "artifactsbench",
+            "browsecomp",
+            "browsecomp_zh",
+            "bullshit_pushback",
+            "finsearchcomp_global",
+            "gaia",
+            "gpqa_main",
+            "hle",
+            "hmmt_feb_2025",
+            "ifbench",
+            "ifeval",
+            "livecodebench",
+            "math_500",
+            "mmlu_pro",
+            "mmmlu",
+            "mmmu",
+            "multi_swe_bench",
+            "scicode",
+            "simpleqa",
+            "swe_bench_multilingual",
+            "swe_bench_pro",
+            "swe_bench_verified",
+            "tau2_bench_airline",
+            "tau2_bench_retail",
+            "tau2_bench_telecom",
+            "tau_bench_airline",
+            "tau_bench_retail",
+            "terminal_bench_1",
+            "terminal_bench_hard",
+            "xbench_deepsearch"
+          ],
+          "n_test_cells": 36
+        },
+        {
+          "model_id": "claude-sonnet-4.6",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 2,
+            "3": 5
+          },
+          "test_benchmark_ids": [
+            "aime_2025",
+            "arc_agi_2",
+            "browsecomp",
+            "bullshit_pushback",
+            "cybergym",
+            "finance_agent",
+            "frontiermath",
+            "gdpval_aa_elo",
+            "gpqa_main",
+            "hle",
+            "hle_text",
+            "mcpatlas",
+            "mmmlu",
+            "mmmu_pro",
+            "mrcr_v2",
+            "osworld",
+            "scicode",
+            "swe_bench_verified",
+            "tau2_bench_retail",
+            "tau2_bench_telecom",
+            "vending_bench_2"
+          ],
+          "n_test_cells": 21
+        },
+        {
+          "model_id": "deepseek-r1-0528",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 3,
+            "3": 4
+          },
+          "test_benchmark_ids": [
+            "aider_polyglot_diff",
+            "aime_2025",
+            "arc_agi_1",
+            "arc_agi_2",
+            "brumo_2025",
+            "chatbot_arena_elo",
+            "cmimc_2025",
+            "cnmo_2024",
+            "codeforces_rating",
+            "frames",
+            "hle",
+            "hmmt_feb_2025",
+            "ifeval",
+            "matharena_apex_2025",
+            "mmlu_pro",
+            "simpleqa",
+            "smt_2025",
+            "swe_bench_verified",
+            "tau_bench_airline",
+            "tau_bench_retail",
+            "usamo_2025"
+          ],
+          "n_test_cells": 21
+        },
+        {
+          "model_id": "gemini-1.5-pro",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 4,
+            "3": 6
+          },
+          "test_benchmark_ids": [
+            "arc_agi_2",
+            "bigbench_hard",
+            "bird_sql",
+            "drop",
+            "facts_grounding",
+            "gpqa_main",
+            "gsm8k",
+            "humaneval",
+            "math",
+            "mathvista",
+            "mgsm",
+            "mmmu",
+            "mrcr_v1",
+            "simpleqa",
+            "vibe_eval",
+            "video_mme"
+          ],
+          "n_test_cells": 16
+        },
+        {
+          "model_id": "gemini-2.0-flash",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 4,
+            "3": 6
+          },
+          "test_benchmark_ids": [
+            "arc_agi_2",
+            "arena_hard",
+            "bigcodebench",
+            "bird_sql",
+            "facts_grounding",
+            "gpqa_main",
+            "math",
+            "mmmu",
+            "mrcr_v1",
+            "mt_aime_2024",
+            "simpleqa",
+            "vibe_eval"
+          ],
+          "n_test_cells": 12
+        },
+        {
+          "model_id": "gemini-2.5-pro",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 2,
+            "3": 3
+          },
+          "test_benchmark_ids": [
+            "aa_intelligence_index",
+            "aa_lcr",
+            "aider_polyglot_diff",
+            "aider_polyglot_whole",
+            "aime_2025",
+            "arc_agi_1",
+            "arc_agi_2",
+            "arena_hard",
+            "artifactsbench",
+            "beyond_aime",
+            "browsecomp",
+            "browsecomp_zh",
+            "brumo_2025",
+            "bullshit_pushback",
+            "charxiv_reasoning",
+            "chatbot_arena_elo",
+            "cmimc_2025",
+            "codeforces_rating",
+            "collie",
+            "critpt",
+            "facts_grounding",
+            "finsearchcomp_global",
+            "frontiermath",
+            "gaia",
+            "global_piqa",
+            "gpqa_main",
+            "hle",
+            "hle_text",
+            "hmmt_feb_2025",
+            "hmmt_nov_2025",
+            "ifbench",
+            "ifeval",
+            "livebench",
+            "livecodebench",
+            "mcpatlas",
+            "mmlu_pro",
+            "mmmlu",
+            "mmmu",
+            "mmmu_pro",
+            "mrcr_v1",
+            "mrcr_v2",
+            "mrcr_v2_8needle",
+            "mt_aime_2024",
+            "omnidocbench",
+            "omnidocbench_1.5",
+            "scicode",
+            "screenspot_pro",
+            "simpleqa",
+            "simpleqa_verified",
+            "smt_2025",
+            "supergpqa",
+            "swe_bench_verified",
+            "tau2_bench_telecom",
+            "terminal_bench_1",
+            "terminal_bench_hard",
+            "toolathlon",
+            "usamo_2025",
+            "vending_bench_2",
+            "vibe_eval",
+            "video_mme",
+            "video_mmmu",
+            "xbench_deepsearch"
+          ],
+          "n_test_cells": 62
+        },
+        {
+          "model_id": "gemini-3.1-pro",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 2,
+            "3": 4
+          },
+          "test_benchmark_ids": [
+            "aa_intelligence_index",
+            "aime_2026",
+            "arc_agi_1",
+            "arc_agi_2",
+            "babyvision",
+            "browsecomp",
+            "charxiv_reasoning",
+            "chatbot_arena_elo",
+            "chinese_simpleqa",
+            "codeforces_rating",
+            "critpt",
+            "cybergym",
+            "deepsearchqa_acc",
+            "finance_agent",
+            "frontiermath",
+            "frontiermath_tier4",
+            "gdpval_aa_elo",
+            "gpqa_main",
+            "hle",
+            "hle_text",
+            "hmmt_feb_2026",
+            "hmmt_nov_2025",
+            "imo_answerbench",
+            "matharena_apex_2025",
+            "mathvision",
+            "mcpatlas",
+            "mcpmark",
+            "mmlu_pro",
+            "mmmlu",
+            "mmmu_pro",
+            "mrcr_v1",
+            "mrcr_v2",
+            "mrcr_v2_8needle",
+            "nl2repo_bench",
+            "ojbench",
+            "scicode",
+            "simpleqa_verified",
+            "swe_bench_multilingual",
+            "swe_bench_pro",
+            "swe_bench_verified",
+            "tau2_bench_retail",
+            "tau2_bench_telecom",
+            "tau3_bench",
+            "toolathlon",
+            "vending_bench_2"
+          ],
+          "n_test_cells": 45
+        },
+        {
+          "model_id": "gemma-2-27b",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 4,
+            "3": 6
+          },
+          "test_benchmark_ids": [
+            "alpacaeval_2",
+            "bigbench_hard",
+            "bird_sql",
+            "drop",
+            "facts_grounding",
+            "gsm8k",
+            "humaneval",
+            "ifeval",
+            "math",
+            "popqa",
+            "safety",
+            "simpleqa",
+            "truthfulqa"
+          ],
+          "n_test_cells": 13
+        },
+        {
+          "model_id": "gemma-2-9b",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 4,
+            "3": 6
+          },
+          "test_benchmark_ids": [
+            "alpacaeval_2",
+            "bigbench_hard",
+            "bird_sql",
+            "drop",
+            "facts_grounding",
+            "gpqa_main",
+            "gsm8k",
+            "humaneval",
+            "ifeval",
+            "infobench",
+            "math",
+            "popqa",
+            "safety",
+            "simpleqa",
+            "truthfulqa"
+          ],
+          "n_test_cells": 15
+        },
+        {
+          "model_id": "gemma-3-1b-it",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 4,
+            "3": 6
+          },
+          "test_benchmark_ids": [
+            "aime_2025",
+            "alpacaeval_2",
+            "bfcl_v3",
+            "bigbench_hard",
+            "bird_sql",
+            "drop",
+            "facts_grounding",
+            "gpqa_main",
+            "gsm8k",
+            "humaneval",
+            "ifbench",
+            "ifeval",
+            "math",
+            "math_500",
+            "multi_if",
+            "popqa",
+            "safety",
+            "simpleqa",
+            "truthfulqa"
+          ],
+          "n_test_cells": 19
+        },
+        {
+          "model_id": "glm-4.6",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 2,
+            "3": 4
+          },
+          "test_benchmark_ids": [
+            "aa_intelligence_index",
+            "aa_lcr",
+            "aime_2025",
+            "artifactsbench",
+            "browsecomp",
+            "browsecomp_zh",
+            "finsearchcomp_global",
+            "gaia",
+            "gpqa_main",
+            "hle",
+            "hle_text",
+            "hle_tools",
+            "hmmt_feb_2025",
+            "hmmt_nov_2025",
+            "ifbench",
+            "imo_answerbench",
+            "mmlu_pro",
+            "multi_swe_bench",
+            "scicode",
+            "swe_bench_multilingual",
+            "swe_bench_verified",
+            "tau2_bench_telecom",
+            "terminal_bench_hard",
+            "xbench_deepsearch"
+          ],
+          "n_test_cells": 24
+        },
+        {
+          "model_id": "gpt-4.1",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 3,
+            "3": 4
+          },
+          "test_benchmark_ids": [
+            "aider_polyglot_diff",
+            "aider_polyglot_whole",
+            "aime_2025",
+            "arc_agi_1",
+            "arc_agi_2",
+            "arena_hard",
+            "browsecomp_long_context_128k",
+            "bullshit_pushback",
+            "charxiv_descriptive",
+            "charxiv_reasoning",
+            "collie",
+            "complexfuncbench",
+            "erqa",
+            "factscore",
+            "gpqa_main",
+            "graphwalks_bfs_0k_128k",
+            "graphwalks_parents_0k_128k",
+            "hle",
+            "hle_text",
+            "hmmt_feb_2025",
+            "ifeval",
+            "internal_api_if_hard",
+            "longfact_concepts",
+            "longfact_objects",
+            "math_500",
+            "mathvista",
+            "mmlu_pro",
+            "mmmlu",
+            "mmmu",
+            "mmmu_pro",
+            "mrcr_v2_2needle_128k",
+            "mt_aime_2024",
+            "multi_if",
+            "multichallenge",
+            "multichallenge_o3mini_grader",
+            "simpleqa",
+            "swelancer_freelance_dollars",
+            "tau2_bench_airline",
+            "tau2_bench_retail",
+            "tau2_bench_telecom",
+            "tau_bench_airline",
+            "tau_bench_retail",
+            "terminal_bench_1",
+            "video_mme",
+            "video_mmmu"
+          ],
+          "n_test_cells": 45
+        },
+        {
+          "model_id": "gpt-4.5",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 3,
+            "3": 5
+          },
+          "test_benchmark_ids": [
+            "aider_polyglot_diff",
+            "arc_agi_2",
+            "arena_hard",
+            "charxiv_descriptive",
+            "charxiv_reasoning",
+            "collie",
+            "complexfuncbench",
+            "gpqa_main",
+            "graphwalks_bfs_0k_128k",
+            "graphwalks_parents_0k_128k",
+            "gsm8k",
+            "ifeval",
+            "internal_api_if_hard",
+            "mathvista",
+            "mmmlu",
+            "mmmu",
+            "mrcr_v2_2needle_128k",
+            "mt_aime_2024",
+            "multi_if",
+            "multichallenge",
+            "multichallenge_o3mini_grader",
+            "swe_bench_verified",
+            "swelancer",
+            "tau_bench_airline",
+            "tau_bench_retail"
+          ],
+          "n_test_cells": 25
+        },
+        {
+          "model_id": "gpt-4o",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 3,
+            "3": 4
+          },
+          "test_benchmark_ids": [
+            "aider_polyglot_diff",
+            "aider_polyglot_whole",
+            "arc_agi_1",
+            "arc_agi_2",
+            "arena_hard",
+            "charxiv_descriptive",
+            "charxiv_reasoning",
+            "collie",
+            "complexfuncbench",
+            "drop",
+            "erqa",
+            "gpqa_main",
+            "graphwalks_bfs_0k_128k",
+            "graphwalks_parents_0k_128k",
+            "hle",
+            "hle_text",
+            "humaneval",
+            "ifeval",
+            "internal_api_if_hard",
+            "math",
+            "math_500",
+            "mathvista",
+            "mgsm",
+            "mmlu_pro",
+            "mmmlu",
+            "mmmu",
+            "mmmu_pro",
+            "mrcr_v2_2needle_128k",
+            "mt_aime_2024",
+            "multi_if",
+            "multichallenge",
+            "multichallenge_o3mini_grader",
+            "multipl_e_avg",
+            "simpleqa",
+            "swe_bench_verified",
+            "swelancer",
+            "tau_bench_airline",
+            "tau_bench_retail",
+            "video_mmmu"
+          ],
+          "n_test_cells": 39
+        },
+        {
+          "model_id": "gpt-4o-mini",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 3,
+            "3": 6
+          },
+          "test_benchmark_ids": [
+            "aider_polyglot_diff",
+            "aider_polyglot_whole",
+            "alpacaeval_2",
+            "arc_agi_2",
+            "arena_hard",
+            "bigbench_hard",
+            "charxiv_descriptive",
+            "charxiv_reasoning",
+            "collie",
+            "complexfuncbench",
+            "drop",
+            "gpqa_main",
+            "graphwalks_bfs_0k_128k",
+            "graphwalks_parents_0k_128k",
+            "gsm8k",
+            "humaneval",
+            "ifeval",
+            "internal_api_if_hard",
+            "livebench",
+            "math",
+            "math_500",
+            "mathvista",
+            "mgsm",
+            "mmmlu",
+            "mmmu",
+            "mrcr_v2_2needle_128k",
+            "multi_if",
+            "multichallenge",
+            "multichallenge_o3mini_grader",
+            "popqa",
+            "safety",
+            "simpleqa",
+            "tau_bench_airline",
+            "tau_bench_retail",
+            "truthfulqa"
+          ],
+          "n_test_cells": 35
+        },
+        {
+          "model_id": "grok-3-beta",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 3,
+            "3": 4
+          },
+          "test_benchmark_ids": [
+            "aime_2025",
+            "arc_agi_1",
+            "arc_agi_2",
+            "chatbot_arena_elo",
+            "collie",
+            "gpqa_main",
+            "hle",
+            "humaneval",
+            "ifeval",
+            "math_500",
+            "mmlu_pro",
+            "mmmu",
+            "mt_aime_2024",
+            "simpleqa",
+            "supergpqa",
+            "swe_bench_verified",
+            "terminal_bench_1",
+            "usamo_2025"
+          ],
+          "n_test_cells": 18
+        },
+        {
+          "model_id": "kimi-k2.6",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 2,
+            "3": 4
+          },
+          "test_benchmark_ids": [
+            "aime_2026",
+            "babyvision",
+            "browsecomp",
+            "charxiv_reasoning",
+            "chinese_simpleqa",
+            "deepsearchqa_acc",
+            "gdpval_aa_elo",
+            "gpqa_main",
+            "hle",
+            "hle_text",
+            "hmmt_feb_2026",
+            "imo_answerbench",
+            "matharena_apex_2025",
+            "mathvision",
+            "mcpatlas",
+            "mcpmark",
+            "mmlu_pro",
+            "mmmu_pro",
+            "ojbench",
+            "osworld",
+            "scicode",
+            "simpleqa_verified",
+            "swe_bench_multilingual",
+            "swe_bench_pro",
+            "swe_bench_verified",
+            "toolathlon",
+            "widesearch"
+          ],
+          "n_test_cells": 27
+        },
+        {
+          "model_id": "llama-3.3-70b-instruct",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 4,
+            "3": 6
+          },
+          "test_benchmark_ids": [
+            "alpacaeval_2",
+            "arena_hard",
+            "bfcl",
+            "bigbench_hard",
+            "bigcodebench",
+            "bird_sql",
+            "drop",
+            "gpqa_main",
+            "gsm8k",
+            "humaneval",
+            "ifeval",
+            "infobench",
+            "livebench",
+            "math",
+            "math_500",
+            "mbpp_plus",
+            "mgsm",
+            "popqa",
+            "repoqa",
+            "safety",
+            "simpleqa",
+            "swe_bench_verified",
+            "truthfulqa"
+          ],
+          "n_test_cells": 23
+        },
+        {
+          "model_id": "qwen-2.5-7b",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 4,
+            "3": 6
+          },
+          "test_benchmark_ids": [
+            "alpacaeval_2",
+            "arena_hard",
+            "bigbench_hard",
+            "drop",
+            "gpqa_main",
+            "gsm8k",
+            "humaneval",
+            "ifeval",
+            "livebench",
+            "math",
+            "multipl_e_avg",
+            "popqa",
+            "safety",
+            "truthfulqa"
+          ],
+          "n_test_cells": 14
+        },
+        {
+          "model_id": "qwen3-32b",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 3,
+            "3": 4
+          },
+          "test_benchmark_ids": [
+            "aime_2025",
+            "arena_hard",
+            "bfcl",
+            "bfcl_v3",
+            "codeforces_rating",
+            "humaneval",
+            "ifbench",
+            "ifeval",
+            "livebench",
+            "math_500",
+            "mmmlu",
+            "mt_aime_2024",
+            "multi_if",
+            "terminal_bench_1"
+          ],
+          "n_test_cells": 14
+        },
+        {
+          "model_id": "qwen3.6-plus",
+          "source_k_by_count": {
+            "1": 1,
+            "2": 2,
+            "3": 4
+          },
+          "test_benchmark_ids": [
+            "aa_lcr",
+            "aime_2026",
+            "c_eval",
+            "erqa",
+            "global_piqa",
+            "gpqa_main",
+            "hle",
+            "hle_text",
+            "hmmt_feb_2025",
+            "hmmt_feb_2026",
+            "hmmt_nov_2025",
+            "ifbench",
+            "ifeval",
+            "imo_answerbench",
+            "longbench_v2",
+            "mathvision",
+            "mcpatlas",
+            "mcpmark",
+            "mmlu_pro",
+            "mmmlu",
+            "mmmu",
+            "mmmu_pro",
+            "nl2repo_bench",
+            "omnidocbench_1.5",
+            "screenspot_pro",
+            "supergpqa",
+            "swe_bench_multilingual",
+            "swe_bench_pro",
+            "swe_bench_verified",
+            "tau3_bench",
+            "toolathlon",
+            "vending_bench_2",
+            "video_mme",
+            "video_mmmu",
+            "widesearch"
+          ],
+          "n_test_cells": 35
+        }
+      ],
+      "excluded_model_ids": [
+        "command-a",
+        "llama-3.1-8b",
+        "qwen-2.5-32b"
+      ],
+      "summary": [
+        {
+          "revealed_scores": 1,
+          "n_models": 22,
+          "n_test_cells": 608,
+          "metrics": {
+            "benchpress": {
+              "medae": 6.011542531757513,
+              "medape": 10.405429256667533,
+              "n": 608
+            },
+            "logit_offsets_only": {
+              "medae": 5.671654271210901,
+              "medape": 9.028548694061863,
+              "n": 608
+            },
+            "logit_model_mean": {
+              "medae": 8.238873685170642,
+              "medape": 15.816437939125397,
+              "n": 608
+            }
+          },
+          "benchpress_model_wins": {
+            "logit_offsets_only": 8,
+            "logit_model_mean": 18
+          },
+          "per_model_medae": [
+            {
+              "model_id": "claude-opus-4.6",
+              "benchpress": 9.994039700843246,
+              "logit_offsets_only": 9.157088065790603,
+              "logit_model_mean": 3.550087235829622
+            },
+            {
+              "model_id": "claude-sonnet-4",
+              "benchpress": 5.56672533429257,
+              "logit_offsets_only": 3.331565142341667,
+              "logit_model_mean": 6.202883074264786
+            },
+            {
+              "model_id": "claude-sonnet-4.6",
+              "benchpress": 8.016794613255314,
+              "logit_offsets_only": 6.506037988538708,
+              "logit_model_mean": 6.30247733584757
+            },
+            {
+              "model_id": "deepseek-r1-0528",
+              "benchpress": 5.173868393541255,
+              "logit_offsets_only": 5.534512383506016,
+              "logit_model_mean": 8.785912239892582
+            },
+            {
+              "model_id": "gemini-1.5-pro",
+              "benchpress": 3.7987428159714938,
+              "logit_offsets_only": 4.73637924474599,
+              "logit_model_mean": 11.404472259502054
+            },
+            {
+              "model_id": "gemini-2.0-flash",
+              "benchpress": 7.599912880817033,
+              "logit_offsets_only": 7.774248827117532,
+              "logit_model_mean": 13.128723548454293
+            },
+            {
+              "model_id": "gemini-2.5-pro",
+              "benchpress": 7.9019710643103735,
+              "logit_offsets_only": 7.651594413159625,
+              "logit_model_mean": 11.492790360272377
+            },
+            {
+              "model_id": "gemini-3.1-pro",
+              "benchpress": 5.047127102059221,
+              "logit_offsets_only": 5.19621503499755,
+              "logit_model_mean": 6.156544229726151
+            },
+            {
+              "model_id": "gemma-2-27b",
+              "benchpress": 4.714491229694971,
+              "logit_offsets_only": 4.619564509285851,
+              "logit_model_mean": 22.668297225166484
+            },
+            {
+              "model_id": "gemma-2-9b",
+              "benchpress": 3.5962446728244686,
+              "logit_offsets_only": 4.094509834812698,
+              "logit_model_mean": 17.84986119790497
+            },
+            {
+              "model_id": "gemma-3-1b-it",
+              "benchpress": 10.742490126574383,
+              "logit_offsets_only": 11.95042001363997,
+              "logit_model_mean": 9.818803578669161
+            },
+            {
+              "model_id": "glm-4.6",
+              "benchpress": 4.601630212343434,
+              "logit_offsets_only": 4.481659784150308,
+              "logit_model_mean": 9.992120957529941
+            },
+            {
+              "model_id": "gpt-4.1",
+              "benchpress": 6.7470008758906275,
+              "logit_offsets_only": 5.443900849251335,
+              "logit_model_mean": 10.058702074957408
+            },
+            {
+              "model_id": "gpt-4.5",
+              "benchpress": 6.759394826572937,
+              "logit_offsets_only": 4.031248483041196,
+              "logit_model_mean": 7.021750914609413
+            },
+            {
+              "model_id": "gpt-4o",
+              "benchpress": 7.689317643038677,
+              "logit_offsets_only": 6.454926971070819,
+              "logit_model_mean": 9.927998753162218
+            },
+            {
+              "model_id": "gpt-4o-mini",
+              "benchpress": 6.893469026337954,
+              "logit_offsets_only": 5.798983055434775,
+              "logit_model_mean": 15.324484032687536
+            },
+            {
+              "model_id": "grok-3-beta",
+              "benchpress": 5.56951319204858,
+              "logit_offsets_only": 6.847376988426461,
+              "logit_model_mean": 9.925315734361433
+            },
+            {
+              "model_id": "kimi-k2.6",
+              "benchpress": 6.397128757035674,
+              "logit_offsets_only": 4.410045768461245,
+              "logit_model_mean": 3.3176002604425037
+            },
+            {
+              "model_id": "llama-3.3-70b-instruct",
+              "benchpress": 4.855361876467143,
+              "logit_offsets_only": 3.4760445947461562,
+              "logit_model_mean": 18.376657125690222
+            },
+            {
+              "model_id": "qwen-2.5-7b",
+              "benchpress": 6.319747606072909,
+              "logit_offsets_only": 6.762193892964181,
+              "logit_model_mean": 20.142981900744285
+            },
+            {
+              "model_id": "qwen3-32b",
+              "benchpress": 3.8628566677380363,
+              "logit_offsets_only": 3.3856361741495213,
+              "logit_model_mean": 10.17207186975137
+            },
+            {
+              "model_id": "qwen3.6-plus",
+              "benchpress": 2.1772957176481924,
+              "logit_offsets_only": 1.9078001766361012,
+              "logit_model_mean": 4.419161283356544
+            }
+          ]
+        },
+        {
+          "revealed_scores": 2,
+          "n_models": 22,
+          "n_test_cells": 608,
+          "metrics": {
+            "benchpress": {
+              "medae": 4.921065455853267,
+              "medape": 8.717829910577116,
+              "n": 608
+            },
+            "logit_offsets_only": {
+              "medae": 5.589713347219334,
+              "medape": 10.286859737083864,
+              "n": 608
+            },
+            "logit_model_mean": {
+              "medae": 8.469572231546014,
+              "medape": 14.953182496764855,
+              "n": 608
+            }
+          },
+          "benchpress_model_wins": {
+            "logit_offsets_only": 14,
+            "logit_model_mean": 18
+          },
+          "per_model_medae": [
+            {
+              "model_id": "claude-opus-4.6",
+              "benchpress": 6.451207665490202,
+              "logit_offsets_only": 5.857865134581168,
+              "logit_model_mean": 3.422939302202714
+            },
+            {
+              "model_id": "claude-sonnet-4",
+              "benchpress": 5.684261074093492,
+              "logit_offsets_only": 3.2667169629492854,
+              "logit_model_mean": 5.506420259594755
+            },
+            {
+              "model_id": "claude-sonnet-4.6",
+              "benchpress": 5.412288027981091,
+              "logit_offsets_only": 5.062302338495115,
+              "logit_model_mean": 2.406087240127974
+            },
+            {
+              "model_id": "deepseek-r1-0528",
+              "benchpress": 6.275047316145788,
+              "logit_offsets_only": 5.810604851869158,
+              "logit_model_mean": 14.876108786757968
+            },
+            {
+              "model_id": "gemini-1.5-pro",
+              "benchpress": 5.248956676768984,
+              "logit_offsets_only": 6.237055393934739,
+              "logit_model_mean": 13.826819442618323
+            },
+            {
+              "model_id": "gemini-2.0-flash",
+              "benchpress": 12.596926985075648,
+              "logit_offsets_only": 11.52209326164493,
+              "logit_model_mean": 16.23770854046118
+            },
+            {
+              "model_id": "gemini-2.5-pro",
+              "benchpress": 6.602097284578868,
+              "logit_offsets_only": 5.898240899729988,
+              "logit_model_mean": 7.011396380450293
+            },
+            {
+              "model_id": "gemini-3.1-pro",
+              "benchpress": 5.268272657363852,
+              "logit_offsets_only": 4.333491767018366,
+              "logit_model_mean": 5.99022602922313
+            },
+            {
+              "model_id": "gemma-2-27b",
+              "benchpress": 3.4868156396631633,
+              "logit_offsets_only": 3.8734496533648723,
+              "logit_model_mean": 22.490720885287892
+            },
+            {
+              "model_id": "gemma-2-9b",
+              "benchpress": 4.344223362989453,
+              "logit_offsets_only": 5.981679056939143,
+              "logit_model_mean": 18.5358479730708
+            },
+            {
+              "model_id": "gemma-3-1b-it",
+              "benchpress": 7.4366855623550165,
+              "logit_offsets_only": 8.61175493793894,
+              "logit_model_mean": 13.81453250076423
+            },
+            {
+              "model_id": "glm-4.6",
+              "benchpress": 4.61586375514198,
+              "logit_offsets_only": 4.674467702975733,
+              "logit_model_mean": 5.3599647492957985
+            },
+            {
+              "model_id": "gpt-4.1",
+              "benchpress": 5.124485039920948,
+              "logit_offsets_only": 5.556858057977575,
+              "logit_model_mean": 9.375887992791672
+            },
+            {
+              "model_id": "gpt-4.5",
+              "benchpress": 3.005565094618433,
+              "logit_offsets_only": 6.650359429541069,
+              "logit_model_mean": 7.3436164245462265
+            },
+            {
+              "model_id": "gpt-4o",
+              "benchpress": 7.652949627343215,
+              "logit_offsets_only": 9.688222529972052,
+              "logit_model_mean": 9.02959073591581
+            },
+            {
+              "model_id": "gpt-4o-mini",
+              "benchpress": 6.586879939526206,
+              "logit_offsets_only": 7.000745256607512,
+              "logit_model_mean": 14.058468228597789
+            },
+            {
+              "model_id": "grok-3-beta",
+              "benchpress": 5.1883213056549105,
+              "logit_offsets_only": 5.365312239627107,
+              "logit_model_mean": 7.88114780581617
+            },
+            {
+              "model_id": "kimi-k2.6",
+              "benchpress": 3.3770688508832336,
+              "logit_offsets_only": 4.520189596631724,
+              "logit_model_mean": 2.977176946566786
+            },
+            {
+              "model_id": "llama-3.3-70b-instruct",
+              "benchpress": 4.368389158197161,
+              "logit_offsets_only": 3.7642944224074597,
+              "logit_model_mean": 18.488827401249296
+            },
+            {
+              "model_id": "qwen-2.5-7b",
+              "benchpress": 5.97783998505138,
+              "logit_offsets_only": 7.601470118112765,
+              "logit_model_mean": 18.455999316854907
+            },
+            {
+              "model_id": "qwen3-32b",
+              "benchpress": 4.087160884883235,
+              "logit_offsets_only": 6.402607262499167,
+              "logit_model_mean": 7.180986321649591
+            },
+            {
+              "model_id": "qwen3.6-plus",
+              "benchpress": 1.6418580323129675,
+              "logit_offsets_only": 1.974703117655082,
+              "logit_model_mean": 2.7021184959515807
+            }
+          ]
+        },
+        {
+          "revealed_scores": 3,
+          "n_models": 22,
+          "n_test_cells": 608,
+          "metrics": {
+            "benchpress": {
+              "medae": 5.110990402245687,
+              "medape": 9.08197589161575,
+              "n": 608
+            },
+            "logit_offsets_only": {
+              "medae": 5.505403936536851,
+              "medape": 9.480714886416628,
+              "n": 608
+            },
+            "logit_model_mean": {
+              "medae": 8.652631659019008,
+              "medape": 15.731432547496263,
+              "n": 608
+            }
+          },
+          "benchpress_model_wins": {
+            "logit_offsets_only": 11,
+            "logit_model_mean": 19
+          },
+          "per_model_medae": [
+            {
+              "model_id": "claude-opus-4.6",
+              "benchpress": 7.327689631963793,
+              "logit_offsets_only": 7.190295357303086,
+              "logit_model_mean": 3.8197650078201235
+            },
+            {
+              "model_id": "claude-sonnet-4",
+              "benchpress": 5.208659305064526,
+              "logit_offsets_only": 5.994747127347775,
+              "logit_model_mean": 5.536786923412443
+            },
+            {
+              "model_id": "claude-sonnet-4.6",
+              "benchpress": 4.504606818038901,
+              "logit_offsets_only": 4.797366067667923,
+              "logit_model_mean": 2.7391742910076005
+            },
+            {
+              "model_id": "deepseek-r1-0528",
+              "benchpress": 5.0806304996790885,
+              "logit_offsets_only": 4.468161373461726,
+              "logit_model_mean": 13.801484751526527
+            },
+            {
+              "model_id": "gemini-1.5-pro",
+              "benchpress": 4.194429198185077,
+              "logit_offsets_only": 5.094655193635234,
+              "logit_model_mean": 10.916806651186135
+            },
+            {
+              "model_id": "gemini-2.0-flash",
+              "benchpress": 7.584839666371337,
+              "logit_offsets_only": 8.1932321559281,
+              "logit_model_mean": 12.360836162044041
+            },
+            {
+              "model_id": "gemini-2.5-pro",
+              "benchpress": 7.247357820790487,
+              "logit_offsets_only": 6.834401462104376,
+              "logit_model_mean": 10.210682364468145
+            },
+            {
+              "model_id": "gemini-3.1-pro",
+              "benchpress": 5.11450410058265,
+              "logit_offsets_only": 3.9153296843417422,
+              "logit_model_mean": 6.241386090675469
+            },
+            {
+              "model_id": "gemma-2-27b",
+              "benchpress": 4.616031236330741,
+              "logit_offsets_only": 4.34784074122679,
+              "logit_model_mean": 21.35347954967572
+            },
+            {
+              "model_id": "gemma-2-9b",
+              "benchpress": 5.111859110323223,
+              "logit_offsets_only": 4.866995597928096,
+              "logit_model_mean": 18.060812711322026
+            },
+            {
+              "model_id": "gemma-3-1b-it",
+              "benchpress": 10.04740425543815,
+              "logit_offsets_only": 10.108622045580509,
+              "logit_model_mean": 16.69943951347714
+            },
+            {
+              "model_id": "glm-4.6",
+              "benchpress": 4.496695290901091,
+              "logit_offsets_only": 3.9116238952054445,
+              "logit_model_mean": 7.182780333175
+            },
+            {
+              "model_id": "gpt-4.1",
+              "benchpress": 5.472952051916565,
+              "logit_offsets_only": 5.976628675075304,
+              "logit_model_mean": 10.482380176419593
+            },
+            {
+              "model_id": "gpt-4.5",
+              "benchpress": 5.11012169416815,
+              "logit_offsets_only": 6.461376340253402,
+              "logit_model_mean": 11.046135404057154
+            },
+            {
+              "model_id": "gpt-4o",
+              "benchpress": 6.940823640516843,
+              "logit_offsets_only": 8.574422464974205,
+              "logit_model_mean": 9.471295200381004
+            },
+            {
+              "model_id": "gpt-4o-mini",
+              "benchpress": 6.9407442916905175,
+              "logit_offsets_only": 6.020911867211012,
+              "logit_model_mean": 12.550290402650866
+            },
+            {
+              "model_id": "grok-3-beta",
+              "benchpress": 5.061734948060878,
+              "logit_offsets_only": 5.387121932229591,
+              "logit_model_mean": 6.942466384061987
+            },
+            {
+              "model_id": "kimi-k2.6",
+              "benchpress": 3.970136689000725,
+              "logit_offsets_only": 3.600170845897516,
+              "logit_model_mean": 3.4442109094102307
+            },
+            {
+              "model_id": "llama-3.3-70b-instruct",
+              "benchpress": 3.578692206645968,
+              "logit_offsets_only": 3.437867798618875,
+              "logit_model_mean": 17.662297287754583
+            },
+            {
+              "model_id": "qwen-2.5-7b",
+              "benchpress": 7.244342941209453,
+              "logit_offsets_only": 7.632298094868371,
+              "logit_model_mean": 18.016811822805572
+            },
+            {
+              "model_id": "qwen3-32b",
+              "benchpress": 4.157115896521128,
+              "logit_offsets_only": 6.648243492201473,
+              "logit_model_mean": 7.4674717246190525
+            },
+            {
+              "model_id": "qwen3.6-plus",
+              "benchpress": 1.9623096246580047,
+              "logit_offsets_only": 1.570109164877195,
+              "logit_model_mean": 2.816885243059062
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
