@@ -142,6 +142,7 @@ across predictors within a budget but change across budgets.
 python plot_baselines.py
 python plot_baselines.py --metric medape
 python plot_baselines.py --metric both
+python plot_baselines.py --metric both --layout row
 ```
 
 Outputs: `figures/bp_heldout_probe_baselines.pdf` and `.png`, plus
@@ -165,6 +166,12 @@ plotted values match the original summaries. Its PNG is embedded in the local
 ICLR rebuttal W1-2 / Q1 draft, with a short caption and the original 59/25
 evaluation scope. OpenReview comments do not render images, so submission
 requires an anonymous figure link or revised-paper appendix reference.
+
+Adding `--layout row` writes `bp_heldout_probe_baselines_both_row` with all four
+panels in one row. It identifies the 59/25 split in its title and uses the same
+metric axis ranges as `all_known/figures/bp_main_probe_offsets_both_row`.
+This single-row PNG is the current embedded version in the local rebuttal.
+All 120 values are unchanged from the original held-out baseline summaries.
 
 ## Matched revealed-count comparison
 

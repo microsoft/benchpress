@@ -40,9 +40,13 @@ def main():
     parser.add_argument('--input', default=os.path.join(
         HERE, 'results', 'heldout_baselines_s42.json.gz'))
     parser.add_argument('--metric', choices=('medae', 'medape', 'both'), default='medae')
+    parser.add_argument('--layout', choices=('grid', 'row'), default='grid')
     args = parser.parse_args()
+    row_layout = args.layout == 'row' and args.metric == 'both'
     metrics = ('medae', 'medape') if args.metric == 'both' else (args.metric,)
     stem = STEM + {'medae': '', 'medape': '_medape', 'both': '_both'}[args.metric]
+    if row_layout:
+        stem += '_row'
     data = load_json(args.input)
     if data['config']['protocol'] != 'heldout_baselines_v2':
         raise ValueError('Expected the original held-out baseline protocol')
@@ -52,18 +56,26 @@ def main():
     )
     apply_single()
     plt.rcParams.update({'pdf.fonttype': 42, 'ps.fonttype': 42})
-    fig, axes = plt.subplots(
-        len(metrics), 2, figsize=(12.6, 8.6 if len(metrics) == 2 else 5.1),
-        sharex='col', sharey='row', squeeze=False)
-    if len(metrics) == 2:
-        fig.subplots_adjust(left=0.085, right=0.985, bottom=0.10, top=0.86,
-                            wspace=0.13, hspace=0.36)
+    if row_layout:
+        fig, axes = plt.subplots(1, 4, figsize=(23.8, 5.2), squeeze=False)
+        fig.subplots_adjust(left=0.045, right=0.992, bottom=0.19, top=0.70,
+                            wspace=0.30)
+        fig.suptitle('Held-out validation: 59 selection models / 25 test models',
+                     fontsize=24, color=CHARCOAL, y=0.985)
     else:
-        fig.subplots_adjust(left=0.085, right=0.985, bottom=0.19, top=0.75, wspace=0.13)
+        fig, axes = plt.subplots(
+            len(metrics), 2, figsize=(12.6, 8.6 if len(metrics) == 2 else 5.1),
+            sharex='col', sharey='row', squeeze=False)
+        if len(metrics) == 2:
+            fig.subplots_adjust(left=0.085, right=0.985, bottom=0.10, top=0.86,
+                                wspace=0.13, hspace=0.36)
+        else:
+            fig.subplots_adjust(left=0.085, right=0.985, bottom=0.19, top=0.75,
+                                wspace=0.13)
     plotted = []
     for row_index, metric in enumerate(metrics):
         for col_index, (ordering, title, policy_style) in enumerate(panels):
-            ax = axes[row_index, col_index]
+            ax = axes[0, row_index * 2 + col_index] if row_layout else axes[row_index, col_index]
             rows = sorted((s for s in data['summary'] if s['method'] == ordering),
                           key=lambda s: s['k'])
             if [s['k'] for s in rows] != list(range(1, 11)):
@@ -84,14 +96,14 @@ def main():
                         linewidth=2.6, markersize=7.2, markeredgewidth=1.1,
                         markeredgecolor='white', zorder=4 if name == 'benchpress' else 3)
             panel_title = title if row_index == 0 else title.replace('(a)', '(c)').replace('(b)', '(d)')
-            ax.set_title(panel_title, fontsize=23, pad=43 if row_index == 0 else 12, color=CHARCOAL)
-            if row_index == 0:
+            ax.set_title(panel_title, fontsize=23, pad=43 if row_index == 0 or row_layout else 12, color=CHARCOAL)
+            if row_index == 0 or row_layout:
                 ax.legend(loc='lower center', bbox_to_anchor=(0.5, 1.025), ncol=3,
-                          frameon=False, fontsize=15.5, handlelength=1.55,
+                          frameon=False, fontsize=14.5 if row_layout else 15.5, handlelength=1.55,
                           handletextpad=0.35, columnspacing=0.8, borderaxespad=0)
-            if row_index == len(metrics) - 1:
+            if row_layout or row_index == len(metrics) - 1:
                 ax.set_xlabel(r'Requested probes ($k$)', fontsize=22, labelpad=9)
-            ax.set_xticks(range(1, 11))
+            ax.set_xticks([1, 2, 4, 6, 8, 10] if row_layout else range(1, 11))
             ax.set_xlim(0.7, 10.3)
             if metric == 'medae':
                 ax.set_ylim(4, 10)
@@ -101,6 +113,9 @@ def main():
                 ax.set_yticks(range(8, 19, 2))
             ax.tick_params(axis='both', labelsize=18)
             ax.grid(axis='y', color=GRAY, linewidth=0.75, alpha=0.22)
+            if row_layout:
+                ax.set_ylabel('MedAE (score points)' if metric == 'medae' else 'MedAPE (%)',
+                              fontsize=21, labelpad=9)
             plotted.extend({
                 'ordering': ordering, 'requested_probes': r['k'],
                 'test_cells': r['n_cells_in_prediction_payload'],
@@ -108,7 +123,8 @@ def main():
                 **{name: r[name][metric] for name, *_ in series},
             } for r in rows)
         metric_label = 'MedAE (score points)' if metric == 'medae' else 'MedAPE (%)'
-        axes[row_index, 0].set_ylabel(metric_label, fontsize=22, labelpad=12)
+        if not row_layout:
+            axes[row_index, 0].set_ylabel(metric_label, fontsize=22, labelpad=12)
     save_fig(stem)
     figures = os.path.join(HERE, 'figures')
     with open(args.input, 'rb') as handle:

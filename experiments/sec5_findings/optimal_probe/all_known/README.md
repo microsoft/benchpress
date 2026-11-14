@@ -165,3 +165,10 @@ match across methods at each budget; the canonical metric reproduces all 40
 summary values. The x-axis counts requested probes, and MedAPE is pooled over
 unrevealed cells with nonzero true scores. This standalone figure is distinct
 from Figure 10's MedAPE-selected ordering and the 59/25 held-out-model figure.
+
+`python plot_offsets.py --metric both` writes
+`figures/bp_main_probe_offsets_both_row.{pdf,png}` and caption/data companions.
+It places four panels in one row: cost-unaware MedAE, cost-aware MedAE,
+cost-unaware MedAPE, and cost-aware MedAPE. The figure identifies the main
+84-model experiment in its title and uses the same metric axis ranges as the
+59/25 single-row figure. All 80 plotted values match the source summaries.
