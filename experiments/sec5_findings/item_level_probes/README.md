@@ -492,6 +492,88 @@ Persistent outputs are under `CHTC:$STAGING/bp_iclr/question_accuracy/`:
 rank-8 NPZs and manifests. The original rank-40 NPZs remain under
 `CHTC:$STAGING/bp_iclr/question_rank40/`.
 
-Native baseline predictions are being recovered on CHTC. Their complete
-four-curve summary and figure require all 37 subtasks, five seeds, six budgets,
-and both selections. The aggregate-score results above remain unchanged.
+Native baseline recovery is complete: canary `8571386` and all 25 jobs in
+cluster `8577715` exited successfully at source
+`9efee67dc6b1b6c6495b2cefea129e643c6a781f`, configuration
+`3629ce98b95b0040`. The canary passed three native-baseline tests and five
+binary-accuracy tests. Its completed units were reused in the full grid.
+The 26 archives contain exactly 185 IRT models and 2,220 prediction bundles,
+with identical manifests and no duplicate units. Each bundle contains both
+native predictors. Fits use Python 3.11.18 and `requirements-baselines.txt`;
+the grid requests one CPU and 4 GB RAM per job, with no GPU or LLM inference.
+
+All native archives remain under
+`CHTC:$STAGING/bp_iclr/question_baselines/`:
+`out_native_baselines_canary.tar.gz`,
+`out_native_baselines_s<seed>_part<0..3>.tar.gz`, and
+`out_native_baselines_s<seed>_c33.tar.gz`. Entries are rooted at
+`results/question_baselines/3629ce98b95b0040/`.
+Scoring job `8592083`, at the same source commit, completed on one CPU with
+4 GB RAM. AP submission files are
+`~/bp_iclr/job_native_{canary,grid,summary}.sub`.
+Its compact `summary.tar.gz` in that staging directory contains
+`results/accuracy/0b10e5b35d18180a/summary.json`, with SHA256
+`65f6259c904e09efc71ca6806389d5007096f856d479f9da4c41cfb90a1402a8`.
+The summary has 240 unique per-seed records and 48 five-seed cells. All
+120 BenchPress records match their frozen source exactly; all four methods
+share each setting's hidden mask, denominator, and observed-question count.
+
+## Native question-prediction accuracy (2026-11-13)
+
+Accuracy measures whether a predictor correctly identifies an unrevealed
+question's binary answer outcome for a held-out model. Predict 1 only when
+the probability is strictly greater than 0.5; ties predict 0. Accuracy is
+`100 * correct / hidden model-question pairs`, so higher is better.
+It is not the held-out LLM's own benchmark accuracy.
+
+The matrix contains 425 models and 21,176 questions across 37 subtasks of
+BBH, GPQA, IFEval, MATH, MMLU-Pro, and MuSR. The fixed split (seed 42) has
+298 training models and 127 held-out models. Question-selection seeds 0
+through 4, budgets 200 through 6400 below, and both frozen selection policies
+are unchanged. Accuracy pools hidden model-question pairs, giving larger
+subtasks more weight. The hidden question population changes with budget.
+This remains the exploratory split used for method development, not a fresh
+model holdout.
+
+The baseline curves evaluate the internal IRT predictor of GP-IRT and ridge
+predictor of AIPW, not their aggregate score estimators. They use native
+question-specific predictions. BenchPress rank 8 has the highest mean at
+200 and 400 questions under both selections; the ridge predictor has the
+highest mean from 800 questions onward. Rank 40 exceeds rank 8 at 6400
+questions, but both native baselines have higher mean accuracy there.
+
+Each cell is mean accuracy (%) over five question-selection seeds.
+The JSON and derived `table.csv` also retain sample standard deviations;
+`per_seed.csv` retains the individual records.
+
+### Random questions
+
+| Method | 200 | 400 | 800 | 1600 | 3200 | 6400 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| BenchPress (rank 8) | 81.201 | 81.408 | 81.717 | 81.948 | 82.071 | 83.565 |
+| BenchPress (rank 40) | 79.574 | 80.616 | 81.443 | 81.908 | 81.760 | 85.437 |
+| IRT predictor (GP-IRT) | 70.674 | 70.253 | 71.593 | 79.039 | 83.076 | 85.705 |
+| Ridge predictor (AIPW) | 77.427 | 80.408 | 82.759 | 84.046 | 84.715 | 86.819 |
+
+### GP-IRT anchor questions
+
+| Method | 200 | 400 | 800 | 1600 | 3200 | 6400 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| BenchPress (rank 8) | 81.244 | 81.607 | 81.853 | 81.991 | 82.187 | 83.815 |
+| BenchPress (rank 40) | 79.788 | 80.692 | 81.578 | 82.110 | 82.004 | 85.668 |
+| IRT predictor (GP-IRT) | 72.397 | 73.523 | 73.028 | 78.927 | 83.046 | 86.073 |
+| Ridge predictor (AIPW) | 78.697 | 81.264 | 83.143 | 84.376 | 84.906 | 87.142 |
+
+Generate the four-curve PDF and PNG with:
+
+```bash
+python plot.py --summary results/accuracy/0b10e5b35d18180a/summary.json \
+  --name bp_question_accuracy
+```
+
+The figure shows means and one sample standard deviation, not confidence
+intervals. Local delivery copies are in
+`~/Downloads/benchpress-question-variants/`: `bp_question_accuracy.pdf`,
+`bp_question_accuracy.png`, `native-accuracy-summary.json`,
+`native-accuracy-table.csv`, and `native-accuracy-per-seed.csv`.
+The aggregate-score results, rebuttal, and Overleaf text remain unchanged.
