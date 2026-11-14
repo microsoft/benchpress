@@ -55,6 +55,10 @@ python evaluate_order.py \
 # no interaction term); default output fixed_order_<key>[_rank<r>]_hidden_only.json.gz.
 # Use --predictor logit_model_mean to score the same fixed-order hidden cells
 # with the logit-space model mean baseline.
+python evaluate_order.py --fixed-order medae_any --k-max 10 \
+  --predictor logit_model_mean --workers 2
+python evaluate_order.py --fixed-order medae_low_cost --k-max 10 \
+  --predictor logit_model_mean --workers 2
 
 # Low-cost pool under the documented <= $30 public-cost rule (drops MMLU-Pro):
 CANDIDATE_ALLOWLIST=../candidate_allowlists/public_cost_le_30usd.json \
@@ -142,6 +146,13 @@ Hidden-only evaluation (unrevealed cells only; CHTC jobs 6307236/6307237/6307249
 - Coverage-matched random baseline (CHTC job 6307756, tag `mr_covrand4`, commit `b1c9bf2`): 10 random k-sets per pool whose revealed-cell count is within 10% of the greedy MedAE ordering's (any: 82/155/250/419 cells at k=1/3/5/10; low-cost: 82/172/219/356). Median hidden-only MedAE (IQR) at k=3 / 5 / 10: any 6.15 (5.61-6.34) / 5.71 (5.60-5.94) / 5.18 (5.01-5.37); low-cost 5.87 (5.79-5.97) / 5.58 (5.47-5.76) / 5.25 (5.17-5.32). Median P90 absolute error at k=5: any 22.91, low-cost 22.85. k=1 has a single coverage-matched benchmark per pool (reused draws), so it is not informative.
 - Same-cell logit-space model mean baseline (CHTC job 6307838, commit `f2ce6da`), hidden-only k=5 MedAE:
   any 7.52 and low-cost 7.77, using the same target cells as the fixed MedAE orderings.
+- Full model-mean curves through k=10: CHTC job 8679698, source `19d613d`,
+  Python 3.11 container with 2 CPUs, using the same 84-by-133 matrix
+  (`9603f902534fb79bf9e8ae042297268ee54d8e60e5647397d15f71562d3889f8`).
+  Outputs: `results/fixed_order_medae_{any,low_cost}_logit_model_mean_hidden_only.json.gz`;
+  archived at `CHTC:~/bp_iclr/probe_model_mean.tar.gz`.
+  All 26,040 predictions at k=1 through 5 reproduce the earlier run within
+  1e-10. At k=10, hidden-only MedAE is 7.28 (any) and 7.24 (low-cost).
 - Low-cost pool without MMLU-Pro (`candidate_allowlists/public_cost_le_30usd.json`, 24 benchmarks; CHTC job 7925235, tag `rb_e4g`, commit `7996392`): greedy MedAE picks GPQA Diamond, MATH-500, MathArena Apex 2025, Aider Polyglot (diff), HMMT Feb 2025, then tau2-bench Telecom, Arena-Hard, Bullshit-Bench pushback, AIME 2025, AlpacaEval 2.0. Hidden-only MedAE at k=1 / 5 / 10: 6.27 / 5.41 / 5.05, against 6.27 / 5.32 / 4.92 for the 25-benchmark low-cost ordering.
 - The with-probe-zero MedAE of the any ordering is 3.955 at k=5, above the arXiv 3.93 because commit `f4319af` made default predictions metric-aware for non-percentage metrics; the low-cost value reproduces 4.55.
 

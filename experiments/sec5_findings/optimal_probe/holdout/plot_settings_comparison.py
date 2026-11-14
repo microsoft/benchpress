@@ -23,6 +23,7 @@ STEM = 'bp_main_vs_heldout_medae'
 
 
 def main():
+    names = ('benchpress', 'logit_offsets_only', 'logit_model_mean')
     panels = (
         ('medae_any', 'cost_unaware_greedy', 'Cost-unaware greedy', PROBE_COST_UNAWARE_STYLE),
         ('medae_low_cost', 'cost_aware_greedy', 'Cost-aware greedy', PROBE_COST_AWARE_STYLE),
@@ -43,7 +44,8 @@ def main():
     for column, (main_order, heldout_order, title, style) in enumerate(panels):
         main_series = {}
         main_cells = {}
-        for method, suffix in (('benchpress', ''), ('logit_offsets_only', '_rank0')):
+        for method, suffix in (('benchpress', ''), ('logit_offsets_only', '_rank0'),
+                               ('logit_model_mean', '_logit_model_mean')):
             path = os.path.join(HERE, '..', 'all_known', 'results',
                                 f'fixed_order_{main_order}{suffix}_hidden_only.json.gz')
             source_paths.append(path)
@@ -57,7 +59,7 @@ def main():
             }
             if len(main_cells[method]) != len(raw):
                 raise ValueError('Duplicate main-experiment prediction cells')
-        if main_cells['benchpress'].keys() != main_cells['logit_offsets_only'].keys():
+        if any(main_cells['benchpress'].keys() != main_cells[name].keys() for name in names):
             raise ValueError('Main methods must be bootstrapped on identical cells')
         for row_index in range(2):
             ax = axes[row_index, column]
@@ -65,34 +67,31 @@ def main():
             if row_index == 0:
                 rows = []
                 for k in range(1, 11):
-                    bp, offsets = (main_series[name][k] for name in
-                                   ('benchpress', 'logit_offsets_only'))
-                    if bp['probe_ids'] != offsets['probe_ids']:
+                    bp = main_series['benchpress'][k]
+                    if any(bp['probe_ids'] != main_series[name][k]['probe_ids'] for name in names):
                         raise ValueError('Main probe orderings differ across methods')
-                    if bp['hidden_only']['n'] != offsets['hidden_only']['n']:
+                    if any(bp['hidden_only']['n'] != main_series[name][k]['hidden_only']['n']
+                           for name in names):
                         raise ValueError('Main prediction coverage differs across methods')
                     rows.append({'k': k, 'test_cells': bp['hidden_only']['n'],
-                                 'benchpress': bp['hidden_only']['medae'],
-                                 'logit_offsets_only': offsets['hidden_only']['medae']})
+                                 **{name: main_series[name][k]['hidden_only']['medae']
+                                    for name in names}})
                     panel_records[k] = []
                     for key in sorted(main_cells['benchpress']):
                         if key[0] != k:
                             continue
                         bp_cell = main_cells['benchpress'][key]
-                        offset_cell = main_cells['logit_offsets_only'][key]
-                        if bp_cell['actual'] != offset_cell['actual']:
+                        if any(bp_cell['actual'] != main_cells[name][key]['actual'] for name in names):
                             raise ValueError('Main methods have different test labels')
                         panel_records[k].append({
                             'model_id': key[1], 'true': bp_cell['actual'],
-                            'benchpress': bp_cell['pred'],
-                            'logit_offsets_only': offset_cell['pred'],
+                            **{name: main_cells[name][key]['pred'] for name in names},
                         })
             else:
                 source = sorted((r for r in heldout['summary']
                                  if r['method'] == heldout_order), key=lambda r: r['k'])
                 rows = []
                 for r in source:
-                    names = ('benchpress', 'logit_offsets_only')
                     if any(r[name]['n'] != r['n_cells_in_prediction_payload'] for name in names):
                         raise ValueError('Held-out prediction coverage differs across methods')
                     rows.append({'k': r['k'], 'test_cells': r['n_cells_in_prediction_payload'],
@@ -108,6 +107,7 @@ def main():
             series = [
                 ('benchpress', 'BenchPress', style['color'], '-', 'o'),
                 ('logit_offsets_only', 'Offsets only', ANSWER_VIOLET, '--', 's'),
+                ('logit_model_mean', 'Model mean', GRAY, ':', '^'),
             ]
             for row in rows:
                 records = panel_records[row['k']]
@@ -184,8 +184,9 @@ def main():
         'same revealed scores and test cells within each panel at each budget. '
         'The settings use different probe sets and evaluation cells. Requested '
         'probes may be unavailable, and newly revealed scores leave the test set. '
-        'All four panels compare BenchPress with offsets only, which removes '
-        'the two latent factors. Bars are pointwise 95% percentile intervals '
+        'All four panels compare BenchPress, offsets only (which removes '
+        'the two latent factors), and logit-space model mean. Bars are '
+        'pointwise 95% percentile intervals '
         'from 2,000 model-cluster bootstrap resamples (seed 42), paired across '
         'methods and budgets within each setting. Model splits, probe '
         'orderings, and fitted predictions remain fixed.\n')
