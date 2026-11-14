@@ -1,5 +1,40 @@
 # Prospective May-to-August snapshot test
 
+## Exact revealed-score counts on the frozen April snapshot
+
+`run_random_reveals.py` uses the archived April 30, 2026 matrix (84 models,
+133 benchmarks, 2,604 scores) unchanged. Targets are rows added in the August
+26 matrix. Only April benchmark columns are used; August updates to existing
+reference-model scores never enter training. Each fit appends exactly one
+target row with exactly 1, 3, 5, or 10 randomly revealed scores. A target needs
+at least five remaining observed scores at a budget. Seeds 0-9 use base seed
+42 and nested target-specific random orders. BenchPress, offsets only, and
+logit model mean share every revealed and hidden score.
+
+Two summaries are retained: all eligible targets at each budget, and a matched
+comparison using only targets with at least 15 April-benchmark scores and only
+test scores outside the first ten reveals. The matched comparison fixes target
+models and test cells across budgets. Errors exclude revealed scores. Outputs
+include pooled MedAE/MedAPE, median model MedAE, coverage counts, the complete
+target inventory, per-unit revealed IDs, raw predictions, input hashes, and the
+exact code commit. No score-report date inference is used.
+
+Run on a remote CPU worker from the repository root:
+
+```bash
+python -m experiments.sec5_findings.prospective_update.run_random_reveals \
+  --train-json /path/to/may.json --eval-json /path/to/aug.json \
+  --out-dir experiments/sec5_findings/prospective_update/results/random_reveals \
+  --workers 16 --mode check
+# Repeat with --mode run after the check passes; --mode summarize never fits.
+```
+
+`--mode check` computes one complete unit. `--mode run` resumes compatible units
+and refuses caches with different input/config/commit identities. The frozen
+matrix hashes must match the archived prospective experiment. The checked-in
+tests cover target-score isolation, exclusion of August-only columns, nested
+reveals, fixed test cells, and insufficient hidden-score handling.
+
 ## Paper mapping
 
 Section 5.3 / Appendix D.3 candidate diagnostic for prospective updates.
