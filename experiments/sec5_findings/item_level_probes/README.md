@@ -56,7 +56,7 @@ and the mean and sample std across the five seeds.
 
 ### BenchPress question selection versus random
 
-`selection.py` compares only two question-selection policies, with the same
+By default, `selection.py` compares two question-selection policies, with the same
 rank-40 BenchPress predictor. It reuses the frozen rank-40 random-selection
 predictions (`577115b7edd126a2`); it never refits random
 or runs GP-IRT/AIPW. The split, budgets, five seeds, and per-subtask allocation
@@ -172,6 +172,41 @@ The derived PDF, PNG, `table.csv`, and `summary.json` are delivered under
 figure from the saved summary with
 `python plot.py --summary <summary.json> --name bp_question_selection`.
 The source archive and configuration above remain the canonical result.
+
+#### Three-policy comparison at budgets 200 to 800
+
+All three selectors use the same rank-40 BenchPress predictor and are scored
+on the common hidden questions within each seed/budget. Accuracy is the
+percentage of correctly predicted binary answer outcomes across the 127
+held-out models. Values are mean ± sample SD over five selection seeds.
+
+| Question budget per model | Random accuracy (%) | BenchPress-selected accuracy (%) | GP-IRT-selected accuracy (%) |
+| --- | --- | --- | --- |
+| 200 | 79.555 ± 0.228 | 79.489 ± 0.184 | 79.773 ± 0.261 |
+| 400 | 80.592 ± 0.135 | 80.869 ± 0.127 | 80.662 ± 0.176 |
+| 800 | 81.425 ± 0.336 | 81.515 ± 0.137 | 81.538 ± 0.094 |
+
+GP-IRT selection has the highest mean accuracy at 200 questions, and
+BenchPress selection at 400; their means differ by 0.023 percentage points
+at 800. This is exploratory evidence on the fixed split described above.
+The common-mask scoring reuses all frozen predictions and the same
+Python 3.11.18 numerical runtime as the two-policy comparison.
+
+| Artifact or stage | Provenance |
+| --- | --- |
+| Scorer | Source `19d613db623651a38a5d1b2a27f33650fd8ed57e`; configuration `d05067f579e71d47`; CHTC job `8679690` |
+| Persistent scored archive | `summary_19d613db623651a38a5d1b2a27f33650fd8ed57e.tar.gz` in the canonical archive directory above |
+| Summary inside archive | `results/question_selection/a6d858760138c8e7/scores/d05067f579e71d47/summary.json` |
+| Summary SHA256 | `3638ba9124e3ef0f1f0cfc90e9a8dc859210e81c2c6339c8d88eb5ba0972911e` |
+| Frozen random and GP-IRT predictions | `CHTC:/staging/y/yzeng58/bp_iclr/question_rank40/out_variant_logit_r40_{random,anchors}_s{seed}_B{budget}.tar.gz`; configuration `577115b7edd126a2`, source `25d69878f9892db6bcd75149cdd31ab603fba995` |
+
+The full six-budget summary contains 90 accuracy records, 30 common masks,
+18 aggregate accuracy cells, and 30 BenchPress-minus-random paired gains.
+The focused figure projects only table budgets 200, 400, and 800 in memory
+before calling `plot_selection`; the full summary remains unchanged.
+Derived outputs under `~/Downloads/benchpress-question-selection/` are
+`summary_with_gp_irt.json`, `table_200_800_with_gp_irt.csv`, and
+`bp_question_selection_200_800_with_gp_irt.{pdf,png}`.
 
 ### Binary question-prediction accuracy
 

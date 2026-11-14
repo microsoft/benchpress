@@ -88,7 +88,8 @@ def plot_selection(summary, name):
     axes[0].set_ylim(max(0, lower), min(100, upper))
     axes[0].set_ylabel('Accuracy (%)')
     fig.legend(*axes[0].get_legend_handles_labels(), loc='lower center',
-               bbox_to_anchor=(0.5, 0.07), ncol=2, frameon=False, fontsize=14)
+               bbox_to_anchor=(0.5, 0.05 if 'anchors' in present else 0.07),
+               ncol=2, frameon=False, fontsize=14)
     fig.subplots_adjust(bottom=0.28)
     caption = (
         '127 held-out models; identical unrevealed questions within each budget/seed.'
@@ -112,7 +113,7 @@ def main():
         summary = json.load(f)
     if summary.get('config', {}).get('comparison') == 'question_selection':
         if args.methods is not None:
-            raise ValueError('the selection comparison always plots both policies at the evaluated ranks')
+            raise ValueError('the selection comparison always plots all compared policies at the evaluated ranks')
         plot_selection(summary, args.name or 'bp_question_selection')
         return
     table = summary['table']
