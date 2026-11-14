@@ -1,4 +1,4 @@
-"""BenchPress profile anchors versus cached random question selection."""
+"""Compare question-selection policies using cached BenchPress predictions."""
 
 import argparse
 import json
@@ -234,10 +234,16 @@ def summarize(args):
             raise ValueError('random reference differs from the fixed predictor settings')
     seeds = sorted(ctx.subset(args.seeds, 'seeds'))
     budgets = sorted(ctx.subset(args.budgets, 'budgets'))
+    policies = ['random', 'benchpress_anchors']
+    if args.include_gp_irt:
+        policies.append('anchors')
     score_config = dict(
         config, ranks=ranks, seeds=seeds, budgets=budgets,
         source_config_hash=args.selection_hash, fit_code_commit=config['code_commit'],
         code_commit=args.code_commit, scoring_runtime=RUNTIME,
+        selection_policies=policies,
+        metric=dict(config['metric'],
+                    mask='questions unrevealed by any compared policy, per seed and budget'),
         random_sources={str(r): config['random_sources'][str(r)] for r in ranks})
     score_hash = config_hash(score_config)
     records, pairs, masks = [], [], []
@@ -250,9 +256,15 @@ def summarize(args):
                 if (unit['targets'], unit['seed'], unit['budget'], unit['column']) != (
                         ctx.held, seed, budget, j):
                     raise ValueError('random reference selection setting mismatch')
-            random_observed = [q[c] for q, c in zip(ctx.data.col_questions, coresets['random'])]
-            np.testing.assert_array_equal([len(q) for q in random_observed], selection['allocation'])
-            excluded = np.union1d(np.concatenate(observed), np.concatenate(random_observed))
+            policy_questions = {'benchpress_anchors': observed}
+            for policy in policies:
+                if policy != 'benchpress_anchors':
+                    policy_questions[policy] = [
+                        q[c] for q, c in zip(ctx.data.col_questions, coresets[policy])]
+            np.testing.assert_array_equal(
+                [len(q) for q in policy_questions['random']], selection['allocation'])
+            excluded = np.unique(np.concatenate(
+                [q for policy in policies for q in policy_questions[policy]]))
             common = np.setdiff1d(np.arange(truth.shape[1]), excluded)
             mask_hash = config_hash({'targets': ctx.held, 'questions': common.tolist()})
             mask = np.ones(truth.shape, dtype=bool)
@@ -265,17 +277,16 @@ def summarize(args):
             })
             for rank in ranks:
                 scores = {}
-                for policy in ('random', 'benchpress_anchors'):
-                    if policy == 'random':
+                for policy in policies:
+                    if policy != 'benchpress_anchors':
                         chash = config['random_sources'][str(rank)]
-                        path = os.path.join(ctx.out, 'variants', chash, 'logit', 'random',
+                        path = os.path.join(ctx.out, 'variants', chash, 'logit', policy,
                                             f's{seed}', f'B{budget}.json')
-                        selected = random_observed
                     else:
                         chash = args.selection_hash
                         path = os.path.join(root, 'predictions', f'r{rank}',
                                             f's{seed}', f'B{budget}.json')
-                        selected = observed
+                    selected = policy_questions[policy]
                     pred, unit = load_question_predictions(ctx, path, chash, selected)
                     if (unit['rank'], unit['seed'], unit['budget'], unit['selection']) != (
                             rank, seed, budget, policy):
@@ -302,7 +313,7 @@ def summarize(args):
     for rank in ranks:
         method = f'benchpress_r{rank}'
         for budget in budgets:
-            for policy in ('random', 'benchpress_anchors'):
+            for policy in policies:
                 rows = [r for r in records if (r['rank'], r['budget'], r['selection'])
                         == (rank, budget, policy)]
                 values = np.array([r['accuracy'] for r in rows])
@@ -342,9 +353,13 @@ def main():
     parser.add_argument('--seeds', type=int_list)
     parser.add_argument('--budgets', type=int_list)
     parser.add_argument('--ranks', nargs='+', type=int, choices=RANKS, default=[40])
+    parser.add_argument('--include-gp-irt', action='store_true',
+                        help='also score cached GP-IRT-selected questions during summarize')
     args = parser.parse_args()
     if args.stage != 'profiles' and not args.selection_hash:
         parser.error('this stage requires --selection-hash')
+    if args.include_gp_irt and args.stage != 'summarize':
+        parser.error('--include-gp-irt applies only to summarize')
     {'profiles': profiles, 'select': select, 'fit': fit, 'summarize': summarize}[args.stage](args)
 
 

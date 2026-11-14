@@ -44,6 +44,12 @@ class QuestionSelectionTests(unittest.TestCase):
             selection.fit(args)
 
     def test_paired_scoring_excludes_questions_revealed_by_either_policy(self):
+        self.assert_common_hidden_scoring(include_gp_irt=False)
+
+    def test_gp_irt_scoring_excludes_questions_revealed_by_any_policy(self):
+        self.assert_common_hidden_scoring(include_gp_irt=True)
+
+    def assert_common_hidden_scoring(self, *, include_gp_irt):
         data = SimpleNamespace(
             answers=np.array([[0, 1, 1, 0, 1, 0], [1, 0, 1, 0, 1, 0]]),
             col_questions=[np.arange(3), np.arange(3, 6)])
@@ -70,18 +76,25 @@ class QuestionSelectionTests(unittest.TestCase):
                 out=root, chash='base', data=data, held=[1], config=grid,
                 subset=lambda values, key: grid[key] if values is None else values)
             args = SimpleNamespace(selection_hash='selected', seeds=None, budgets=None,
-                                   code_commit='scorer', ranks=[40])
+                                   code_commit='scorer', ranks=[40],
+                                   include_gp_irt=include_gp_irt)
             units = [{'targets': [1], 'seed': 0, 'budget': 2, 'column': j} for j in (0, 1)]
 
             def predictions(ctx, path, chash, selected):
-                random = '/variants/' in path
+                cached = '/variants/' in path
                 rank = next(r for r in (8, 40) if (
-                    config['random_sources'][str(r)] == chash if random else f'/r{r}/' in path))
-                pred = [[100., 50., 100., 0., 0., 100.]] if random else [
-                    [0., 0., 100., 100., 100., 0.]]
+                    config['random_sources'][str(r)] == chash if cached else f'/r{r}/' in path))
+                policy = ('anchors' if '/anchors/' in path else 'random') if cached else 'benchpress_anchors'
+                pred = {
+                    'random': [[100., 50., 100., 0., 0., 100.]],
+                    'benchpress_anchors': [[0., 0., 100., 100., 100., 0.]],
+                    'anchors': [[100., 50., 100., 0., 0., 50.]],
+                }[policy]
+                if policy == 'anchors':
+                    np.testing.assert_array_equal(np.concatenate(selected), [2, 3])
                 return np.array(pred), {
                     'rank': rank, 'seed': 0, 'budget': 2,
-                    'selection': 'random' if random else 'benchpress_anchors',
+                    'selection': policy,
                     'selection_hash': config_hash([[1], [4]]),
                     'question_pred_sha256': 'a' * 64, 'seconds': 0.,
                 }
@@ -92,7 +105,8 @@ class QuestionSelectionTests(unittest.TestCase):
                     patch.object(selection, 'load_profiles'), \
                     patch.object(selection, 'load_selection', return_value=(observed, selected)), \
                     patch.object(selection, 'load_coresets', return_value=(
-                        {'random': [np.array([0]), np.array([0])]}, units)), \
+                        {'random': [np.array([0]), np.array([0])],
+                         'anchors': [np.array([2]), np.array([0])]}, units)), \
                     patch.object(selection, 'load_question_predictions', side_effect=predictions):
                 selection.summarize(args)
             scores = os.path.join(root, 'question_selection', 'selected', 'scores')
@@ -101,15 +115,21 @@ class QuestionSelectionTests(unittest.TestCase):
             with open(os.path.join(scores, hashes[0], 'summary.json')) as f:
                 summary = json.load(f)
             self.assertEqual(hashes[0], config_hash(summary['config']))
-        self.assertEqual(summary['evaluation_masks'][0]['questions'], [2, 5])
+        self.assertEqual(summary['evaluation_masks'][0]['questions'], [5] if include_gp_irt else [2, 5])
         self.assertEqual(summary['config']['ranks'], [40])
         self.assertEqual(summary['config']['fit_code_commit'], 'fit')
         self.assertEqual(set(summary['table']), {'benchpress_r40'})
-        self.assertEqual(len(summary['per_seed']), 2)
+        policies = ['random', 'benchpress_anchors'] + (['anchors'] if include_gp_irt else [])
+        self.assertEqual(summary['config']['selection_policies'], policies)
+        self.assertEqual(set(summary['table']['benchpress_r40']), set(policies))
+        self.assertEqual(len(summary['per_seed']), len(policies))
         for row in summary['per_seed']:
-            self.assertEqual(row['n'], 2)
-            self.assertEqual(row['accuracy'], 50. if row['selection'] == 'random' else 100.)
-        self.assertTrue(all(row['gain_pp'] == 50. for row in summary['paired_gains']))
+            self.assertEqual(row['n'], 1 if include_gp_irt else 2)
+            expected = (0. if include_gp_irt else 50.) if row['selection'] == 'random' else 100.
+            self.assertEqual(row['accuracy'], expected)
+            self.assertEqual(row['mask_hash'], summary['evaluation_masks'][0]['mask_hash'])
+        self.assertTrue(all(row['gain_pp'] == (100. if include_gp_irt else 50.)
+                            for row in summary['paired_gains']))
 
 
 if __name__ == '__main__':

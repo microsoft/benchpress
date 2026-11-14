@@ -50,12 +50,20 @@ def plot_selection(summary, name):
             'label': 'BenchPress-selected questions', 'color': MEMENTO_MAGENTA,
             'linestyle': '-', 'marker': 's',
         },
+        'anchors': {
+            'label': 'GP-IRT-selected questions', 'color': ANSWER_VIOLET,
+            'linestyle': ':', 'marker': 'v',
+        },
     }
+    present = set(next(iter(table.values()), {}))
     if (not summary['complete_grid']
             or summary['config']['metric']['name'] != 'binary_accuracy'
             or not ranks or set(table) != {f'benchpress_r{rank}' for rank in ranks}
-            or any(set(rows) != set(policies) for rows in table.values())):
-        raise ValueError('selection figure requires both policies for every evaluated rank')
+            or not {'random', 'benchpress_anchors'}.issubset(present)
+            or not present.issubset(policies)
+            or any(set(rows) != present for rows in table.values())):
+        raise ValueError('selection figure requires the same supported policies at every rank')
+    policies = {policy: style for policy, style in policies.items() if policy in present}
     apply_single()
     fig, axes = plt.subplots(1, len(ranks), figsize=(7 * len(ranks), 6.5),
                              sharey=True, squeeze=False)
@@ -73,7 +81,8 @@ def plot_selection(summary, name):
         ax.set_xscale('log', base=2)
         ax.set_xticks(budgets)
         ax.set_xticklabels([str(b) for b in budgets])
-        ax.set_xlabel('Evaluated questions per model')
+        ax.set_xlabel('Question budget per model' if 'anchors' in present
+                      else 'Evaluated questions per model')
         ax.grid(alpha=0.3)
     lower, upper = axes[0].get_ylim()
     axes[0].set_ylim(max(0, lower), min(100, upper))
@@ -81,10 +90,14 @@ def plot_selection(summary, name):
     fig.legend(*axes[0].get_legend_handles_labels(), loc='lower center',
                bbox_to_anchor=(0.5, 0.07), ncol=2, frameon=False, fontsize=14)
     fig.subplots_adjust(bottom=0.28)
-    fig.text(0.5, 0.01,
-             '127 held-out models; identical unrevealed questions within each budget/seed.'
-             '\nPredict 1 iff score >0.5. Mean and one sample SD over five selection seeds.',
-             ha='center', fontsize=10)
+    caption = (
+        '127 held-out models; identical unrevealed questions within each budget/seed.'
+        '\nPredict 1 iff score >0.5. Mean and one sample SD over five selection seeds.')
+    if 'anchors' in present:
+        caption = (
+            '127 held-out models; common hidden questions within each budget/seed.'
+            '\nFive-seed mean ± sample SD; score >0.5 predicts 1. GP-IRT can use fewer unique questions.')
+    fig.text(0.5, 0.01, caption, ha='center', fontsize=10)
     save_fig(name)
 
 

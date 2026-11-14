@@ -104,6 +104,21 @@ NPZs/checksums, and exact evaluation question IDs. Scored outputs are in
 seed/budget grid). Existing predictions, figures,
 MedAE summaries, rebuttal, and Overleaf text remain unchanged.
 
+Add `--include-gp-irt` to `selection.py summarize` to compare three question
+selection policies using the same BenchPress predictor. The third curve
+reuses the `anchors` raw predictions from rank-40 configuration
+`577115b7edd126a2`. All three policies are rescored on questions unrevealed
+by any of them; adding this policy changes the scoring identity and leaves
+the two-policy result intact. No IRT or BenchPress model is refit. The
+`selection_policies` configuration field records the scored policies;
+`paired_gains` and `gains` continue to describe BenchPress-selected minus
+random accuracy.
+
+The GP-IRT curve uses the original selected question IDs. Its unique count
+can be one below the nominal budget: at budget 400, seeds 0 and 4 each use
+399 questions. The three-policy figure therefore labels the x-axis as
+question budget and retains actual counts in each accuracy record.
+
 #### Completed selection comparison
 
 The rank-40 comparison completed on CHTC on November 14, 2026. Accuracy is
