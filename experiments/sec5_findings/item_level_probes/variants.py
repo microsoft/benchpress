@@ -2,6 +2,7 @@
 """Method-only variants on the frozen question-level evaluation artifacts."""
 
 import argparse
+import hashlib
 import json
 import os
 import time
@@ -233,6 +234,10 @@ def summarize(args):
 def summarize_accuracy(args):
     ctx = Context(args, check_commit=False)
     bp = load_benchpress_manifest(ctx)
+    with open(os.path.join(ctx.out, 'summary.json')) as f:
+        reference = json.load(f)
+    if reference['config_hash'] != ctx.chash or reference['benchpress_config_hash'] != bp['config_hash']:
+        raise ValueError('reference summary provenance mismatch')
     sources = {}
     for chash in args.variant_hashes:
         manifest_path = os.path.join(ctx.out, 'variants', chash, 'manifest.json')
@@ -278,7 +283,8 @@ def summarize_accuracy(args):
                 if (unit['targets'] != ctx.held or unit['column'] != j
                         or unit['seed'] != seed or unit['budget'] != budget):
                     raise ValueError('estimator targets or setting mismatch')
-            estimator_hash = config_hash(units)
+            estimator_hash = hashlib.sha256(
+                json.dumps(units, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
             for selection in selections:
                 observed = [q[c] for q, c in zip(ctx.data.col_questions, coresets[selection])]
                 hidden = [np.setdiff1d(q, o) for q, o in zip(ctx.data.col_questions, observed)]
