@@ -128,6 +128,29 @@ On the May `84 x 133` matrix, predictor-fit counts are:
 - Random baseline: `2,500` fits (`10` k values x `10` seeds x `25` validation
   models).
 
+## Predictor comparison across requested probe budgets
+
+`plot_baselines.py` draws two panels from the original
+`results/heldout_baselines_s42.json.gz` summary: cost-unaware and cost-aware
+greedy probes, each with BenchPress, offsets only, and logit-space model mean
+at every requested budget from 1 to 10. It does not fit predictors or change
+the appendix evaluation setup. The y-axis is pooled MedAE on unrevealed
+observed cells; all 25 held-out models remain in each row. Test cells match
+across predictors within a budget but change across budgets.
+
+```bash
+python plot_baselines.py
+```
+
+Outputs: `figures/bp_heldout_probe_baselines.pdf` and `.png`, plus
+`figures/bp_heldout_probe_baselines_caption.md` and
+`figures/bp_heldout_probe_baselines_data.json`. The data companion records all
+60 plotted values, test-cell counts, and the source artifact hash/manifest.
+The figure uses the shared visual identity: policy colors for BenchPress,
+violet dashed lines for offsets only, and gray dotted lines for model mean.
+Both panels use the same axes. It is a standalone figure for the rebuttal
+discussion, with no manuscript placement applied.
+
 ## Matched revealed-count comparison
 
 `summarize_revealed_counts.py` re-analyzes `results/heldout_baselines_s42.json.gz`
