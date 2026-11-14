@@ -66,7 +66,7 @@ def main():
                                  if r['method'] == heldout_order), key=lambda r: r['k'])
                 rows = []
                 for r in source:
-                    names = ('benchpress', 'logit_offsets_only', 'logit_model_mean')
+                    names = ('benchpress', 'logit_offsets_only')
                     if any(r[name]['n'] != r['n_cells_in_prediction_payload'] for name in names):
                         raise ValueError('Held-out prediction coverage differs across methods')
                     rows.append({'k': r['k'], 'test_cells': r['n_cells_in_prediction_payload'],
@@ -77,8 +77,6 @@ def main():
                 ('benchpress', 'BenchPress', style['color'], '-', 'o'),
                 ('logit_offsets_only', 'Offsets only', ANSWER_VIOLET, '--', 's'),
             ]
-            if row_index == 1:
-                series.append(('logit_model_mean', 'Model mean', GRAY, ':', '^'))
             for name, label, color, linestyle, marker in series:
                 ax.plot([r['k'] for r in rows], [r[name] for r in rows], label=label,
                         color=color, linestyle=linestyle, marker=marker, linewidth=2.6,
@@ -122,8 +120,8 @@ def main():
         'same revealed scores and test cells within each panel at each budget. '
         'The settings use different probe sets and evaluation cells. Requested '
         'probes may be unavailable, and newly revealed scores leave the test set. '
-        'Offsets only removes the two latent factors. Model mean is shown for '
-        'the held-out comparison.\n')
+        'All four panels compare BenchPress with offsets only, which removes '
+        'the two latent factors.\n')
     with open(os.path.join(HERE, 'figures', STEM + '_caption.md'), 'w') as handle:
         handle.write(caption)
 

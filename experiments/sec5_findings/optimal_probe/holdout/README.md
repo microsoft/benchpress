@@ -177,8 +177,8 @@ The current rebuttal uses `python plot_settings_comparison.py`:
 `figures/bp_main_vs_heldout_medae.{pdf,png}` with caption and data companions.
 This is one MedAE-only 2-by-2 figure, with the main 84-model experiment on top
 and the 59/25 held-out experiment below; columns are cost-unaware and cost-aware
-greedy. Axes are identical. Main panels compare BenchPress and offsets only;
-held-out panels also include model mean. All 100 values match the saved source
+greedy. Axes are identical. All four panels compare BenchPress and offsets only.
+All 80 values match the saved source
 summaries, and the data companion records each source hash and test-cell count.
 
 ## Matched revealed-count comparison
