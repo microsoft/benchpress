@@ -166,3 +166,5 @@ python run_prospective_coverage.py --new-model-protocol model_folds \
 ```
 
 Outputs go to `results/prospective_coverage_model_folds/` with the same `raw_records.json.gz` (plus `seed` and `fold`), `manifest.json` (target list, calibrator sha256), and `summary.json` (`new_models.model_folds`).
+
+Last valid result (CHTC CPU job 8679703, github commit `5a4e0cf`, 16 CPUs, 1,578 s; calibrator sha256 `17256bcf…`, identical to job 7925236; returned archive sha256 `c4662e12…`, kept at `~/bp_iclr/out_cov_model_folds_5a4e0cf.tar.gz` on ap2002). Targets are the same 23 August-only models as the matched set of `prospective_update/results/random_reveals`. Checks: May leave-fold-out reproduction 0.899 on 26,040 cells; the 178 new cells of May models reproduce 84.3% / width 22.4 / MedAE 4.44. August-only models, 3-fold holdout, 10 seeds, 4,540 held-out predictions (454 cells per seed): 90% coverage 86.8%, median width 27.7, MedAE 5.55; 80% / 95% coverage 74.5% / 93.6%; 90% coverage by May risk tercile 85.5 / 85.8 / 89.2% (median width 15.7 / 27.6 / 52.3); misses split 49% above, 51% below; per-model 90% coverage ranges from 75% to 100% (median 87%).
