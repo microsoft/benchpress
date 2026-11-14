@@ -34,6 +34,15 @@ class QuestionSelectionTests(unittest.TestCase):
             with self.subTest(count=count, profiles=profiles), self.assertRaises(ValueError):
                 select_profile_anchors(profiles, count, 0)
 
+    def test_fit_rejects_rank_outside_profile_configuration(self):
+        args = SimpleNamespace(selection_hash='selected', code_commit='fit', ranks=[8])
+        manifest = {'config': {
+            'runtime': selection.RUNTIME, 'code_commit': 'fit', 'ranks': [40]}}
+        with patch.object(selection, 'Context'), \
+                patch.object(selection, 'load_manifest', return_value=manifest), \
+                self.assertRaisesRegex(ValueError, 'requested ranks'):
+            selection.fit(args)
+
     def test_paired_scoring_excludes_questions_revealed_by_either_policy(self):
         data = SimpleNamespace(
             answers=np.array([[0, 1, 1, 0, 1, 0], [1, 0, 1, 0, 1, 0]]),

@@ -169,6 +169,8 @@ def fit(args):
     if (manifest['config']['runtime'] != RUNTIME
             or manifest['config']['code_commit'] != args.code_commit):
         raise ValueError('fitting must use the profile source and runtime')
+    if not set(args.ranks).issubset(manifest['config']['ranks']):
+        raise ValueError('requested ranks are not in the fitted configuration')
     root = os.path.join(ctx.out, 'question_selection', args.selection_hash)
     for seed in ctx.subset(args.seeds, 'seeds'):
         for budget in ctx.subset(args.budgets, 'budgets'):
