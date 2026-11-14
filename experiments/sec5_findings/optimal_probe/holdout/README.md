@@ -142,6 +142,7 @@ across predictors within a budget but change across budgets.
 python plot_baselines.py
 python plot_baselines.py --metric medape
 python plot_baselines.py --metric both
+python plot_baselines.py --metric both --layout row
 ```
 
 Outputs: `figures/bp_heldout_probe_baselines.pdf` and `.png`, plus
@@ -165,6 +166,33 @@ plotted values match the original summaries. Its PNG is embedded in the local
 ICLR rebuttal W1-2 / Q1 draft, with a short caption and the original 59/25
 evaluation scope. OpenReview comments do not render images, so submission
 requires an anonymous figure link or revised-paper appendix reference.
+
+Adding `--layout row` writes `bp_heldout_probe_baselines_both_row` with all four
+panels in one row. It identifies the 59/25 split in its title and uses the same
+metric axis ranges as `all_known/figures/bp_main_probe_offsets_both_row`.
+This single-row PNG is an alternative layout.
+All 120 values are unchanged from the original held-out baseline summaries.
+
+The current rebuttal uses `python plot_settings_comparison.py`:
+`figures/bp_main_vs_heldout_medae.{pdf,png}` with caption and data companions.
+This is one MedAE-only 2-by-2 figure, with the main 84-model experiment on top
+and the 59/25 held-out experiment below; columns are cost-unaware and cost-aware
+greedy. Axes are identical. All four panels compare BenchPress and offsets only.
+All 80 values match the saved source
+summaries, and the data companion records each source hash and test-cell count.
+Vertical error bars are pointwise 95% percentile intervals for pooled MedAE,
+computed from 2,000 whole-model bootstrap resamples with seed 42 using
+`benchpress.stats.cluster_bootstrap_median`. Each sampled model contributes all
+its hidden-cell errors, including multiplicity when sampled repeatedly. The
+same model draws pair the two methods and all budgets within each setting.
+The 84-model and 25-model cohorts are bootstrapped separately. The split,
+selected probes, and fitted predictions are fixed; these bars do not estimate
+uncertainty from refitting or probe selection. The JSON data companion stores
+every interval and its configuration. The four axes expand together if needed
+to keep all intervals visible. Validation covers uneven cluster sizes,
+constant errors, deterministic paired draws, and invalid inputs; all point
+estimates reproduce the existing figure. The analysis reads cached predictions
+only and is safe locally.
 
 ## Matched revealed-count comparison
 
