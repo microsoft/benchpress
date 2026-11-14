@@ -8,8 +8,8 @@
 reference-model scores never enter training. Each fit appends exactly one
 target row with exactly 1, 3, 5, or 10 randomly revealed scores. A target needs
 at least five remaining observed scores at a budget. Seeds 0-9 use base seed
-42 and nested target-specific random orders. BenchPress, offsets only, and
-logit model mean share every revealed and hidden score.
+42 and nested target-specific random orders. BenchPress uses rank 2 and
+lambda 0.1.
 
 Two summaries are retained: all eligible targets at each budget, and a matched
 comparison using only targets with at least 15 April-benchmark scores and only
@@ -45,21 +45,30 @@ the scheduler logs under `execution/`. Local verification reproduces every
 summary entry from 17,510 raw test records, with all three predictions finite.
 The persistent CHTC archive is `~/bp_iclr/random_reveals_run.tar.gz`.
 
-Matched comparison: the same 23 targets and 2,240 target/seed/benchmark records
-at every budget. Both columns list BenchPress / offsets only / model mean:
+BenchPress comparison with the main-body temporal test. MedAE measures
+absolute prediction error in score points; lower is better. Both columns
+first take each model's median MedAE over ten seeds, then the median across
+models. The new experiment uses the same 23 targets and 2,240
+target/seed/benchmark test records at every budget.
 
-| Revealed scores | Pooled MedAE | Median model MedAE |
+| Revealed scores | Main-body temporal test: 27 targets | Frozen April to August-added models: 23 targets |
 |---|---|---|
-| 1 | 8.14 / 7.49 / 7.71 | 7.98 / 7.52 / 6.62 |
-| 3 | 5.97 / 6.44 / 6.77 | 6.60 / 6.56 / 5.47 |
-| 5 | 5.90 / 6.03 / 6.16 | 6.35 / 6.02 / 5.53 |
-| 10 | 5.43 / 5.46 / 6.00 | 6.15 / 5.44 / 5.14 |
+| 1 | 9.37 | 7.98 |
+| 3 | Not tested | 6.60 |
+| 5 | 6.76 | 6.35 |
+| 10 | 6.12 | 6.15 |
 
-The model-level column first takes each model's median MedAE over seeds, then
-the median across models. It favors model mean, while pooled MedAE favors
-BenchPress from three reveals onward; these summaries must be distinguished.
-All-eligible target counts are 42 / 41 / 32 / 23 at 1 / 3 / 5 / 10 reveals.
-The complete target inventory and both aggregations are in the report.
+The errors are numerically similar at five and ten reveals. Target models,
+reference matrices, and test-score sets differ between experiments, so the
+comparison does not isolate the effect of score-report timing in the
+historical test. Historical values are reproduced from
+`../temporal_deployment/results.json` with
+`summary_utils.temporal_overall_medians(..., hidden_only=True)`; new values
+use `matched_targets_and_cells` / `median_model_medae` in the saved summary.
+The new pooled MedAE values are 8.14 / 5.97 / 5.90 / 5.43; these use a different
+aggregation. All-eligible target counts are 42 / 41 / 32 / 23 at
+1 / 3 / 5 / 10 reveals. The complete target inventory and both aggregations
+are in `results/random_reveals/report.md`.
 
 ## Paper mapping
 
