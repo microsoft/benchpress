@@ -1,7 +1,7 @@
 numpy==1.26.4
 scipy==1.16.3
 scikit-learn==1.2.0
-torch==1.13.1
+torch==2.13.0
 pyro-ppl==1.8.6
 py-irt==0.4.10
 pygam==0.12.0
