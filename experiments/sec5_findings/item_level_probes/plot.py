@@ -102,9 +102,9 @@ def plot_selection(summary, name, caption=None):
     if caption is None:
         fig.text(0.5, 0.01, default_caption, ha='center', fontsize=10)
     else:
-        fig.text(0.5, 0.01, textwrap.fill(caption, width=90 * len(ranks),
-                                       break_long_words=False, break_on_hyphens=False),
-                 ha='center', va='top', fontsize=12, linespacing=1.25)
+        fig.text(0.02, 0.01, textwrap.fill('Figure: ' + caption, width=90 * len(ranks),
+                                        break_long_words=False, break_on_hyphens=False),
+                 ha='left', va='top', fontsize=12, linespacing=1.25)
     save_fig(name)
 
 
@@ -188,9 +188,9 @@ def main():
     else:
         axes[0].legend(frameon=False, fontsize='small')
     if args.caption is not None:
-        fig.text(0.5, 0.01, textwrap.fill(args.caption, width=90 * len(selections),
-                                       break_long_words=False, break_on_hyphens=False),
-                 ha='center', va='top', fontsize=12, linespacing=1.25)
+        fig.text(0.02, 0.01, textwrap.fill('Figure: ' + args.caption, width=90 * len(selections),
+                                        break_long_words=False, break_on_hyphens=False),
+                 ha='left', va='top', fontsize=12, linespacing=1.25)
     elif accuracy:
         fig.text(0.5, 0.01,
                  r'Hidden questions only; predict 1 iff score $>0.5$. Bands: one seed standard deviation.'

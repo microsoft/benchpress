@@ -205,7 +205,8 @@ The full six-budget summary contains 90 accuracy records, 30 common masks,
 The focused figure projects only table budgets 200, 400, and 800 in memory
 before calling `plot_selection`; the full summary remains unchanged.
 Pass `caption=<text>` to `plot_selection` to replace the embedded note in
-both PDF and PNG. The note wraps below the legend without changing the plot
+both PDF and PNG. The note starts with `Figure:` and wraps left-aligned below
+the legend without changing the plot
 area, curves, or default outputs. For the rebuttal, include the five-seed
 mean and sample SD, common unrevealed questions, strict probability threshold,
 and GP-IRT's 399 unique questions in two seeds at nominal budget 400.
@@ -218,7 +219,8 @@ Derived outputs under `~/Downloads/benchpress-question-selection/` are
 For the focused rebuttal figure, use `plot.py --methods benchpress_r40
 gp_irt_items aipw_items --selections random --xlabel 'Known scores per model'`
 with the saved accuracy summary. `--caption '<text>'` replaces the embedded
-note in both exports; omitting it preserves the default note and layout.
+note in both exports, left-aligned and prefixed with `Figure:`; omitting it
+preserves the default note and layout.
 The rebuttal note defines known scores as revealed binary question outcomes,
 pooled accuracy on identical unrevealed model-question pairs within each
 budget/seed, the strict probability threshold, the five-seed mean and sample
