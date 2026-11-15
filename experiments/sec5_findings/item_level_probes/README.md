@@ -204,11 +204,25 @@ The full six-budget summary contains 90 accuracy records, 30 common masks,
 18 aggregate accuracy cells, and 30 BenchPress-minus-random paired gains.
 The focused figure projects only table budgets 200, 400, and 800 in memory
 before calling `plot_selection`; the full summary remains unchanged.
+Pass `caption=<text>` to `plot_selection` to replace the embedded note in
+both PDF and PNG. The note wraps below the legend without changing the plot
+area, curves, or default outputs. For the rebuttal, include the five-seed
+mean and sample SD, common unrevealed questions, strict probability threshold,
+and GP-IRT's 399 unique questions in two seeds at nominal budget 400.
 Derived outputs under `~/Downloads/benchpress-question-selection/` are
 `summary_with_gp_irt.json`, `table_200_800_with_gp_irt.csv`, and
 `bp_question_selection_200_800_with_gp_irt.{pdf,png}`.
 
 ### Binary question-prediction accuracy
+
+For the focused rebuttal figure, use `plot.py --methods benchpress_r40
+gp_irt_items aipw_items --selections random --xlabel 'Known scores per model'`
+with the saved accuracy summary. `--caption '<text>'` replaces the embedded
+note in both exports; omitting it preserves the default note and layout.
+The rebuttal note defines known scores as revealed binary question outcomes,
+pooled accuracy on identical unrevealed model-question pairs within each
+budget/seed, the strict probability threshold, the five-seed mean and sample
+SD, and the baselines' internal question predictors.
 
 `baselines.py summarize` scores the individual binary answers on unrevealed
 questions of the 127 held-out models. A score strictly greater than 0.5

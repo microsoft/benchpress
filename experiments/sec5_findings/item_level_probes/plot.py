@@ -5,6 +5,7 @@ import argparse
 import json
 import os
 import sys
+import textwrap
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -41,7 +42,7 @@ STYLES = {
 }
 
 
-def plot_selection(summary, name):
+def plot_selection(summary, name, caption=None):
     table = summary['table']
     ranks = summary['config']['ranks']
     policies = {
@@ -91,14 +92,19 @@ def plot_selection(summary, name):
                bbox_to_anchor=(0.5, 0.05 if 'anchors' in present else 0.07),
                ncol=2, frameon=False, fontsize=14)
     fig.subplots_adjust(bottom=0.28)
-    caption = (
+    default_caption = (
         '127 held-out models; identical unrevealed questions within each budget/seed.'
         '\nPredict 1 iff score >0.5. Mean and one sample SD over five selection seeds.')
     if 'anchors' in present:
-        caption = (
+        default_caption = (
             '127 held-out models; common hidden questions within each budget/seed.'
             '\nFive-seed mean ± sample SD; score >0.5 predicts 1. GP-IRT can use fewer unique questions.')
-    fig.text(0.5, 0.01, caption, ha='center', fontsize=10)
+    if caption is None:
+        fig.text(0.5, 0.01, default_caption, ha='center', fontsize=10)
+    else:
+        fig.text(0.5, 0.01, textwrap.fill(caption, width=90 * len(ranks),
+                                       break_long_words=False, break_on_hyphens=False),
+                 ha='center', va='top', fontsize=12, linespacing=1.25)
     save_fig(name)
 
 
@@ -109,6 +115,7 @@ def main():
     ap.add_argument('--methods', nargs='+', choices=list(STYLES))
     ap.add_argument('--selections', nargs='+', choices=['random', 'anchors'])
     ap.add_argument('--xlabel')
+    ap.add_argument('--caption', help='Replace the embedded note; wrap below the legend in both exports')
     args = ap.parse_args()
 
     with open(args.summary) as f:
@@ -116,7 +123,7 @@ def main():
     if summary.get('config', {}).get('comparison') == 'question_selection':
         if any(value is not None for value in (args.methods, args.selections, args.xlabel)):
             raise ValueError('the selection comparison uses all compared policies and its fixed axis labels')
-        plot_selection(summary, args.name or 'bp_question_selection')
+        plot_selection(summary, args.name or 'bp_question_selection', caption=args.caption)
         return
     table = summary['table']
     metric = summary.get('config', {}).get('metric', {})
@@ -180,7 +187,11 @@ def main():
         fig.subplots_adjust(bottom=0.32 if accuracy else 0.25)
     else:
         axes[0].legend(frameon=False, fontsize='small')
-    if accuracy:
+    if args.caption is not None:
+        fig.text(0.5, 0.01, textwrap.fill(args.caption, width=90 * len(selections),
+                                       break_long_words=False, break_on_hyphens=False),
+                 ha='center', va='top', fontsize=12, linespacing=1.25)
+    elif accuracy:
         fig.text(0.5, 0.01,
                  r'Hidden questions only; predict 1 iff score $>0.5$. Bands: one seed standard deviation.'
                  '\nBaselines use their internal question predictors, not their aggregate score estimators.',
