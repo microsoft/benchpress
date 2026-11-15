@@ -3,7 +3,11 @@
 ## Paper mapping
 
 - ICLR 2027 Appendix `\Cref{app:question_level_budgets}` (D.4, "Question-Level
-  Budgets"); rebuttal R-ye3d Q1.
+  Prediction and Selection"); rebuttal R-ye3d Q1.
+- The appendix figure is rendered by
+  `../../appendix_d_sec5_findings/item_level_probes/plot.py` from the saved
+  native-prediction and three-policy selection summaries. Its README records
+  the paper projection and source checksums.
 
 ## Purpose
 
