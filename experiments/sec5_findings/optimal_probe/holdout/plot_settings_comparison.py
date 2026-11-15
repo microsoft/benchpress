@@ -3,7 +3,6 @@
 import hashlib
 import os
 import sys
-import textwrap
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT = os.path.abspath(os.path.join(HERE, '..', '..', '..', '..'))
@@ -17,6 +16,7 @@ from benchpress.plot_helpers.visual_identity import (
 )
 import matplotlib.pyplot as plt
 from matplotlib.colors import to_rgba
+from matplotlib.font_manager import FontProperties
 import numpy as np
 
 STEM = 'bp_main_vs_heldout_medae'
@@ -164,10 +164,32 @@ def main():
     upper_limit = max(10, np.ceil(max(r['ci_upper'] for r in intervals)))
     axes[0, 0].set_ylim(lower_limit, upper_limit)
     axes[0, 0].set_yticks(np.arange(lower_limit, upper_limit + 1))
-    fig.text(0.02, -0.025, textwrap.fill(CAPTION, width=116,
-                                      break_long_words=False, break_on_hyphens=False),
-             ha='left', va='top', fontsize=15, fontstyle='italic',
-             linespacing=1.35, color=CHARCOAL)
+    fig.canvas.draw()
+    renderer = fig.canvas.get_renderer()
+    figure_bounds = fig.get_tightbbox(renderer).transformed(fig.dpi_scale_trans)
+    caption_font = FontProperties(size=15, style='italic')
+    label_font = FontProperties(size=15, weight='bold')
+    space = renderer.get_text_width_height_descent(' ', caption_font, False)[0]
+    lines = [[]]
+    line_width = 0
+    for index, word in enumerate(('Figure: ' + CAPTION).split()):
+        font = label_font if index == 0 else caption_font
+        width = renderer.get_text_width_height_descent(word, font, '$' in word)[0]
+        if lines[-1] and line_width + space + width > figure_bounds.width:
+            lines.append([])
+            line_width = 0
+        line_width += (space if lines[-1] else 0) + width
+        lines[-1].append((word, width, font))
+    baseline = figure_bounds.y0 - (18 + caption_font.get_size()) * fig.dpi / 72
+    for line_index, line in enumerate(lines):
+        gap = space if line_index == len(lines) - 1 or len(line) == 1 else (
+            figure_bounds.width - sum(width for _, width, _ in line)) / (len(line) - 1)
+        x = figure_bounds.x0
+        for word, width, font in line:
+            fig.text(x / fig.bbox.width, baseline / fig.bbox.height, word,
+                     ha='left', va='baseline', fontproperties=font, color=CHARCOAL)
+            x += width + gap
+        baseline -= caption_font.get_size() * 1.35 * fig.dpi / 72
     save_fig(STEM)
     sources = []
     for path in source_paths:
@@ -185,7 +207,7 @@ def main():
         'sources': sources, 'data': plotted,
     }, indent=2)
     with open(os.path.join(HERE, 'figures', STEM + '_caption.md'), 'w') as handle:
-        handle.write('*' + CAPTION + '*\n')
+        handle.write('**Figure:** *' + CAPTION + '*\n')
 
 
 if __name__ == '__main__':

@@ -180,7 +180,9 @@ and the 59/25 held-out experiment below; columns are cost-unaware and cost-aware
 greedy. Axes are identical. All four panels compare BenchPress, offsets only,
 and logit-space model mean. Method colors are identical across panels:
 magenta for BenchPress, violet for offsets only, and gray for model mean.
-The caption is embedded below the plots in both exports. After regeneration,
+The caption is embedded below the plots in both exports, starting with
+"Figure:" and justified to the measured figure width (last line left-aligned).
+After regeneration,
 refresh the PNG/PDF delivery copies beside the rebuttal and in Downloads;
 the rebuttal uses relative links to its adjacent copies.
 All 120 values match the saved source
