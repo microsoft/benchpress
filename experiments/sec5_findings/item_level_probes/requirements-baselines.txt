@@ -1,6 +1,6 @@
 numpy==1.26.4
 scipy==1.16.3
-scikit-learn==1.2.0
+scikit-learn==1.5.0
 torch==1.13.1
 pyro-ppl==1.8.6
 py-irt==0.4.10
